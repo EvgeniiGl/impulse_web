@@ -1,8 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-</head>
-<body>
-<div id="root"></div>
-</body>
-</html>
+<?php
+
+declare(strict_types=1);
+
+// Set timezone
+date_default_timezone_set('Europe/Moscow');
+
+// Include bootstrap
+require_once __DIR__ . '/../app/bootstrap.php';

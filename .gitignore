@@ -1,3 +1,6 @@
 .idea
 .env
 db_data
+vendor
+logs
+composer.lock

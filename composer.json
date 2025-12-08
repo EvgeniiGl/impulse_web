@@ -3,11 +3,12 @@
   "description": "Application",
   "type": "project",
   "require": {
-    "php": ">=8.2",
-    "ext-swoole": "*",
-    "ext-phalcon": "^5.0",
+    "php": ">=8.3",
     "ext-pdo": "*",
-    "ext-pdo_pgsql": "*"
+    "ext-pdo_pgsql": "*",
+    "ext-phalcon": "^5.0",
+    "ext-swoole": "*",
+    "vlucas/phpdotenv": "^5.5"
   },
   "require-dev": {
     "swoole/ide-helper": "^6.0",

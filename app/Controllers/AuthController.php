@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Auth\Controllers;
+namespace App\Controllers;
 
 use App\Base\Controllers\BaseController;
 use Phalcon\Http\Response;
 
 class AuthController extends BaseController
 {
-    public function login(): Response
+    public function loginAction(): Response
     {
 
         return $this->jsonResponse([
