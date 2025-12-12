@@ -24,7 +24,7 @@ return function (): Config {
         ],
         'app' => [
             'env'   => getenv('APP_ENV') ?? 'development',
-            'debug' => getenv('APP_DEBUG') ?? true,
+            'debug' => getenv('APP_DEBUG') ?? false,
             'url'   => getenv('APP_URL') ?? 'http://localhost',
         ],
     ]);

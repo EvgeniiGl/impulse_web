@@ -5,10 +5,13 @@ declare(strict_types=1);
 // Load Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 
-define('APP_PATH', realpath(__DIR__ . '/..'));
+date_default_timezone_set('Europe/Moscow');
+if (!defined('APP_PATH')) {
+    define('APP_PATH', realpath(__DIR__ . '/..'));
+}
 
-use App\DB;
 use App\Handlers\ExceptionHandler;
+use App\Providers\TranslationServiceProvider;
 use Dotenv\Dotenv;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\Application;
@@ -18,6 +21,7 @@ use Phalcon\Logger\Adapter\Stream;
 use Phalcon\Mvc\View;
 use Phalcon\Support\Debug;
 use Phalcon\Mvc\Model\Manager as ModelsManager;
+use Phalcon\Translate\Adapter\AdapterInterface;
 
 $dotenv = Dotenv::createImmutable(APP_PATH);
 $dotenv->load();
@@ -36,9 +40,9 @@ $di = new FactoryDefault();
 $di->setShared('config', require __DIR__ . '/../config/config.php');
 
 // Register database connection
-$di->setShared('db', function () use ($di) {
-    return DB::create($di);
-});
+$di->setShared('db', require __DIR__ . '/../config/db.php');
+
+$di->register(new TranslationServiceProvider());
 
 // Register models manager
 $di->setShared('modelsManager', ModelsManager::class);
@@ -69,13 +73,12 @@ $di->setShared('view', function () {
 
 $application = new Application($di);
 
-
 try {
     $response = $application->handle($_SERVER['REQUEST_URI']);
     $response->send();
 } catch (Throwable $e) {
-    $logger = $di->get('logger');
-    $debug = getenv('APP_DEBUG') === 'true' || getenv('APP_DEBUG') === '1';
+    $logger           = $di->get('logger');
+    $debug            = getenv('APP_DEBUG') === 'true' || getenv('APP_DEBUG') === '1';
     $exceptionHandler = new ExceptionHandler($logger, $debug);
 
     $errorResponse = $exceptionHandler->handle($e);

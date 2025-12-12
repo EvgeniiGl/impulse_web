@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Base\Controllers;
+namespace App\Controllers;
 
 use Phalcon\Http\Response;
 use Phalcon\Mvc\Controller as PhalconController;
