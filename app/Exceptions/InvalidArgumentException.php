@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use Swoole\Http\Status;
+use Phalcon\Http\Message\ResponseStatusCodeInterface;
 
 class InvalidArgumentException extends BaseException
 {
-    protected $code = Status::UNPROCESSABLE_ENTITY;
+    protected $code = ResponseStatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY;
     public $message = 'Incorrect data';
 }
