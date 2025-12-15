@@ -13,43 +13,50 @@ use Phalcon\Filter\Validation\Exception as ValidationException;
 class ExceptionHandler
 {
     private LoggerInterface $logger;
-    private bool $debug;
+    private bool            $debug;
 
     public function __construct(LoggerInterface $logger, bool $debug = false)
     {
         $this->logger = $logger;
-        $this->debug = $debug;
+        $this->debug  = $debug;
     }
 
+    /**
+     * @param Throwable $exception
+     * @return Response
+     */
     public function handle(Throwable $exception): Response
     {
         $this->logger->error(
             'Exception occurred: ' . $exception->getMessage(),
             [
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-                'trace' => $exception->getTraceAsString(),
-                'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown',
+                'file'           => $exception->getFile(),
+                'line'           => $exception->getLine(),
+                'trace'          => $exception->getTraceAsString(),
+                'request_uri'    => $_SERVER['REQUEST_URI'] ?? 'unknown',
                 'request_method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
             ]
         );
 
         $statusCode = $this->getStatusCode($exception);
-        
+
         $response = new Response();
         $response->setStatusCode($statusCode);
         $response->setContentType('application/json', 'UTF-8');
 
         $errorData = [
-            'error' => true,
+            'success' => false,
             'message' => $this->getErrorMessage($exception),
-            'code' => $statusCode,
+            'code'    => $statusCode,
         ];
+        if (is_callable([$exception, 'getErrors'])) {
+            $errorData['errors'] = $exception->getErrors();
+        }
 
         if ($this->debug) {
             $errorData['debug'] = [
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
+                'file'  => $exception->getFile(),
+                'line'  => $exception->getLine(),
                 'trace' => $exception->getTrace(),
             ];
         }
@@ -69,7 +76,7 @@ class ExceptionHandler
 
         // Определяем код по типу исключения
         $className = get_class($exception);
-        
+
         switch ($className) {
             case DispatcherException::class:
                 return 404;
@@ -84,7 +91,7 @@ class ExceptionHandler
     {
         if (!$this->debug) {
             $statusCode = $this->getStatusCode($exception);
-            
+
             switch ($statusCode) {
                 case 404:
                     return 'Resource not found';

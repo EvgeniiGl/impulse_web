@@ -22,6 +22,10 @@ return function (): Config {
 //            'servicesDir'    => __DIR__ . '/../app/Services/',
             'baseUri'        => '/',
         ],
+        'jwt' => [
+            'secret' => getenv('JWT_SECRET') ?? 'secret_something',
+            'expiration' => 3600
+        ],
         'app' => [
             'env'   => getenv('APP_ENV') ?? 'development',
             'debug' => getenv('APP_DEBUG') ?? false,

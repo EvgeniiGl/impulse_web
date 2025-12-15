@@ -1,0 +1,8 @@
+POST {{url}}/auth/login
+Accept: application/json
+Accept-Language: ru
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}

@@ -12,6 +12,8 @@ use Phalcon\Messages\Messages;
 
 abstract class Request extends Injectable
 {
+    protected array $data;
+
     protected Validation $validation;
     protected Messages   $messages;
     protected bool       $passedValidation = false;
@@ -34,12 +36,14 @@ abstract class Request extends Injectable
     public function validate(): bool
     {
         $request = $this->request;
-        $data    = array_merge(
+        $this->data    = array_merge(
             $request->getPost(),
-            $request->get()
+            $request->get(),
+            $request->getQuery(),
+            (array)$request->getJsonRawBody()
         );
 
-        $this->messages = $this->validation->validate($data);
+        $this->messages = $this->validation->validate($this->data);
 
         if (count($this->messages) === 0) {
             $this->passedValidation = true;
@@ -88,5 +92,10 @@ abstract class Request extends Injectable
             $errors[$field][] = $message->getMessage();
         }
         return $errors;
+    }
+
+    public function get(string $field, $default = null)
+    {
+        return $this->data[$field] ?? $default;
     }
 }

@@ -31,7 +31,7 @@ abstract class BaseException extends Exception
 
     private function prepareMessage(?string $message = null): ?string
     {
-        return is_null($message) ? $this->message : $message;
+        return is_null($message) ? TranslationHelper::translate($this->message) : TranslationHelper::translate($message);
     }
 
     private function prepareStatusCode(?int $code = null): int

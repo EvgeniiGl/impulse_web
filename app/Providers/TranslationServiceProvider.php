@@ -24,7 +24,7 @@ class TranslationServiceProvider implements ServiceProviderInterface
             // Определяем базовый путь
             $basePath = defined('APP_PATH')
                 ? APP_PATH
-                : dirname(dirname(__DIR__));
+                : dirname(__DIR__, 2);
 
             // Пробуем загрузить файл перевода
             $translationFile = $basePath . '/Messages/' . $locale . '.php';

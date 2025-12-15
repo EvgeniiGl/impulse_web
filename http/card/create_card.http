@@ -1,0 +1,41 @@
+POST {{url}}/cards
+Authorization: {{token}}
+Accept-Language: ru
+Content-Type: multipart/form-data; boundary=MyBoundary
+
+--MyBoundary
+Content-Disposition: form-data; name="Title"
+
+john_doe
+--MyBoundary
+Content-Disposition: form-data; name="AccessLevel"
+
+private
+--MyBoundary
+Content-Disposition: form-data; name="file"; filename="document.png"
+Content-Type: image/png
+
+< ./../assets/screen.png
+--MyBoundary--
+
+###
+
+POST {{url}}/cards
+Authorization: {{token}}
+Accept-Language: ru
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="Name"
+
+john_doe
+--WebAppBoundary
+Content-Disposition: form-data; name="email"
+
+john@example.com
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+< ./../assets/screen.png
+--WebAppBoundary--
