@@ -105,7 +105,7 @@ class CardService extends Injectable
             throw new Exception('You do not have permission to delete this card');
         }
 
-        $transaction = $this->db->begin();
+        $this->db->begin();
 
         try {
             // Удаляем файл из MinIO, если он существует
@@ -122,11 +122,11 @@ class CardService extends Injectable
                 throw new Exception(implode(', ', $messages));
             }
 
-            $transaction->commit();
+            $this->db->commit();
             return true;
 
         } catch (Exception $e) {
-            $transaction->rollback();
+            $this->db->rollback();
             throw new Exception('Failed to delete card: ' . $e->getMessage());
         }
     }
@@ -141,7 +141,7 @@ class CardService extends Injectable
             throw new Exception('You do not have permission to update this card');
         }
 
-        $transaction = $this->db->begin();
+        $this->db->begin();
         $oldFilePath = null;
 
         try {
@@ -187,11 +187,11 @@ class CardService extends Injectable
                 $this->storageService->deleteFile($oldFilePath);
             }
 
-            $transaction->commit();
+            $this->db->commit();
             return $card;
 
         } catch (Exception $e) {
-            $transaction->rollback();
+            $this->db->rollback();
 
             // Если был загружен новый файл, удаляем его
             if (isset($uploadResult) && isset($uploadResult['object_path'])) {

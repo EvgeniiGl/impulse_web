@@ -16,7 +16,7 @@ class BaseController extends PhalconController
     private Config $config;
     private Cache  $cache;
 
-    public function onConstruct()
+    public function onConstruct(): void
     {
         // Исключаем публичные маршруты
         $publicRoutes = [
@@ -28,7 +28,7 @@ class BaseController extends PhalconController
         $currentRoute = $this->request->getURI();
 
         if (in_array($currentRoute, $publicRoutes)) {
-            return true;
+            return;
         }
 
         $this->config = $this->di->get('config');
@@ -42,7 +42,7 @@ class BaseController extends PhalconController
                 'error'   => 'Authorization header is missing or invalid'
             ]);
             $this->response->send();
-            return false;
+            return;
         }
 
         $token = substr($authHeader, 7);

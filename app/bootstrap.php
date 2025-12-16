@@ -11,17 +11,12 @@ if (!defined('APP_PATH')) {
 }
 
 use App\Handlers\ExceptionHandler;
-use App\Middlewares\AuthMiddleware;
 use App\Providers\TranslationServiceProvider;
-use Aws\S3\S3Client;
 use Dotenv\Dotenv;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
-use League\Flysystem\Filesystem;
 use Phalcon\Cache\AdapterFactory;
 use Phalcon\Cache\Cache;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\Application;
-use Phalcon\Mvc\Micro;
 use Phalcon\Mvc\Model\MetaData\Memory;
 use Phalcon\Logger\Logger;
 use Phalcon\Logger\Adapter\Stream;

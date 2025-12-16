@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Middlewares\AuthMiddleware;
 use App\Requests\Auth\LoginRequest;
 use App\Requests\Auth\RegisterRequest;
 use App\Models\User;
@@ -11,8 +10,6 @@ use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Phalcon\Http\Response;
-use Phalcon\Mvc\Controller;
-use Phalcon\Messages\Messages;
 use Phalcon\Cache\Cache;
 
 class AuthController extends BaseController
