@@ -11,17 +11,24 @@ if (!defined('APP_PATH')) {
 }
 
 use App\Handlers\ExceptionHandler;
+use App\Middlewares\AuthMiddleware;
 use App\Providers\TranslationServiceProvider;
+use Aws\S3\S3Client;
 use Dotenv\Dotenv;
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use League\Flysystem\Filesystem;
+use Phalcon\Cache\AdapterFactory;
+use Phalcon\Cache\Cache;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\Application;
+use Phalcon\Mvc\Micro;
 use Phalcon\Mvc\Model\MetaData\Memory;
 use Phalcon\Logger\Logger;
 use Phalcon\Logger\Adapter\Stream;
 use Phalcon\Mvc\View;
+use Phalcon\Storage\SerializerFactory;
 use Phalcon\Support\Debug;
 use Phalcon\Mvc\Model\Manager as ModelsManager;
-use Phalcon\Translate\Adapter\AdapterInterface;
 
 $dotenv = Dotenv::createImmutable(APP_PATH);
 $dotenv->load();
@@ -65,13 +72,40 @@ $di->setShared('router', require __DIR__ . '/router.php');
 
 $di->setShared('dispatcher', require __DIR__ . '/dispatcher.php');
 
+$di->setShared('storage', require __DIR__ . '/../config/di/storage.php');
+
+$di->setShared('cardService', require __DIR__ . '/../config/di/cardService.php');
+
 $di->setShared('view', function () {
     $view = new View();
     $view->setViewsDir(APP_PATH . '/app/Views/');
     return $view;
 });
 
+// Регистрация кэша
+$di->set(
+    'cache', // Name of the service
+    function () {
+        $serializerFactory = new SerializerFactory();
+        $adapterFactory    = new AdapterFactory($serializerFactory);
+
+        $options = [
+            'defaultSerializer' => 'Php', // Use PHP serialization by default
+            'lifetime'          => 3600,  // Default lifetime in seconds (1 hour)
+        ];
+
+        // Create an Apcu adapter instance
+        $adapter = $adapterFactory->newInstance('apcu', $options);
+
+        // Return the Cache instance
+        return new Cache($adapter);
+    }
+);
 $application = new Application($di);
+
+//$application->before(
+//    new AuthMiddleware($di->get('config'), $di->get('cache'))
+//);
 
 try {
     $response = $application->handle($_SERVER['REQUEST_URI']);

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Auth\Controllers\AuthController;
 use Phalcon\Mvc\Router;
 
 /**
@@ -13,11 +12,15 @@ return function (): Router {
 //    $router->setDefaultController(IndexController::class);
 //    $router->setDefaultAction('index');
 
-    // API routes
-    $router->add('/login', [
-        'controller' => 'Auth',
-        'action'     => 'login',
-    ])->via(['POST']);
+    $router->addPost('/cards', [
+        'controller' => 'cards',
+        'action'     => 'create'
+    ]);
+
+    $router->addPost('/auth/login', [
+        'controller' => 'auth',
+        'action'     => 'login'
+    ]);
 
     return $router;
 };

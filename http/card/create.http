@@ -1,14 +1,14 @@
 POST {{url}}/cards
-Authorization: {{token}}
+Authorization: Bearer {{token}}
 Accept-Language: ru
 Content-Type: multipart/form-data; boundary=MyBoundary
 
 --MyBoundary
-Content-Disposition: form-data; name="Title"
+Content-Disposition: form-data; name="title"
 
 john_doe
 --MyBoundary
-Content-Disposition: form-data; name="AccessLevel"
+Content-Disposition: form-data; name="access_type"
 
 private
 --MyBoundary

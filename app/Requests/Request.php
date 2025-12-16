@@ -6,23 +6,27 @@ namespace App\Requests;
 
 use App\Exceptions\InvalidArgumentException;
 use Exception;
+use Phalcon\Di\Di;
 use Phalcon\Filter\Validation;
 use Phalcon\Di\Injectable;
 use Phalcon\Messages\Messages;
 
-abstract class Request extends Injectable
+abstract class Request
 {
     protected array $data;
 
-    protected Validation $validation;
-    protected Messages   $messages;
-    protected bool       $passedValidation = false;
+    protected Validation            $validation;
+    protected Messages              $messages;
+    protected \Phalcon\Http\Request $request;
+    protected bool                  $passedValidation = false;
 
     /**
      * @throws Exception
      */
     public function __construct()
     {
+        $di               = Di::getDefault();
+        $this->request    = $di->get('request');
         $this->validation = new Validation();
         $this->rules();
         $valid = $this->validate();
@@ -31,12 +35,12 @@ abstract class Request extends Injectable
         }
     }
 
-    abstract protected function rules();
+    abstract protected function rules(): void;
 
     public function validate(): bool
     {
-        $request = $this->request;
-        $this->data    = array_merge(
+        $request    = $this->request;
+        $this->data = array_merge(
             $request->getPost(),
             $request->get(),
             $request->getQuery(),

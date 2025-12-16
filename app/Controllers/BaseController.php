@@ -4,11 +4,91 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Phalcon\Cache\Cache;
+use Phalcon\Config\Config;
 use Phalcon\Http\Response;
 use Phalcon\Mvc\Controller as PhalconController;
 
 class BaseController extends PhalconController
 {
+    private Config $config;
+    private Cache  $cache;
+
+    public function onConstruct()
+    {
+        // Исключаем публичные маршруты
+        $publicRoutes = [
+            '/auth/login',
+            '/auth/register',
+            '/auth/refresh-token',
+        ];
+
+        $currentRoute = $this->request->getURI();
+
+        if (in_array($currentRoute, $publicRoutes)) {
+            return true;
+        }
+
+        $this->config = $this->di->get('config');
+        $this->cache  = $this->di->get('cache');
+        $authHeader   = $this->request->getHeader('Authorization');
+
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            $this->response->setStatusCode(401);
+            $this->response->setJsonContent([
+                'success' => false,
+                'error'   => 'Authorization header is missing or invalid'
+            ]);
+            $this->response->send();
+            return false;
+        }
+
+        $token = substr($authHeader, 7);
+
+        try {
+            // Проверка черного списка
+            if ($this->isTokenBlacklisted($token)) {
+                throw new \Exception('Token is blacklisted');
+            }
+
+            $decoded = JWT::decode($token, new Key($this->config->jwt->secret, 'HS256'));
+
+            // Добавляем информацию о пользователе в контейнер
+            $this->di->setShared('user', function () use ($decoded) {
+                return [
+                    'id'    => $decoded->sub,
+                    'email' => $decoded->email,
+                    'name'  => $decoded->name ?? null,
+                ];
+            });
+        } catch (\Exception $e) {
+            $this->response->setStatusCode(401);
+            $this->response->setJsonContent([
+                'success' => false,
+                'error'   => 'Invalid or expired token'
+            ]);
+            $this->response->send();
+        }
+    }
+
+    private function isTokenBlacklisted(string $token): bool
+    {
+        $tokenId = hash('sha256', $token);
+        return $this->cache->exists($tokenId);
+    }
+
+    public function before()
+    {
+        // Выполняется перед выполнением маршрута
+    }
+
+    public function after()
+    {
+        // Выполняется после выполнения маршрута
+    }
+
     /**
      * @param array<string,mixed> $data
      * @param int $statusCode

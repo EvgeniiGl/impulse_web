@@ -1,0 +1,5 @@
+GET {{url}}/cards
+Authorization: Bearer {{token}}
+Accept-Language: ru
+
+###

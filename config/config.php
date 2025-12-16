@@ -9,7 +9,7 @@ use Phalcon\Config\Config;
  */
 return function (): Config {
     return new Config([
-        'database' => [
+        'database'    => [
             'host'     => getenv('DB_HOST') ?? 'postgres',
             'port'     => getenv('DB_PORT') ?? '5432',
             'username' => getenv('DB_USER') ?? 'app_user',
@@ -17,19 +17,39 @@ return function (): Config {
             'dbname'   => getenv('DB_NAME') ?? 'app_db',
         ],
         'application' => [
-//            'controllersDir' => __DIR__ . '/../app/Controllers/',
-//            'modelsDir'      => __DIR__ . '/../app/Models/',
-//            'servicesDir'    => __DIR__ . '/../app/Services/',
-            'baseUri'        => '/',
+            'baseUri' => '/',
         ],
-        'jwt' => [
-            'secret' => getenv('JWT_SECRET') ?? 'secret_something',
+        'jwt'         => [
+            'secret'     => getenv('JWT_SECRET') ?? 'secret_something',
             'expiration' => 3600
         ],
-        'app' => [
+        'app'         => [
             'env'   => getenv('APP_ENV') ?? 'development',
             'debug' => getenv('APP_DEBUG') ?? false,
             'url'   => getenv('APP_URL') ?? 'http://localhost',
+        ],
+        'minio'       => [
+            'endpoint'  => getenv('MINIO_ENDPOINT') ?: 'http://minio:9000',
+            'key'       => getenv('MINIO_KEY') ?: 'minikey',
+            'secret'    => getenv('MINIO_SECRET') ?: 'minisecter',
+            'region'    => getenv('MINIO_REGION') ?: 'us-east-1',
+            'bucket'    => getenv('MINIO_BUCKET') ?: 'impulse',
+            'publicUrl' => getenv('MINIO_PUBLIC_URL') ?: 'http://localhost:8098',
+        ],
+        'uploads'     => [
+            'maxFileSize'       => 32 * 1024 * 1024, // 32MB
+            'allowedTypes'      => [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'image/svg+xml',
+                'application/pdf',
+                'text/plain',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ],
+            'maxFileNameLength' => 255,
         ],
     ]);
 };
