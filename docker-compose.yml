@@ -49,7 +49,7 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      - /var/db_data:/var/lib/postgresql/data
+      - ./../var/db_data:/var/lib/postgresql/data
     networks:
       - app-network
     restart: unless-stopped
