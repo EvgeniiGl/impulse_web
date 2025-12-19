@@ -8,7 +8,6 @@ WORKDIR /var/www
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
     curl \
     libpng-dev \
     libonig-dev \
@@ -16,8 +15,12 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     zip \
     unzip \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    openssl \
     && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs \
+    build-essential
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

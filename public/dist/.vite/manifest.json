@@ -1,0 +1,12 @@
+{
+  "src/main.tsx": {
+    "file": "my-app.js",
+    "name": "main",
+    "src": "src/main.tsx",
+    "isEntry": true
+  },
+  "style.css": {
+    "file": "my-app.css",
+    "src": "style.css"
+  }
+}
