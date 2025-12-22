@@ -20,6 +20,7 @@ class BaseController extends PhalconController
     {
         // Исключаем публичные маршруты
         $publicRoutes = [
+            '/',
             '/auth/login',
             '/auth/register',
             '/auth/refresh-token',
@@ -102,5 +103,10 @@ class BaseController extends PhalconController
         $response->setContent(json_encode($data, JSON_UNESCAPED_UNICODE) ?: '');
 
         return $response;
+    }
+
+    public function indexAction()
+    {
+        return;
     }
 }

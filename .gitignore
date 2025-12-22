@@ -6,3 +6,4 @@ logs
 composer.lock
 phinx.yml
 minio
+public/dist

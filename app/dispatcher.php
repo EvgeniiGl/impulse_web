@@ -9,7 +9,7 @@ use Phalcon\Mvc\Dispatcher;
  */
 return function (): Dispatcher {
     $dispatcher = new Dispatcher();
-    $dispatcher->setDefaultController('cards');
+    $dispatcher->setDefaultController('Base');
     $dispatcher->setDefaultAction('index');
     $dispatcher->setControllerSuffix('Controller');
     $dispatcher->setActionSuffix('Action');

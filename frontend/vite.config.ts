@@ -19,13 +19,18 @@ export default defineConfig({
         sourcemap: true, // опционально
 
         // Собираем бандл из TypeScript
-        lib: {
-            entry: resolve(__dirname, 'src/main.tsx'),
-            name: 'App',
-            formats: ['es'],
-        },
+        // lib: {
+        //     entry: resolve(__dirname, 'src/main.tsx'),
+        //     name: 'App',
+        //     formats: ['es'],
+        // },
         rollupOptions: {
-            external: ['react', 'react-dom'],
+            input: '/src/main.tsx',
+            output: {
+                entryFileNames: '[name].js',
+                chunkFileNames: '[name].js',
+                assetFileNames: '[name][extname]',
+            },
         },
     },
     resolve: {
