@@ -70,6 +70,14 @@ services:
     networks:
       - app-network
 
+  npm:
+    image: node:24.12.0-alpine
+    working_dir: /var/www/frontend
+    entrypoint: [ "npm" ]
+    volumes:
+      - ./frontend:/var/www/frontend
+      - ./public:/var/www/public
+
 networks:
   app-network:
     driver: bridge

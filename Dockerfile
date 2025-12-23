@@ -18,10 +18,6 @@ RUN apt-get update && apt-get install -y \
     openssl \
     && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs \
-    build-essential
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -33,7 +29,6 @@ RUN composer install --optimize-autoloader
 
 # Copy PHP JIT configuration
 #COPY php-jit.ini /usr/local/etc/php/conf.d/99-jit.ini
-
 
 RUN adduser www
 RUN usermod -a -G 1000 www

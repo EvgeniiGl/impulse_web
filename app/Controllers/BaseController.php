@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Helpers\TranslationHelper;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Phalcon\Cache\Cache;
@@ -105,8 +106,8 @@ class BaseController extends PhalconController
         return $response;
     }
 
-    public function indexAction()
+    public function indexAction(): void
     {
-        return;
+        $this->view->title = TranslationHelper::translate('Impulse');
     }
 }

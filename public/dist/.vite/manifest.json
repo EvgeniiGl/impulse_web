@@ -1,6 +1,6 @@
 {
   "src/assets/react.svg": {
-    "file": "react.svg",
+    "file": "assets/react.svg",
     "src": "src/assets/react.svg"
   },
   "src/main.tsx": {
@@ -9,10 +9,10 @@
     "src": "src/main.tsx",
     "isEntry": true,
     "css": [
-      "main.css"
+      "assets/main.css"
     ],
     "assets": [
-      "react.svg"
+      "assets/react.svg"
     ]
   }
 }
