@@ -72,11 +72,19 @@ services:
 
   npm:
     image: node:24.12.0-alpine
+    container_name: impulse_npm
     working_dir: /var/www/frontend
     entrypoint: [ "npm" ]
+    environment:
+      # Критически важно для Windows!
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - VITE_WATCH_POLLING=1000
+      - VITE_POLLING_INTERVAL=1000
+    stdin_open: true  # Для интерактивного режима
+    tty: true         # Для интерактивного режима
     volumes:
-      - ./frontend:/var/www/frontend
-      - ./public:/var/www/public
+      - './:/var/www'
 
 networks:
   app-network:

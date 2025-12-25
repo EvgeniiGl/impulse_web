@@ -1,7 +1,65 @@
 {
-  "files": [],
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    //
+    //    "esModuleInterop": true,
+    //    "noImplicitAny": false,
+    //    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+    "baseUrl": ".",
+    //    "strictNullChecks": true,
+    //
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@assets/*": [
+        "./src/assets/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@UI/*": [
+        "./src/UI/*"
+      ],
+      "@pages/*": [
+        "./src/pages/*"
+      ],
+      "@base/*": [
+        "./src/base/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "node_modules/@types/jquery/JQuery.d.ts"
+  ],
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

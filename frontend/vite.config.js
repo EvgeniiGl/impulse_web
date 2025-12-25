@@ -1,8 +1,7 @@
-import react from '@vitejs/plugin-react-swc'
-import {defineConfig} from 'vite'
-import path from 'path'
-import svgr from 'vite-plugin-svgr'
-
+import react from '@vitejs/plugin-react-swc';
+import { defineConfig } from 'vite';
+import path from 'path';
+import svgr from 'vite-plugin-svgr';
 export default defineConfig({
     plugins: [
         react(),
@@ -20,9 +19,9 @@ export default defineConfig({
         },
     },
     root: path.join(__dirname, "src"),
-    base: process.env.APP_ENV === 'development'
-        ? path.join(__dirname, "/")
-        : path.join(__dirname, "dist"),
+    // base: process.env.APP_ENV === 'development'
+    //     ? path.join(__dirname, "/")
+    //     : path.join(__dirname, "dist"),
     build: {
         outDir: path.join(__dirname, "../public/bundle"),
         emptyOutDir: true,
@@ -31,10 +30,10 @@ export default defineConfig({
         rollupOptions: {
             input: path.resolve(__dirname, 'src/main.tsx'),
             output: {
-                entryFileNames: `[name].js`,
-                chunkFileNames: `[name].js`,
-                assetFileNames: `[name].[ext]`,
+                entryFileNames: "[name].js",
+                chunkFileNames: "[name].js",
+                assetFileNames: "[name].[ext]",
             }
         }
     }
-})
+});
