@@ -105,9 +105,4 @@ class BaseController extends PhalconController
 
         return $response;
     }
-
-    public function indexAction(): void
-    {
-        $this->view->title = TranslationHelper::translate('Impulse');
-    }
 }

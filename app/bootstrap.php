@@ -104,7 +104,9 @@ $application = new Application($di);
 
 try {
     $response = $application->handle($_SERVER['REQUEST_URI']);
-    $response->send();
+    if (!$response->isSent()) {
+        $response->send();
+    }
 } catch (Throwable $e) {
     $logger           = $di->get('logger');
     $debug            = getenv('APP_DEBUG') === 'true' || getenv('APP_DEBUG') === '1';
