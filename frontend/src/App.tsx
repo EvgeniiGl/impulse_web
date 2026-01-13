@@ -1,5 +1,4 @@
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import Menu from '@modules/Menu';
 import HomePage from './pages/HomePage';
 import TodayPage from './pages/TodayPage';
 import MyPage from './pages/MyPage';
@@ -9,7 +8,6 @@ function App() {
     return (
         <Router>
             <div className="App">
-                <Menu/>
                 <Routes>
                     <Route path="/" element={<HomePage/>}/>
                     <Route path="/today" element={<TodayPage/>}/>

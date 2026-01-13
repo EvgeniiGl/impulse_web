@@ -7,7 +7,8 @@ final class CreateCardsTable extends AbstractMigration
 {
     public function up(): void
     {
-        $sql = "
+        $sql = /** @lang PostgreSQL */
+            "
             CREATE TYPE access_type AS ENUM ('private', 'shared', 'public');
             
             CREATE TABLE cards (

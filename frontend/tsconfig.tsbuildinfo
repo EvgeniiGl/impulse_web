@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/base/Api/example_language.ts","./src/components/LanguageSwitcher/LanguageSwitcher.tsx","./src/i18n/i18n.ts","./src/i18n/translations/TranslationTypes.ts","./src/modules/Header.tsx","./src/modules/Menu.tsx","./src/pages/HomePage.tsx","./src/pages/LoginPage.tsx","./src/pages/MyPage.tsx","./src/pages/TodayPage.tsx"],"errors":true,"version":"5.9.3"}

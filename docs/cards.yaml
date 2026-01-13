@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: "Impulse"
+  version: '0.1'
+servers:
+  - url: 'http://localhost'
+    description: DEV server
+security:
+  - basicAuth: [ ]
+paths:
+
+  /cards:
+    get:
+      summary: Список карточек
+      operationId: smena
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 229
+          description: Smena ID
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+            example: application/octet-stream
+          description: Must be application/octet-stream for binary export
+
+      security:
+        - basicAuth: [ ]
+      responses:
+        '200':
+          description: массив
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

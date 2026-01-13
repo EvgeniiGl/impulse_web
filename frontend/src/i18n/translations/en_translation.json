@@ -1,10 +1,4 @@
 {
-  "page": {
-    "hello": "Hello, {{name}}!",
-    "changeLanguage": "Change language to Russian",
-    "dashboardTitle": "User Dashboard",
-    "profile": "My profile"
-  },
   "menu": {
     "home": "Home",
     "today": "Today",

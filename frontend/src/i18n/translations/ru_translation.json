@@ -1,10 +1,4 @@
 {
-  "page": {
-    "hello": "Привет, {{name}}!",
-    "changeLanguage": "Переключить язык на английский",
-    "dashboardTitle": "Личный кабинет",
-    "profile": "Мой профиль"
-  },
   "menu": {
     "home": "Главная",
     "today": "Сегодня",
