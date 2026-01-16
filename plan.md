@@ -26,7 +26,9 @@
 **Описание**: Создание технической документации и схемы БД
 
 - ~~Определение структуры таблиц (users, cards, collections)~~
-- Проектирование API endpoints (auth: login,register,logout; users: block; cards: create, update, delete, list;
+- Проектирование API endpoints (auth: ~~login,register,logout, refresh~~;
+  users: block, unblock;
+  cards: create, update, delete, list;
   collections: get, create, update, delete, addCard, deleteCard)
 - Выбор технологического стека (библиотеки, фреймворки)
 - Создание ER-диаграммы базы данных

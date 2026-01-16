@@ -9,10 +9,11 @@ use Phalcon\Mvc\Dispatcher;
  */
 return function (): Dispatcher {
     $dispatcher = new Dispatcher();
-    $dispatcher->setDefaultController('Base');
+    $dispatcher->setDefaultController('Index');
     $dispatcher->setDefaultAction('index');
     $dispatcher->setControllerSuffix('Controller');
     $dispatcher->setActionSuffix('Action');
     $dispatcher->setDefaultNamespace('App\\Controllers');
+
     return $dispatcher;
 };

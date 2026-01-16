@@ -1,14 +1,17 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Helpers\TranslationHelper;
 use App\Requests\Auth\LoginRequest;
 use App\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use InvalidArgumentException;
 use Phalcon\Http\Response;
 use Phalcon\Cache\Cache;
 
@@ -34,11 +37,11 @@ class AuthController extends BaseController
         if (!$data) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Invalid JSON data'
+                'error'   => TranslationHelper::translate('Invalid JSON data')
             ], 400);
         }
 
-        $req = new LoginRequest($data);
+        $req = new LoginRequest();
 
         if (!$req->validate()) {
             $errors = [];
@@ -60,25 +63,27 @@ class AuthController extends BaseController
         if (!$user || !$user->verifyPassword($req->get('password'))) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Invalid email or password'
+                'error'   => TranslationHelper::translate('Invalid email or password')
             ], 401);
         }
 
         if (!$user->is_active) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Account is deactivated'
+                'error'   => TranslationHelper::translate('Account is deactivated')
             ], 403);
         }
 
         // Generate JWT token
-        $token = $this->generateToken($user);
+        $token        = $this->generateToken($user);
+        $refreshToken = $this->generateRefreshToken($user);
 
         return $this->jsonResponse([
             'success' => true,
             'data'    => [
-                'token' => $token,
-                'user'  => [
+                'token'         => $token,
+                'refresh_token' => $refreshToken,
+                'user'          => [
                     'id'    => $user->id,
                     'name'  => $user->name,
                     'email' => $user->email
@@ -94,7 +99,7 @@ class AuthController extends BaseController
         if (!$data) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Invalid JSON data'
+                'error'   => TranslationHelper::translate('Invalid JSON data')
             ], 400);
         }
 
@@ -122,7 +127,7 @@ class AuthController extends BaseController
         if ($existingUser) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'User with this email already exists'
+                'error'   => TranslationHelper::translate('User with this email already exists'),
             ], 409);
         }
 
@@ -146,13 +151,15 @@ class AuthController extends BaseController
         }
 
         // Generate JWT token
-        $token = $this->generateToken($user);
+        $token        = $this->generateToken($user);
+        $refreshToken = $this->generateRefreshToken($user);
 
         return $this->jsonResponse([
             'success' => true,
             'data'    => [
-                'token' => $token,
-                'user'  => [
+                'token'         => $token,
+                'refresh_token' => $refreshToken,
+                'user'          => [
                     'id'    => $user->id,
                     'name'  => $user->name,
                     'email' => $user->email
@@ -168,7 +175,7 @@ class AuthController extends BaseController
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Authorization header is missing or invalid'
+                'error'   => TranslationHelper::translate('Authorization header is missing or invalid')
             ], 401);
         }
 
@@ -190,7 +197,7 @@ class AuthController extends BaseController
 
             return $this->jsonResponse([
                 'success' => true,
-                'message' => 'Successfully logged out'
+                'message' => TranslationHelper::translate('Successfully logged out')
             ]);
 
         } catch (\Exception $e) {
@@ -198,60 +205,79 @@ class AuthController extends BaseController
             // чтобы не давать информации о валидности токена
             return $this->jsonResponse([
                 'success' => true,
-                'message' => 'Successfully logged out'
+                'message' => TranslationHelper::translate('Successfully logged out')
             ]);
         }
     }
 
     public function refreshTokenAction(): Response
     {
-        $authHeader = $this->request->getHeader('Authorization');
+        // Получаем refresh token из тела запроса или заголовка
+        $refreshToken = $this->request->getPost('refresh_token')
+            ?: $this->request->getHeader('X-Refresh-Token');
 
+        if (!$refreshToken) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => TranslationHelper::translate('Refresh token is required')
+            ], 400);
+        }
+
+        $authHeader = $this->request->getHeader('Authorization');
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Authorization header is missing or invalid'
+                'error'   => TranslationHelper::translate('Authorization header is missing or invalid')
             ], 401);
         }
-
         $token = substr($authHeader, 7);
-
         try {
             // Проверяем, не в черном ли списке токен
             if ($this->isTokenBlacklisted($token)) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Token is invalid'
+                    'error'   => TranslationHelper::translate('Refresh token is invalid or revoked')
                 ], 401);
             }
-
-            // Декодируем токен
-            $decoded = JWT::decode($token, new Key($this->config->jwt->secret, 'HS256'));
-
+            // Декодируем refresh token (у него должен быть свой секрет и больший срок)
+            $decoded = JWT::decode(
+                $refreshToken,
+                new Key($this->config->jwt->refreshSecret, 'HS256')
+            );
             // Находим пользователя
             $user = User::findFirst([
                 'conditions' => 'id = :id: AND is_active = true',
                 'bind'       => ['id' => $decoded->sub]
             ]);
-
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'User not found or inactive'
+                    'error'   => TranslationHelper::translate('User not found or inactive')
                 ], 404);
             }
 
-            // Добавляем старый токен в черный список
-            $this->addToBlacklist($token, $decoded->exp);
+            // Проверяем, что refresh token еще действителен
+            if ($decoded->exp < time()) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'error'   => TranslationHelper::translate('Refresh token expired')
+                ], 401);
+            }
 
-            // Генерируем новый токен
-            $newToken = $this->generateToken($user);
+            // Добавляем использованный refresh token в черный список
+            $this->addToBlacklist($refreshToken, $decoded->exp, 'refresh');
+
+            // Генерируем новую пару токенов
+            $newAccessToken  = $this->generateToken($user);
+            $newRefreshToken = $this->generateRefreshToken($user);
 
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
-                    'token' => $newToken,
-                    'user'  => [
+                    'token'         => $newAccessToken,
+                    'refresh_token' => $newRefreshToken,
+                    'expires_in'    => $this->config->jwt->accessExpire, // например, 900 секунд
+                    'user'          => [
                         'id'    => $user->id,
                         'name'  => $user->name,
                         'email' => $user->email
@@ -259,15 +285,23 @@ class AuthController extends BaseController
                 ]
             ]);
 
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => TranslationHelper::translate('Refresh token expired'),
+                'code'    => 'REFRESH_TOKEN_EXPIRED'
+            ], 401);
         } catch (\Exception $e) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => 'Invalid token'
+                'error'   => TranslationHelper::translate('Invalid refresh token'),
+                'debug'   => $this->config->environment === 'development' ? $e->getMessage() : null
             ], 401);
         }
     }
 
-    public function meAction(): Response
+    public
+    function meAction(): Response
     {
         try {
             $user = $this->getAuthenticatedUser();
@@ -275,7 +309,7 @@ class AuthController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Authentication required'
+                    'error'   => TranslationHelper::translate('Authentication required')
                 ], 401);
             }
 
@@ -301,7 +335,8 @@ class AuthController extends BaseController
         }
     }
 
-    private function generateToken(User $user): string
+    private
+    function generateToken(User $user): string
     {
         $payload = [
             'iss'   => $this->config->jwt->issuer ?? $this->config->application->domain,
@@ -321,17 +356,35 @@ class AuthController extends BaseController
         );
     }
 
+    private
+    function generateRefreshToken(User $user): string
+    {
+        $payload = [
+            'iss'  => $this->config->jwt->issuer ?? $this->config->application->domain,
+            'aud'  => $this->config->jwt->audience ?? $this->config->application->domain,
+            'iat'  => time(),
+            'exp'  => time() + $this->config->jwt->refreshExpire, // 30 дней
+            'sub'  => $user->id,
+            'jti'  => bin2hex(random_bytes(16)), // Unique token ID
+            'type' => 'refresh'
+        ];
+
+        return JWT::encode($payload, $this->config->jwt->refreshSecret, 'HS256');
+    }
+
     /**
      * Добавляет токен в черный список
      */
-    private function addToBlacklist(string $token, int $expiresAt): void
+    private
+    function addToBlacklist(string $token, int $expiresAt): void
     {
         if (isset($this->cache)) {
             $tokenId = hash('sha256', $token);
             $ttl     = $expiresAt - time();
 
             if ($ttl > 0) {
-                $this->cache->save($tokenId, 'blacklisted', $ttl);
+                // Используем set() вместо save()
+                $this->cache->set($tokenId, 'blacklisted', $ttl);
             }
         }
     }
@@ -339,44 +392,51 @@ class AuthController extends BaseController
     /**
      * Проверяет, находится ли токен в черном списке
      */
-    private function isTokenBlacklisted(string $token): bool
+    private
+    function isTokenBlacklisted(string $token): bool
     {
         if (!isset($this->cache)) {
             return false;
         }
 
         $tokenId = hash('sha256', $token);
-        return $this->cache->exists($tokenId);
+        // Используем has() вместо exists()
+        return $this->cache->has($tokenId);
     }
 
     /**
      * Инвалидирует все токены пользователя
      */
-    private function invalidateUserTokens(string $userId): void
+    private
+    function invalidateUserTokens(string $userId): void
     {
         if (isset($this->cache)) {
             $key = 'invalidated_user_' . $userId;
-            $this->cache->save($key, time(), 3600 * 24); // 24 часа
+            // Используем set() вместо save()
+            $this->cache->set($key, time(), 3600 * 24); // 24 часа
         }
     }
 
     /**
      * Проверяет, инвалидированы ли токены пользователя
      */
-    public function isUserTokensInvalidated(string $userId): bool
+    public
+    function isUserTokensInvalidated(string $userId): bool
     {
         if (!isset($this->cache)) {
             return false;
         }
 
         $key = 'invalidated_user_' . $userId;
-        return $this->cache->exists($key);
+        // Используем has() вместо exists()
+        return $this->cache->has($key);
     }
 
     /**
      * Получает аутентифицированного пользователя из JWT
      */
-    private function getAuthenticatedUser(): ?User
+    private
+    function getAuthenticatedUser(): ?User
     {
         $authHeader = $this->request->getHeader('Authorization');
 
@@ -407,5 +467,37 @@ class AuthController extends BaseController
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Получает значение из черного списка
+     * @throws \Phalcon\Cache\Exception\InvalidArgumentException
+     */
+    private
+    function getBlacklistValue(string $token): ?string
+    {
+        if (!isset($this->cache)) {
+            return null;
+        }
+
+        $tokenId = hash('sha256', $token);
+        $value   = $this->cache->get($tokenId);
+
+        return $value !== null ? (string)$value : null;
+    }
+
+    /**
+     * Удаляет токен из черного списка
+     * @throws \Phalcon\Cache\Exception\InvalidArgumentException
+     */
+    private
+    function removeFromBlacklist(string $token): bool
+    {
+        if (!isset($this->cache)) {
+            return false;
+        }
+
+        $tokenId = hash('sha256', $token);
+        return $this->cache->delete($tokenId);
     }
 }

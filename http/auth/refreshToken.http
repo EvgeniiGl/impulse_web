@@ -1,0 +1,6 @@
+POST {{url}}/auth/refresh-token
+Authorization: Bearer {{token}}
+X-Refresh-Token: {{refresh_token}}
+Accept-Language: ru
+
+###

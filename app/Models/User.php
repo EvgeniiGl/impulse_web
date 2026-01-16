@@ -38,7 +38,7 @@ class User extends Model
     {
         $this->id = Uuid::uuid4()->toString();
     }
-    
+
     public function initialize(): void
     {
         $this->setSource('users');
@@ -193,5 +193,35 @@ class User extends Model
         );
 
         return $this->validate($validator);
+    }
+
+    /**
+     * Блокировка пользователя
+     */
+    public function block(): bool
+    {
+        $this->is_active  = false;
+        $this->updated_at = date('Y-m-d H:i:s');
+
+        return $this->save();
+    }
+
+    /**
+     * Разблокировка пользователя
+     */
+    public function unblock(): bool
+    {
+        $this->is_active  = true;
+        $this->updated_at = date('Y-m-d H:i:s');
+
+        return $this->save();
+    }
+
+    /**
+     * Проверка активности пользователя
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active;
     }
 }

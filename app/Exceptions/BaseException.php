@@ -22,7 +22,7 @@ abstract class BaseException extends Exception
     )
     {
         // Detect and set the running environment
-        $this->environment = $_ENV['APP_ENV'];
+        $this->environment = getenv('APP_ENV');
 
         $this->message = $this->prepareMessage($message);
         $this->code    = $this->prepareStatusCode($code);

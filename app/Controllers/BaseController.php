@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\UnauthorizedException;
 use App\Helpers\TranslationHelper;
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Phalcon\Cache\Cache;
@@ -16,69 +18,56 @@ class BaseController extends PhalconController
 {
     private Config $config;
     private Cache  $cache;
+    private        $publicRoutes = [
+        '/',
+        '/auth/login',
+        '/auth/register',
+        '/auth/refresh-token',
+    ];
 
     public function onConstruct(): void
     {
         // Исключаем публичные маршруты
-        $publicRoutes = [
-            '/',
-            '/auth/login',
-            '/auth/register',
-            '/auth/refresh-token',
-        ];
-
         $currentRoute = $this->request->getURI();
-
-        if (in_array($currentRoute, $publicRoutes)) {
-            return;
-        }
-
-        $this->config = $this->di->get('config');
-        $this->cache  = $this->di->get('cache');
-        $authHeader   = $this->request->getHeader('Authorization');
-
-        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
-            $this->response->setStatusCode(401);
-            $this->response->setJsonContent([
-                'success' => false,
-                'error'   => 'Authorization header is missing or invalid'
-            ]);
-            $this->response->send();
-            return;
-        }
-
-        $token = substr($authHeader, 7);
-
-        try {
-            // Проверка черного списка
-            if ($this->isTokenBlacklisted($token)) {
-                throw new \Exception('Token is blacklisted');
+        if (!in_array($currentRoute, $this->publicRoutes)) {
+            $this->config = $this->di->get('config');
+            $this->cache  = $this->di->get('cache');
+            $authHeader   = $this->request->getHeader('Authorization');
+            if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+                $this->response->setStatusCode(401);
+                $this->response->setJsonContent([
+                    'success' => false,
+                    'error'   => 'Authorization header is missing or invalid'
+                ]);
+                $this->response->send();
+                return;
             }
 
-            $decoded = JWT::decode($token, new Key($this->config->jwt->secret, 'HS256'));
-
-            // Добавляем информацию о пользователе в контейнер
-            $this->di->setShared('user', function () use ($decoded) {
-                return [
-                    'id'    => $decoded->sub,
-                    'email' => $decoded->email,
-                    'name'  => $decoded->name ?? null,
-                ];
-            });
-        } catch (\Exception $e) {
-            $this->response->setStatusCode(401);
-            $this->response->setJsonContent([
-                'success' => false,
-                'error'   => 'Invalid or expired token'
-            ]);
-            $this->response->send();
+            $token = substr($authHeader, 7);
+            try {
+                // Проверка черного списка
+                if ($this->isTokenBlacklisted($token)) {
+                    throw new \Exception('Token is blacklisted');
+                }
+                $decoded = JWT::decode($token, new Key($this->config->jwt->secret, 'HS256'));
+                // Добавляем информацию о пользователе в контейнер
+                $this->di->setShared('user', function () use ($decoded) {
+                    return [
+                        'id'    => $decoded->sub,
+                        'email' => $decoded->email,
+                        'name'  => $decoded->name ?? null,
+                    ];
+                });
+            } catch (\Exception $e) {
+                throw new UnauthorizedException();
+            }
         }
     }
 
     private function isTokenBlacklisted(string $token): bool
     {
         $tokenId = hash('sha256', $token);
-        return $this->cache->exists($tokenId);
+        return $this->cache->has($tokenId);
     }
 
     public function before()
