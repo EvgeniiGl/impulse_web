@@ -1,4 +1,4 @@
-POST {{url}}/cards
+PUT {{url}}/cards/77687270-0ca3-427f-9620-38c97a281232
 Authorization: Bearer {{token}}
 Accept-Language: ru
 Content-Type: multipart/form-data; boundary=MyBoundary
@@ -6,7 +6,11 @@ Content-Type: multipart/form-data; boundary=MyBoundary
 --MyBoundary
 Content-Disposition: form-data; name="title"
 
-john_doe1
+john_doe132
+--MyBoundary
+Content-Disposition: form-data; name="description"
+
+haha hahaha hahaha hahaha hahaha hahaha ha
 --MyBoundary
 Content-Disposition: form-data; name="access_type"
 

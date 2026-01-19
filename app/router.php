@@ -45,6 +45,38 @@ return function (): Router {
         'action'     => 'unblock'
     ]);
 
+// cards маршруты
+    $router->add('/cards', [
+        'controller' => 'cards',
+        'action'     => 'create'
+    ], [
+        'POST'
+    ]);
+    $router->add('/cards', [
+        'controller' => 'cards',
+        'action'     => 'index'
+    ], [
+        'GET'
+    ]);
+    $router->add('/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'cards',
+        'action'     => 'get'
+    ], [
+        'GET'
+    ]);
+    $router->add('/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'cards',
+        'action'     => 'update'
+    ], [
+        'PUT'
+    ]);
+    $router->add('/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'cards',
+        'action'     => 'delete'
+    ], [
+        'DELETE'
+    ]);
+
 // Для React Router - все остальные пути на главную страницу
     $router->add('/', [
         'controller' => 'index',

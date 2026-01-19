@@ -1,0 +1,5 @@
+DELETE {{url}}/cards/77687270-0ca3-427f-9620-38c97a281232
+Authorization: Bearer {{token}}
+Accept-Language: ru
+
+###

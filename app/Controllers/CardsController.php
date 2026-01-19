@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Helpers\TranslationHelper;
 use App\Requests\Card\CreateCardRequest;
+use App\Requests\Card\UpdateCardRequest;
 use App\Services\CardService;
 use App\Models\Card;
 use App\Models\User;
@@ -29,7 +31,7 @@ class CardsController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Authentication required'
+                    'error'   => TranslationHelper::translate('Authentication required')
                 ], 401);
             }
 
@@ -41,7 +43,7 @@ class CardsController extends BaseController
             if (!$file) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'File required'
+                    'error'   => TranslationHelper::translate('File required')
                 ], 422);
             }
 
@@ -92,7 +94,7 @@ class CardsController extends BaseController
             if (!$card) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Card not found'
+                    'error'   => TranslationHelper::translate('Card not found')
                 ], 404);
             }
 
@@ -100,7 +102,7 @@ class CardsController extends BaseController
             if (!$card->hasAccess($user)) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Access denied'
+                    'error'   => TranslationHelper::translate('Access denied')
                 ], 403);
             }
 
@@ -150,7 +152,7 @@ class CardsController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Authentication required'
+                    'error'   => TranslationHelper::translate('Authentication required')
                 ], 401);
             }
 
@@ -201,7 +203,7 @@ class CardsController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Authentication required'
+                    'error'   => TranslationHelper::translate('Authentication required')
                 ], 401);
             }
 
@@ -213,15 +215,14 @@ class CardsController extends BaseController
             if (!$card) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Card not found'
+                    'error'   => TranslationHelper::translate('Card not found')
                 ], 404);
             }
 
-            $data = $this->request->getPost();
-            $file = $this->request->getUploadedFiles();
-            $file = !empty($file) ? $file[0] : null;
-
-            $request = new CreateCardRequest($data, $file ? $file->toArray() : null);
+            $data    = $this->request->getPut();
+            $file    = $this->request->getUploadedFiles();
+            $file    = !empty($file) ? $file[0] : null;
+            $request = new UpdateCardRequest($data, $file ? $file->toArray() : null);
 
             // Обновляем карточку
             $updatedCard = $this->cardService->updateCard($card, $request, $user);
@@ -258,8 +259,8 @@ class CardsController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Authentication required'
-                ], 401);
+                    'error'   => TranslationHelper::translate('Authentication required')],
+                    401);
             }
 
             $card = Card::findFirst([
@@ -270,7 +271,7 @@ class CardsController extends BaseController
             if (!$card) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => 'Card not found'
+                    'error'   => TranslationHelper::translate('Card not found')
                 ], 404);
             }
 
@@ -278,7 +279,7 @@ class CardsController extends BaseController
 
             return $this->jsonResponse([
                 'success' => true,
-                'message' => 'Card deleted successfully'
+                'message' => TranslationHelper::translate('Card deleted successfully')
             ]);
 
         } catch (Exception $e) {

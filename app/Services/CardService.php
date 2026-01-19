@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Models\Card;
 use App\Models\User;
 use App\Requests\Card\CreateCardRequest;
+use App\Requests\Card\UpdateCardRequest;
 use Exception;
 use Phalcon\Di\Injectable;
 
@@ -134,7 +135,7 @@ class CardService extends Injectable
     /**
      * Обновляет карточку
      */
-    public function updateCard(Card $card, CreateCardRequest $request, User $user): Card
+    public function updateCard(Card $card, UpdateCardRequest $request, User $user): Card
     {
         // Проверяем права доступа
         if ($card->creator_id !== $user->id && !$user->hasAccess($card, 'write')) {
@@ -173,7 +174,6 @@ class CardService extends Injectable
             $card->title       = $request->getTitle() ?? $card->title;
             $card->description = $request->getDescription() ?? $card->description;
             $card->access_type = $request->getAccessType() ?? $card->access_type;
-
             if (!$card->update()) {
                 $messages = [];
                 foreach ($card->getMessages() as $message) {

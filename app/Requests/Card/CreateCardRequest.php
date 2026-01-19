@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Requests\Card;
 
+use App\Helpers\TranslationHelper;
 use Phalcon\Filter\Validation;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Filter\Validation\Validator\StringLength;
@@ -54,7 +55,7 @@ class CreateCardRequest
         $validation->add(
             'title',
             new PresenceOf([
-                'message' => 'Title is required'
+                'message' => TranslationHelper::translate('Title is required')
             ])
         );
 
@@ -63,8 +64,8 @@ class CreateCardRequest
             new StringLength([
                 'min'            => 3,
                 'max'            => 100,
-                'messageMinimum' => 'Title must be at least 3 characters',
-                'messageMaximum' => 'Title must not exceed 100 characters'
+                'messageMinimum' => TranslationHelper::translate('Title must be at least 3 characters'),
+                'messageMaximum' => TranslationHelper::translate('Title must not exceed 100 characters')
             ])
         );
 
@@ -73,7 +74,7 @@ class CreateCardRequest
             'description',
             new StringLength([
                 'max'            => 1500,
-                'messageMaximum' => 'Description must not exceed 1500 characters',
+                'messageMaximum' => TranslationHelper::translate('Description must not exceed 1500 characters'),
                 'allowEmpty'     => true
             ])
         );
@@ -83,7 +84,7 @@ class CreateCardRequest
             'access_type',
             new InclusionIn([
                 'domain'  => ['private', 'shared', 'public'],
-                'message' => 'Access type must be one of: private, shared, public'
+                'message' => TranslationHelper::translate('Access type must be one of: private, shared, public')
             ])
         );
 
