@@ -1,0 +1,4 @@
+### Получение всех карточек в коллекции
+GET {{url}}/collections
+Authorization: Bearer {{token}}
+Accept-Language: ru

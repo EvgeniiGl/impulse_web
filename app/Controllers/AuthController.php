@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\UnauthorizedException;
 use App\Helpers\TranslationHelper;
 use App\Requests\Auth\LoginRequest;
 use App\Requests\Auth\RegisterRequest;
@@ -19,12 +20,16 @@ class AuthController extends BaseController
 {
     private Cache $cache;
 
+    /**
+     * @throws UnauthorizedException
+     */
     public function onConstruct(): void
     {
         // Получаем кэш для хранения недействительных токенов
         if ($this->di->has('cache')) {
             $this->cache = $this->di->get('cache');
         }
+        parent::onConstruct();
     }
 
     /**
@@ -430,43 +435,6 @@ class AuthController extends BaseController
         $key = 'invalidated_user_' . $userId;
         // Используем has() вместо exists()
         return $this->cache->has($key);
-    }
-
-    /**
-     * Получает аутентифицированного пользователя из JWT
-     */
-    private
-    function getAuthenticatedUser(): ?User
-    {
-        $authHeader = $this->request->getHeader('Authorization');
-
-        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
-            return null;
-        }
-
-        $token = substr($authHeader, 7);
-
-        try {
-            // Проверяем черный список
-            if ($this->isTokenBlacklisted($token)) {
-                return null;
-            }
-
-            // Декодируем JWT
-            $decoded = JWT::decode($token, new Key($this->config->jwt->secret, 'HS256'));
-
-            // Проверяем, не инвалидированы ли токены пользователя
-            if ($this->isUserTokensInvalidated($decoded->sub)) {
-                return null;
-            }
-
-            return User::findFirst([
-                'conditions' => 'id = :id: AND is_active = true',
-                'bind'       => ['id' => $decoded->sub]
-            ]);
-        } catch (\Exception $e) {
-            return null;
-        }
     }
 
     /**

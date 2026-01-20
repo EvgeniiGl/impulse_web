@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Exceptions\UnauthorizedException;
 use App\Helpers\TranslationHelper;
+use App\Models\User;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -93,5 +94,36 @@ class BaseController extends PhalconController
         $response->setContent(json_encode($data, JSON_UNESCAPED_UNICODE) ?: '');
 
         return $response;
+    }
+
+    /**
+     * Получение аутентифицированного пользователя из JWT
+     */
+    protected function getAuthenticatedUser(): ?User
+    {
+        // Здесь реализуйте получение пользователя из JWT токена
+        // Примерная реализация:
+        $authHeader = $this->request->getHeader('Authorization');
+
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return null;
+        }
+
+        $token = substr($authHeader, 7);
+
+        // Декодируем JWT и получаем ID пользователя
+        try {
+            $payload = \Firebase\JWT\JWT::decode(
+                $token,
+                new \Firebase\JWT\Key($this->config->jwt->secret, 'HS256')
+            );
+
+            return User::findFirst([
+                'conditions' => 'id = :id: AND is_active = true',
+                'bind'       => ['id' => $payload->sub]
+            ]);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

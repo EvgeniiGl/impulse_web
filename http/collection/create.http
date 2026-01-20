@@ -1,0 +1,12 @@
+### Создание полной коллекции со всеми полями
+POST {{url}}/collections
+Authorization: Bearer {{token}}
+Accept-Language: ru
+Content-Type: application/json
+
+{
+  "name": "Полная коллекция",
+  "description": "Коллекция со всеми возможными полями",
+  "access_type": "public",
+  "tags": "дизайн,портфолио,проекты"
+}

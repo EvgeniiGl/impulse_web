@@ -70,6 +70,7 @@ $di->setShared('dispatcher', require __DIR__ . '/dispatcher.php');
 $di->setShared('storage', require __DIR__ . '/../config/di/storage.php');
 
 $di->setShared('cardService', require __DIR__ . '/../config/di/cardService.php');
+$di->setShared('collectionService', require __DIR__ . '/../config/di/collectionService.php');
 
 $di->setShared('view', function () {
     $view = new View();

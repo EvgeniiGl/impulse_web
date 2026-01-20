@@ -1,0 +1,14 @@
+### Удаление коллекции
+DELETE {{url}}/collections/{{collection_id}}
+Authorization: Bearer {{token}}
+Accept-Language: ru
+
+### Добавление карточки в коллекцию
+POST {{url}}/collections/{{collection_id}}/cards
+Authorization: Bearer {{token}}
+Accept-Language: ru
+Content-Type: application/json
+
+{
+  "card_id": "{{card_id}}"
+}

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Phalcon\Mvc\Router;
+use Phalcon\Mvc\Router\Group as RouterGroup;
 
 /**
  * Router configuration
@@ -97,6 +98,31 @@ return function (): Router {
         'controller' => 'index',
         'action'     => 'index'
     ]);
+
+// collections маршруты
+// Создаем группу отдельно
+    $collectionGroup = new RouterGroup([
+        'controller' => 'collections',
+    ]);
+
+// Добавляем маршруты
+    $collectionGroup->addGet('/collections', ['action' => 'index']);
+    $collectionGroup->addPost('/collections', ['action' => 'create']);
+    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'show']);
+    $collectionGroup->addPut('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'update']);
+    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'delete']);
+
+// Карточки в коллекции
+    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards', ['action' => 'addCard']);
+    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards/{card_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'removeCard']);
+
+// Расшаривание
+    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share', ['action' => 'share']);
+    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share/{user_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'unshare']);
+    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/shared-users', ['action' => 'sharedUsers']);
+
+// Монтируем группу к роутеру
+    $router->mount($collectionGroup);
 
     return $router;
 };

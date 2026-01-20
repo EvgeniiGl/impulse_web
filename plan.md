@@ -29,7 +29,7 @@
 - Проектирование API endpoints (auth: ~~login,register,logout, refresh~~;
   users: ~~block, unblock~~;
   cards: ~~get~~, ~~create~~, ~~update~~, ~~delete~~, ~~list~~;
-  collections: get, create, update, delete, addCard, deleteCard)
+  collections: ~~get~~, ~~create~~, unshare, share, ~~list~~, update, delete, ~~addCard~~, ~~deleteCard~~)
 - Выбор технологического стека (библиотеки, фреймворки)
 - Создание ER-диаграммы базы данных
 - Документирование REST API спецификации

@@ -1,0 +1,11 @@
+### Обновление коллекции
+PUT {{url}}/collections/{{collection_id}}
+Authorization: Bearer {{token}}
+Accept-Language: ru
+Content-Type: application/json
+
+{
+  "title": "Обновленное название",
+  "description": "Обновленное описание",
+  "access_type": "private"
+}
