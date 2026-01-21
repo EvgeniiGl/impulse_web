@@ -6,6 +6,7 @@ namespace App\Requests\Collection;
 
 use App\Helpers\TranslationHelper;
 use App\Requests\Request;
+use Phalcon\Filter\Validation\Validator\InclusionIn;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Filter\Validation\Validator\Regex;
 use Phalcon\Messages\Messages;
@@ -21,12 +22,19 @@ class ShareCollectionRequest extends Request
                 'cancelOnFail' => true
             ])
         );
-
         $this->validation->add(
             'user_id',
             new Regex([
                 'pattern' => '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
                 'message' => TranslationHelper::translate('Invalid user ID format'),
+            ])
+        );
+        $this->validation->add(
+            'permission',
+            new InclusionIn([
+                'message'    => 'Permission must be one of: read, write, admin',
+                'domain'     => ['read', 'write', 'admin'],
+                'allowEmpty' => true // разрешаем пустое значение, т.к. есть дефолт
             ])
         );
     }

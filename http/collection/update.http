@@ -1,11 +1,10 @@
 ### Обновление коллекции
-PUT {{url}}/collections/{{collection_id}}
+PUT {{url}}/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556
 Authorization: Bearer {{token}}
 Accept-Language: ru
 Content-Type: application/json
 
 {
-  "title": "Обновленное название",
-  "description": "Обновленное описание",
+  "name": "Обновленное название",
   "access_type": "private"
 }

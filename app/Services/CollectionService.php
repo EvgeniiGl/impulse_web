@@ -40,7 +40,7 @@ class CollectionService
     /**
      * Обновить коллекцию
      */
-    public function update(int $collectionId, array $data, int $userId): Collection|false
+    public function update(string $collectionId, array $data, User $user): Collection|false
     {
         $collection = Collection::findFirst([
             'conditions' => 'id = :id:',
@@ -49,7 +49,7 @@ class CollectionService
             ]
         ]);
 
-        if (!$collection || !$collection->isOwner($userId)) {
+        if (!$collection || !$collection->isOwner($user->id)) {
             return false;
         }
 
@@ -75,7 +75,7 @@ class CollectionService
     /**
      * Удалить коллекцию
      */
-    public function delete(int $collectionId, int $userId): bool
+    public function delete(string $collectionId, User $user): bool
     {
         $collection = Collection::findFirst([
             'conditions' => 'id = :id:',
@@ -84,7 +84,7 @@ class CollectionService
             ]
         ]);
 
-        if (!$collection || !$collection->isOwner($userId)) {
+        if (!$collection || !$collection->isOwner($user->id)) {
             return false;
         }
 
@@ -217,8 +217,17 @@ class CollectionService
     /**
      * Поделиться коллекцией
      */
-    public function share(string $collectionId, string $targetUserId, User $user): array
+    public function share(string $collectionId, string $targetUserId, User $user, string $permission = 'read'): array
     {
+        // Валидация permission
+        $allowedPermissions = ['read', 'write', 'admin'];
+        if (!in_array($permission, $allowedPermissions)) {
+            return [
+                'success' => false,
+                'message' => 'Invalid permission type. Allowed values: read, write, admin'
+            ];
+        }
+
         $collection = Collection::findFirst([
             'conditions' => 'id = :id:',
             'bind'       => [
@@ -252,17 +261,24 @@ class CollectionService
         $userCollection                = new UserCollection();
         $userCollection->collection_id = $collectionId;
         $userCollection->user_id       = $targetUserId;
+        $userCollection->permission    = $permission; // добавлено поле permission
 
         if ($userCollection->save()) {
             return [
                 'success' => true,
-                'message' => 'Collection shared successfully'
+                'message' => 'Collection shared successfully',
+                'data'    => [
+                    'collection_id' => $collectionId,
+                    'user_id'       => $targetUserId,
+                    'permission'    => $permission
+                ]
             ];
         }
 
         return [
             'success' => false,
-            'message' => 'Error sharing collection'
+            'message' => 'Error sharing collection',
+            'errors'  => $userCollection->getMessages(),
         ];
     }
 

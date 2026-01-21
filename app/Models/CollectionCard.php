@@ -13,6 +13,7 @@ class CollectionCard extends Model
     public string  $collection_id;
     public string  $card_id;
     public ?string $created_at = null;
+    public ?string $updated_at = null;
 
     public function initialize(): void
     {

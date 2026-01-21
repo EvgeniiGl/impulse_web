@@ -8,8 +8,6 @@ final class CreateAccessRulesTable extends AbstractMigration
     public function up(): void
     {
         $sql = "
-            CREATE TYPE permission_type AS ENUM ('read', 'write', 'admin');
-            
             CREATE TABLE access_rules (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 card_id UUID NOT NULL,
@@ -43,6 +41,5 @@ final class CreateAccessRulesTable extends AbstractMigration
     public function down(): void
     {
         $this->execute('DROP TABLE IF EXISTS access_rules CASCADE');
-        $this->execute('DROP TYPE IF EXISTS permission_type');
     }
 }

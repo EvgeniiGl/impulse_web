@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Phalcon\Mvc\Model;
+use Ramsey\Uuid\Uuid;
 
 class UserCollection extends Model
 {
-    public int    $id;
-    public int    $collection_id;
-    public int    $user_id;
-    public string $created_at;
+    public ?string $id         = null;
+    public string  $collection_id;
+    public string  $user_id;
+    public ?string $created_at = null;
+    public ?string $updated_at = null;
 
     public function initialize(): void
     {
@@ -39,5 +41,12 @@ class UserCollection extends Model
                 ]
             ])
         );
+    }
+
+    public function beforeCreate(): void
+    {
+        $this->id         = Uuid::uuid4()->toString();
+        $this->created_at = date('Y-m-d H:i:s');
+        $this->updated_at = date('Y-m-d H:i:s');
     }
 }

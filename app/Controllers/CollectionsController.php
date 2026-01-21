@@ -122,7 +122,7 @@ class CollectionsController extends BaseController
      * PUT /api/collections/{id}
      * Обновить коллекцию
      */
-    public function updateAction(int $id)
+    public function updateAction(string $id)
     {
         $request = new UpdateCollectionRequest();
 
@@ -165,7 +165,7 @@ class CollectionsController extends BaseController
      * DELETE /api/collections/{id}
      * Удалить коллекцию
      */
-    public function deleteAction(int $id)
+    public function deleteAction(string $id)
     {
         $user = $this->getAuthenticatedUser();
         if (!$user) {
@@ -244,23 +244,18 @@ class CollectionsController extends BaseController
      * POST /api/collections/{id}/share
      * Поделиться коллекцией
      */
-    public function shareAction(int $id)
+    public function shareAction(string $id)
     {
         $request = new ShareCollectionRequest();
+        $user    = $this->getAuthenticatedUser();
+        $data    = $this->request->getJsonRawBody(true);
 
-        if (!$request->validate($this->request->getJsonRawBody(true))) {
-            return $this->response
-                ->setStatusCode(400)
-                ->setJsonContent([
-                    'success' => false,
-                    'errors'  => $request->getErrors()
-                ]);
-        }
-
-        $user = $this->getAuthenticatedUser();
-        $data = $this->request->getJsonRawBody(true);
-
-        $result = $this->collectionService->share($id, $request->get('user_id'), $user);
+        $result = $this->collectionService->share(
+            $id,
+            $request->get('user_id'),
+            $user,
+            $request->get('permission', 'read'),
+        );
 
         $statusCode = $result['success'] ? 200 : 400;
 
