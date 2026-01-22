@@ -2,6 +2,7 @@ import {useTranslation} from 'react-i18next';
 import Header from "@modules/Header.tsx";
 import Footer from "@modules/Footer.tsx";
 import Main from "@modules/Main.tsx";
+import Menu from "@modules/Menu.tsx";
 
 export default function HomePage() {
     const {t} = useTranslation();
@@ -41,8 +42,9 @@ export default function HomePage() {
                             <h2 className="text-3xl font-bold text-gray-900 text-center">
                                 {t('home.features')}
                             </h2>
-                            <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
-                                <div className="bg-white overflow-hidden shadow rounded-lg">
+                            <div className="mt-10 flex flex-wrap gap-10">
+                                <div
+                                    className="bg-white overflow-hidden shadow rounded-lg flex-1 min-w-[280px] sm:min-w-0 sm:basis-[calc(50%-1.25rem)] lg:basis-[calc(33.333%-1.67rem)]">
                                     <div className="p-5">
                                         <div className="text-lg font-medium text-gray-900">
                                             {t('home.feature1.title')}
@@ -53,7 +55,20 @@ export default function HomePage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div
+                                    className="bg-white overflow-hidden shadow rounded-lg flex-1 min-w-[280px] sm:min-w-0 sm:basis-[calc(50%-1.25rem)] lg:basis-[calc(33.333%-1.67rem)]">
+                                    <div className="p-5">
+                                        <div className="text-lg font-medium text-gray-900">
+                                            {t('home.feature1.title')}
+                                        </div>
+                                        <div className="mt-2 text-sm text-gray-500">
+                                            {t('home.feature1.description')}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="bg-white overflow-hidden shadow rounded-lg flex-1 min-w-[280px] sm:min-w-0 sm:basis-[calc(50%-1.25rem)] lg:basis-[calc(33.333%-1.67rem)]">
                                     <div className="p-5">
                                         <div className="text-lg font-medium text-gray-900">
                                             {t('home.feature2.title')}
@@ -64,7 +79,8 @@ export default function HomePage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div
+                                    className="bg-white overflow-hidden shadow rounded-lg flex-1 min-w-[280px] sm:min-w-0 sm:basis-[calc(50%-1.25rem)] lg:basis-[calc(33.333%-1.67rem)]">
                                     <div className="p-5">
                                         <div className="text-lg font-medium text-gray-900">
                                             {t('home.feature3.title')}
@@ -75,6 +91,7 @@ export default function HomePage() {
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

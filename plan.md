@@ -63,6 +63,9 @@
 
 **Результат**: Figma файл с готовыми макетами для всех экранов
 
+[plan_front.md](plan_front.md)
+
+иконку инь/янь
 ---
 
 ## Фаза 2: Разработка Backend (14 дней)
@@ -627,3 +630,4 @@ https://dribbble.com/shots/22280739-HarmonyWake-Alarm-Wake-Up-Sleep-Control-App
 https://react-svgr.com/playground/?native=true
 https://www.codedaily.io/tutorials/The-Shapes-of-React-Native
 https://www.svgrepo.com/vectors/home-1/
+https://dribbble.com/shots/14895718-AABook-app-motivation-and-recovery

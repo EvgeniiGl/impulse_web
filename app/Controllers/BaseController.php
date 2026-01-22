@@ -24,6 +24,8 @@ class BaseController extends PhalconController
         '/auth/login',
         '/auth/register',
         '/auth/refresh-token',
+        '/my',
+        '/today',
     ];
 
     public function onConstruct(): void

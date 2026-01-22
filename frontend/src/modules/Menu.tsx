@@ -8,12 +8,10 @@ export default function Menu() {
     return (
         <nav className="bg-white shadow-md border-b border-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-
-                    {/* Логотип */}
+                <div className="flex justify-between flex-col items-center h-16">
                     <div className="flex items-center space-x-8">
                         {/* Десктопное меню */}
-                        <div className="hidden md:flex items-center space-x-1">
+                        <div className="flex flex-col space-y-1">
                             <Link
                                 to="/"
                                 className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors duration-200 flex items-center space-x-1"
@@ -47,10 +45,8 @@ export default function Menu() {
                         </div>
                     </div>
 
-                    {/* Правая часть */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center flex-col space-x-4">
                         <LanguageSwitcher/>
-
                         <Link
                             to="/login"
                             className="hidden sm:inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"

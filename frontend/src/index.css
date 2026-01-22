@@ -37,7 +37,7 @@ body {
     place-items: center;
     min-width: 320px;
     min-height: 100vh;
-    background: #dbddff;
+    background: var(--color-white);
 }
 
 h1 {

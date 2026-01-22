@@ -1,0 +1,51 @@
+:root {
+    /* Primary colors */
+    --color-primary: #897df5;
+    --color-primary-dark: #665f9a;
+    --color-primary-light: #dcd8fe;
+
+    /* Neutral colors */
+    --color-white: #ffffff;
+    --color-black: #1d2127;
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+
+    /* Semantic colors */
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #3b82f6;
+
+    /* Background colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #a6a4a4;
+    --bg-tertiary: #f6f6f6;
+
+    /* Text colors */
+    --text-primary: #111827;
+    --text-secondary: #7b778f;
+    --text-tertiary: #d6d0ff;
+
+    /* Border colors */
+    --border-primary: #e5e7eb;
+    --border-secondary: #d1d5db;
+}
+
+/* Dark theme (опционально) */
+[data-theme="dark"] {
+    --color-primary: #897df5;
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #374151;
+    --text-primary: #cfc9f8;
+    --text-secondary: #a49dcc;
+    --border-primary: #374151;
+}
