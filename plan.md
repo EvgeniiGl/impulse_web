@@ -628,8 +628,13 @@
 6. Поддерживайте актуальную документацию на протяжении всего проекта
 
 https://color.romanuke.com/tsvetovaya-palitra-1923/
+
 https://dribbble.com/shots/22280739-HarmonyWake-Alarm-Wake-Up-Sleep-Control-App
+
 https://react-svgr.com/playground/?native=true
+
 https://www.codedaily.io/tutorials/The-Shapes-of-React-Native
+
 https://www.svgrepo.com/vectors/home-1/
+
 https://dribbble.com/shots/14895718-AABook-app-motivation-and-recovery

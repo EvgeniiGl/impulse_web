@@ -18,6 +18,8 @@ export default defineConfig({
             '@UI': path.resolve(__dirname, './src/UI'),
             '@pages': path.resolve(__dirname, './src/pages'),
             '@base': path.resolve(__dirname, './src/base'),
+            '@store': path.resolve(__dirname, './src/store'),
+            '@hooks': path.resolve(__dirname, './src/hooks'),
         },
     },
     root: path.join(__dirname, "src"),

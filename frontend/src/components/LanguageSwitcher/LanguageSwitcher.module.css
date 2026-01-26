@@ -1,0 +1,24 @@
+.languageButton {
+    box-sizing: border-box;
+    padding: 0.125rem 0.25rem; /* py-0.5 px-1 */
+    font-size: 10px;
+    font-weight: 500;
+    border-radius: 0.25rem;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    cursor: pointer;
+}
+
+.languageButton:not(.active) {
+    color: rgb(55, 65, 81); /* text-gray-700 */
+}
+
+.languageButton:not(.active):hover {
+    background-color: rgb(243, 244, 246); /* bg-gray-100 */
+}
+
+.languageButton.active {
+    background-color: var(--color-primary);
+    color: var(--text-white);
+}

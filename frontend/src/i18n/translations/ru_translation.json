@@ -1,9 +1,11 @@
 {
+  "app_name": "Импульс",
   "menu": {
     "home": "Главная",
     "today": "Сегодня",
     "my": "Мое",
-    "login": "Вход"
+    "login": "Вход",
+    "create": "Создать"
   },
   "home": {
     "welcome": "Добро пожаловать в наше приложение",
@@ -36,6 +38,69 @@
     "title": "Войдите в свой аккаунт",
     "email": "Email адрес",
     "password": "Пароль",
-    "signIn": "Войти"
+    "signIn": "Войти",
+    "noAccount": "Нет аккаунта?",
+    "createAccount": "Создать новый аккаунт"
+  },
+  "loading": "Загрузка",
+  "common": {
+    "back": "Назад",
+    "backToHome": "На главную"
+  },
+  "register": {
+    "title": "Создайте аккаунт",
+    "subtitle": "Уже есть аккаунт?",
+    "signInLink": "Войти",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "email": "Email адрес",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "passwordHint": "Минимум 8 символов",
+    "agreeToTerms": "Я согласен с",
+    "termsOfService": "Условиями использования",
+    "and": "и",
+    "privacyPolicy": "Политикой конфиденциальности",
+    "signUp": "Зарегистрироваться",
+    "orContinueWith": "Или продолжить с",
+    "errors": {
+      "firstNameRequired": "Имя обязательно",
+      "lastNameRequired": "Фамилия обязательна",
+      "emailRequired": "Email обязателен",
+      "emailInvalid": "Введите корректный email адрес",
+      "passwordRequired": "Пароль обязателен",
+      "passwordTooShort": "Пароль должен содержать минимум 8 символов",
+      "confirmPasswordRequired": "Подтвердите пароль",
+      "passwordsDoNotMatch": "Пароли не совпадают",
+      "termsRequired": "Необходимо согласиться с условиями"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Already have an account?",
+      "signInLink": "Sign in",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "passwordHint": "Must be at least 8 characters",
+      "agreeToTerms": "I agree to the",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy",
+      "signUp": "Sign up",
+      "orContinueWith": "Or continue with",
+      "errors": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordRequired": "Password is required",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "confirmPasswordRequired": "Please confirm your password",
+        "passwordsDoNotMatch": "Passwords do not match",
+        "termsRequired": "You must agree to the terms and conditions"
+      }
+    }
   }
 }

@@ -2,7 +2,6 @@ import {useTranslation} from 'react-i18next';
 import Header from "@modules/Header.tsx";
 import Footer from "@modules/Footer.tsx";
 import Main from "@modules/Main.tsx";
-import Menu from "@modules/Menu.tsx";
 
 export default function HomePage() {
     const {t} = useTranslation();
@@ -10,7 +9,6 @@ export default function HomePage() {
     return (
         <>
             <Header/>
-
             <Main>
                 <div className="min-h-screen bg-gray-50">
                     <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">

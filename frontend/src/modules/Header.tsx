@@ -1,9 +1,10 @@
-import Menu from "@modules/Menu.tsx";
+import LanguageSwitcher from "@components/LanguageSwitcher/LanguageSwitcher.tsx";
 
 export default function Header() {
 
     return (
         <>
+            <LanguageSwitcher/>
             {/*<header className="flex items-center justify-between px-6 py-4 bg-white shadow-md">*/}
             {/*<div className="flex items-center space-x-4">*/}
             {/*    <div className="h-10 w-32 bg-gray-200 rounded"></div>*/}

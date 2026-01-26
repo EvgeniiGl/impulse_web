@@ -1,5 +1,3 @@
-import Menu from "@modules/Menu.tsx";
-
 export default function Footer() {
 
     return (

@@ -30,9 +30,10 @@
     --bg-tertiary: #f6f6f6;
 
     /* Text colors */
-    --text-primary: #111827;
+    --text-primary: #646cff;
     --text-secondary: #7b778f;
     --text-tertiary: #d6d0ff;
+    --text-white: #ffffff;
 
     /* Border colors */
     --border-primary: #e5e7eb;
@@ -47,5 +48,6 @@
     --bg-tertiary: #374151;
     --text-primary: #cfc9f8;
     --text-secondary: #a49dcc;
+    --text-white: #ffffff;
     --border-primary: #374151;
 }

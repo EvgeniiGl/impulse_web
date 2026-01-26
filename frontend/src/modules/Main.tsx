@@ -1,4 +1,4 @@
-import Menu from "@modules/Menu.tsx";
+import SideLeft from "@modules/SideLeft.tsx";
 import React from "react";
 
 type MainProps = {
@@ -11,7 +11,7 @@ export default function Main({children}: MainProps) {
             <div className="flex flex-col lg:flex-row gap-1">
                 <aside className="lg:flex-[1] space-y-6">
                     <div className="min-h-screen rounded-lg">
-                        <Menu/>
+                        <SideLeft/>
                     </div>
                 </aside>
                 <section className="lg:flex-[4] space-y-6">

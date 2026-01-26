@@ -1,9 +1,11 @@
 {
+  "app_name": "Impulse",
   "menu": {
     "home": "Home",
     "today": "Today",
     "my": "My",
-    "login": "Login"
+    "login": "Login",
+    "create": "Create"
   },
   "home": {
     "welcome": "Welcome to Our App",
@@ -36,6 +38,13 @@
     "title": "Sign in to your account",
     "email": "Email address",
     "password": "Password",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create new account"
+  },
+  "loading": "Loading",
+  "common": {
+    "back": "Back",
+    "backToHome": "Back to Home"
   }
 }
