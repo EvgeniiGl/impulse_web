@@ -46,5 +46,32 @@
   "common": {
     "back": "Back",
     "backToHome": "Back to Home"
+  },
+  "register": {
+    "title": "Create your account",
+    "subtitle": "Already have an account?",
+    "signInLink": "Sign in",
+    "name": "User name",
+    "email": "Email address",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordHint": "Must be at least 8 characters",
+    "agreeToTerms": "I agree to the",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "signUp": "Sign up",
+    "orContinueWith": "Or continue with",
+    "errors": {
+      "userNameRequired": "User name is required",
+      "lastNameRequired": "Last name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "termsRequired": "You must agree to the terms and conditions"
+    }
   }
 }

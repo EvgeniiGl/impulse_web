@@ -52,8 +52,7 @@ export interface TranslationTypes {
             "title": string,
             "subtitle": string,
             "signInLink": string,
-            "firstName": string,
-            "lastName": string,
+            "name": string,
             "email": string,
             "password": string,
             "confirmPassword": string,
@@ -65,7 +64,7 @@ export interface TranslationTypes {
             "signUp": string,
             "orContinueWith": string,
             "errors": {
-                "firstNameRequired": string,
+                "nameRequired": string,
                 "lastNameRequired": string,
                 "emailRequired": string,
                 "emailInvalid": string,

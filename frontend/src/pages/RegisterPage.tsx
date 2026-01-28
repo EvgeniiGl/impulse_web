@@ -1,84 +1,135 @@
-import {useTranslation} from 'react-i18next';
+import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {useState} from 'react';
+import {useAppDispatch, useAppSelector} from '@store/store.ts';
+import {
+    registerUser,
+    selectAuthLoading,
+    selectAuthError,
+    selectRegistrationSuccess,
+    clearError,
+    clearRegistrationSuccess,
+    AuthResponse,
+    RegisterCredentials,
+} from '../store/slices/authSlice';
+import {useTranslation} from "react-i18next";
 import Header from "@modules/Header.tsx";
 
-export default function RegisterPage() {
-    const {t} = useTranslation();
-    const navigate = useNavigate();
+interface FromData {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    agreeToTerms: boolean;
+}
 
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
+const Register: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+    const {t} = useTranslation();
+
+
+    // const loading = useAppSelector(selectAuthLoading);
+    // const serverError = useAppSelector(selectAuthError);
+    const registrationSuccess = useAppSelector(selectRegistrationSuccess);
+
+    const [formData, setFormData] = useState<FromData>({
+        name: '',
         email: '',
         password: '',
         confirmPassword: '',
-        agreeToTerms: false
+        agreeToTerms: false,
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value, type, checked} = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-        // Очистка ошибки при изменении поля
-        if (errors[name]) {
-            setErrors(prev => ({...prev, [name]: ''}));
+    // Очистка ошибок при размонтировании
+    useEffect(() => {
+        return () => {
+            dispatch(clearError());
+            dispatch(clearRegistrationSuccess());
+        };
+    }, [dispatch]);
+
+    // Перенаправление после успешной регистрации
+    useEffect(() => {
+        if (registrationSuccess) {
+            // Можно показать уведомление
+            setTimeout(() => {
+                navigate('/'); // или '/dashboard'
+            }, 1000);
         }
-    };
+    }, [registrationSuccess, navigate]);
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.firstName.trim()) {
-            newErrors.firstName = t('register.errors.firstNameRequired');
-        }
-
-        if (!formData.lastName.trim()) {
-            newErrors.lastName = t('register.errors.lastNameRequired');
-        }
-
         if (!formData.email.trim()) {
-            newErrors.email = t('register.errors.emailRequired');
+            newErrors.email = 'register.errors.emailRequired';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = t('register.errors.emailInvalid');
+            newErrors.email = 'register.errors.emailInvalid';
         }
 
         if (!formData.password) {
-            newErrors.password = t('register.errors.passwordRequired');
+            newErrors.password = 'register.errors.passwordRequired';
         } else if (formData.password.length < 8) {
-            newErrors.password = t('register.errors.passwordTooShort');
+            newErrors.password = 'register.errors.passwordTooShort';
         }
 
         if (!formData.confirmPassword) {
-            newErrors.confirmPassword = t('register.errors.confirmPasswordRequired');
+            newErrors.confirmPassword = 'register.errors.confirmPasswordRequired';
         } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = t('register.errors.passwordsDoNotMatch');
+            newErrors.confirmPassword = 'register.errors.passwordsDoNotMatch';
         }
 
         if (!formData.agreeToTerms) {
-            newErrors.agreeToTerms = t('register.errors.termsRequired');
+            newErrors.agreeToTerms = 'register.errors.termsRequired';
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Очистка предыдущих ошибок
+        dispatch(clearError());
+
         if (validateForm()) {
-            // Здесь логика регистрации
-            console.log('Form submitted:', formData);
-            // navigate('/login'); // Перенаправление после успешной регистрации
+            const r: RegisterCredentials = {
+                email: formData.email,
+                password: formData.password,
+                name: formData.name,
+            }
+            try {
+                await dispatch(registerUser(r)).unwrap();
+
+                // Успешная регистрация - редирект произойдет через useEffect
+            } catch (error) {
+                // Ошибка уже в store
+                console.error('Registration failed:', error);
+            }
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value, type, checked} = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
+
+        // Очистка ошибки для конкретного поля
+        if (errors[name]) {
+            setErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
+    };
     return (
         <>
             <Header/>
@@ -122,42 +173,23 @@ export default function RegisterPage() {
                     <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <form className="space-y-6" onSubmit={handleSubmit}>
                             {/* Имя и Фамилия */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="">
                                 <div>
-                                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                                        {t('register.firstName')}
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                        {t('register.name')}
                                     </label>
                                     <input
                                         type="text"
-                                        id="firstName"
-                                        name="firstName"
-                                        value={formData.firstName}
+                                        id="name"
+                                        name="name"
+                                        value={formData.name}
                                         onChange={handleChange}
                                         className={`mt-1 block w-full border ${
-                                            errors.firstName ? 'border-red-500' : 'border-gray-300'
+                                            errors.name ? 'border-red-500' : 'border-gray-300'
                                         } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                                     />
-                                    {errors.firstName && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                                        {t('register.lastName')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="lastName"
-                                        name="lastName"
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        className={`mt-1 block w-full border ${
-                                            errors.lastName ? 'border-red-500' : 'border-gray-300'
-                                        } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                                    />
-                                    {errors.lastName && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                                    {errors.userName && (
+                                        <p className="mt-1 text-sm text-red-600">{t(errors.name)}</p>
                                     )}
                                 </div>
                             </div>
@@ -178,7 +210,7 @@ export default function RegisterPage() {
                                     } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                                 />
                                 {errors.email && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                    <p className="mt-1 text-sm text-red-600">{t(errors.email)}</p>
                                 )}
                             </div>
 
@@ -221,7 +253,7 @@ export default function RegisterPage() {
                                     </button>
                                 </div>
                                 {errors.password && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                                    <p className="mt-1 text-sm text-red-600">{t(errors.password)}</p>
                                 )}
                                 <p className="mt-1 text-xs text-gray-500">{t('register.passwordHint')}</p>
                             </div>
@@ -264,7 +296,7 @@ export default function RegisterPage() {
                                     </button>
                                 </div>
                                 {errors.confirmPassword && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                                    <p className="mt-1 text-sm text-red-600">{t(errors.confirmPassword)}</p>
                                 )}
                             </div>
 
@@ -293,14 +325,14 @@ export default function RegisterPage() {
                                     </label>
                                 </div>
                                 {errors.agreeToTerms && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.agreeToTerms}</p>
+                                    <p className="mt-1 text-sm text-red-600">{t(errors.agreeToTerms)}</p>
                                 )}
                             </div>
 
                             {/* Кнопка регистрации */}
                             <button
                                 type="submit"
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                                className="text-primary-color w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                             >
                                 {t('register.signUp')}
                             </button>
@@ -351,3 +383,5 @@ export default function RegisterPage() {
         </>
     );
 }
+
+export default Register;

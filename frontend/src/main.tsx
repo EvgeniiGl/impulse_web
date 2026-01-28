@@ -5,7 +5,6 @@ import './index.css'
 import './App.css'
 import App from './App.tsx'
 import './i18n/i18n';
-import '@fontsource/comfortaa';
 import {store} from '@store/store';
 import {Provider} from 'react-redux';
 

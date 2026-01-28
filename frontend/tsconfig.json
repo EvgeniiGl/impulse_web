@@ -11,6 +11,8 @@
     "skipLibCheck": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -60,8 +62,7 @@
     }
   },
   "include": [
-    "src",
-    "node_modules/@types/jquery/JQuery.d.ts"
+    "src"
   ],
   "references": [
     {
