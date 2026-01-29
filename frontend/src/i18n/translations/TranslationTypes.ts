@@ -7,6 +7,7 @@ export interface TranslationTypes {
             my: string;
             login: string;
             create: string;
+            "logout": string
         };
         home: {
             welcome: string;

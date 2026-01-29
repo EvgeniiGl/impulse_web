@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Requests\Auth;
 
+use App\Helpers\TranslationHelper;
 use Phalcon\Filter\Validation;
 use Phalcon\Filter\Validation\Validator\Email;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
@@ -16,7 +17,7 @@ class RegisterRequest
 
     public function __construct(array $data)
     {
-        $this->email = $data['email'] ?? '';
+        $this->email    = $data['email'] ?? '';
         $this->password = $data['password'] ?? '';
     }
 
@@ -37,35 +38,35 @@ class RegisterRequest
         // Email validation
         $validation->add(
             'email',
-            new PresenceOf(['message' => 'Email is required'])
+            new PresenceOf(['message' => TranslationHelper::translate('Email is required')])
         );
 
         $validation->add(
             'email',
-            new Email(['message' => 'Invalid email format'])
+            new Email(['message' => TranslationHelper::translate('Invalid email format')])
         );
 
         $validation->add(
             'email',
             new StringLength([
-                'max' => 255,
-                'messageMaximum' => 'Email must not exceed 255 characters'
+                'max'            => 255,
+                'messageMaximum' => TranslationHelper::translate('Email must not exceed 255 characters'),
             ])
         );
 
         // Password validation
         $validation->add(
             'password',
-            new PresenceOf(['message' => 'Password is required'])
+            new PresenceOf(['message' => TranslationHelper::translate('Password is required')])
         );
 
         $validation->add(
             'password',
             new StringLength([
-                'min' => 8,
-                'max' => 72,
-                'messageMinimum' => 'Password must be at least 8 characters',
-                'messageMaximum' => 'Password must not exceed 72 characters'
+                'min'            => 9,
+                'max'            => 72,
+                'messageMinimum' => TranslationHelper::translate('Password must be at least 8 characters'),
+                'messageMaximum' => TranslationHelper::translate('Password must not exceed 72 characters'),
             ])
         );
 
@@ -74,12 +75,12 @@ class RegisterRequest
             'password',
             new Validation\Validator\Callback([
                 'callback' => [$this, 'validatePasswordStrength'],
-                'message' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+                'message'  => TranslationHelper::translate('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
             ])
         );
 
         return $validation->validate([
-            'email' => $this->email,
+            'email'    => $this->email,
             'password' => $this->password
         ]);
     }
@@ -92,8 +93,8 @@ class RegisterRequest
             return false;
         }
 
-        $hasUpper = preg_match('/[A-Z]/', $password);
-        $hasLower = preg_match('/[a-z]/', $password);
+        $hasUpper  = preg_match('/[A-Z]/', $password);
+        $hasLower  = preg_match('/[a-z]/', $password);
         $hasNumber = preg_match('/\d/', $password);
         // $hasSpecial = preg_match('/[^A-Za-z0-9]/', $password);
 

@@ -1,15 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAppDispatch, useAppSelector} from '@store/store.ts';
-import {
+import slice, {
+    setErrors,
     registerUser,
-    selectAuthLoading,
-    selectAuthError,
-    selectRegistrationSuccess,
     clearError,
-    clearRegistrationSuccess,
-    AuthResponse,
     RegisterCredentials,
+    selectIsAuthenticated,
 } from '../store/slices/authSlice';
 import {useTranslation} from "react-i18next";
 import Header from "@modules/Header.tsx";
@@ -27,10 +24,9 @@ const Register: React.FC = () => {
     const navigate = useNavigate();
     const {t} = useTranslation();
 
-
-    // const loading = useAppSelector(selectAuthLoading);
-    // const serverError = useAppSelector(selectAuthError);
-    const registrationSuccess = useAppSelector(selectRegistrationSuccess);
+    const {isAuthenticated, errors} = useAppSelector((state) => {
+        return state.auth
+    });
 
     const [formData, setFormData] = useState<FromData>({
         name: '',
@@ -40,7 +36,6 @@ const Register: React.FC = () => {
         agreeToTerms: false,
     });
 
-    const [errors, setErrors] = useState<Record<string, string>>({});
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
@@ -48,19 +43,18 @@ const Register: React.FC = () => {
     useEffect(() => {
         return () => {
             dispatch(clearError());
-            dispatch(clearRegistrationSuccess());
         };
     }, [dispatch]);
 
     // Перенаправление после успешной регистрации
     useEffect(() => {
-        if (registrationSuccess) {
+        if (isAuthenticated) {
             // Можно показать уведомление
             setTimeout(() => {
                 navigate('/'); // или '/dashboard'
             }, 1000);
         }
-    }, [registrationSuccess, navigate]);
+    }, [isAuthenticated, navigate]);
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -87,7 +81,7 @@ const Register: React.FC = () => {
             newErrors.agreeToTerms = 'register.errors.termsRequired';
         }
 
-        setErrors(newErrors);
+        dispatch(setErrors(newErrors));
         return Object.keys(newErrors).length === 0;
     };
 
@@ -120,16 +114,23 @@ const Register: React.FC = () => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
         }));
-
+        console.log("log--",
+            "\ndata--name", name,
+            "\ndata--type", type,
+            "\ndata--value", value,
+            "\ndata--errors[name]", errors[name],
+        );
         // Очистка ошибки для конкретного поля
         if (errors[name]) {
-            setErrors(prev => {
-                const newErrors = {...prev};
-                delete newErrors[name];
-                return newErrors;
-            });
+            let newErrors = {...errors}
+            delete newErrors[name];
+            console.log("log--",
+                "\ndata--newErrors", newErrors,
+            );
+            dispatch(setErrors(newErrors))
         }
     };
+
     return (
         <>
             <Header/>

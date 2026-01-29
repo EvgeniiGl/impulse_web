@@ -16,7 +16,7 @@ export default function SideLeft() {
                         </div>
                         <Menu/>
                     </div>
-                    <div className="flex items-center flex-col space-x-4 w-full mb-2">
+                    <div className="flex items-center flex-col space-x-4 w-full mb-6">
                         <Profile/>
                     </div>
                 </div>

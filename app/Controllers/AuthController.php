@@ -114,7 +114,7 @@ class AuthController extends BaseController
         if ($validation->count() > 0) {
             $errors = [];
             foreach ($validation as $message) {
-                $errors[] = $message->getMessage();
+                $errors[$message->getField()] = $message->getMessage();
             }
 
             return $this->jsonResponse([

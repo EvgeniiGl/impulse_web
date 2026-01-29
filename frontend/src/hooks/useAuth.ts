@@ -1,6 +1,6 @@
 // src/hooks/useAuth.ts
-import {useAppSelector} from '../store/store';
-import {User} from '../store/slices/userSlice';
+import {useAppSelector} from '@store/store';
+import {logoutUser, selectIsAuthenticated, User} from "@store/slices/authSlice";
 
 interface UseAuthReturn {
     user: User | null;
@@ -10,12 +10,12 @@ interface UseAuthReturn {
 }
 
 export const useAuth = (): UseAuthReturn => {
-    const {currentUser, isAuthenticated, loading, error} = useAppSelector(
-        (state) => state.user
-    );
+    const {isAuthenticated, loading, error, user} = useAppSelector((state) => {
+        return state.auth
+    });
 
-    return {
-        user: currentUser,
+    return <UseAuthReturn>{
+        user,
         isAuthenticated,
         loading,
         error,

@@ -12,15 +12,14 @@ class TranslationServiceProvider implements ServiceProviderInterface
     public function register(DiInterface $di): void
     {
         $di->setShared('translation', function () use ($di) {
-            $request = $di->get('request');
+            $request       = $di->get('request');
             $defaultLocale = 'en';
 
             // Получаем язык из запроса
             $locale = $request->getBestLanguage() ?? $defaultLocale;
-
             // Нормализуем локаль (например, ru_RU -> ru)
             $locale = explode('_', $locale)[0];
-
+            $locale = explode('-', $locale)[0];
             // Определяем базовый путь
             $basePath = defined('APP_PATH')
                 ? APP_PATH
@@ -30,7 +29,7 @@ class TranslationServiceProvider implements ServiceProviderInterface
             $translationFile = $basePath . '/Messages/' . $locale . '.php';
 
             if (!file_exists($translationFile)) {
-                $locale = $defaultLocale;
+                $locale          = $defaultLocale;
                 $translationFile = $basePath . '/Messages/' . $locale . '.php';
             }
 
@@ -41,7 +40,7 @@ class TranslationServiceProvider implements ServiceProviderInterface
 
             // Создаем экземпляр переводчика
             $interpolator = new InterpolatorFactory();
-            $factory = new TranslateFactory($interpolator);
+            $factory      = new TranslateFactory($interpolator);
 
             return $factory->newInstance(
                 'array',

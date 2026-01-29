@@ -5,8 +5,22 @@ import MyPage from './pages/MyPage';
 import LoginPage from './pages/LoginPage';
 import CreatePage from "@pages/CreatePage.tsx";
 import RegisterPage from "@pages/RegisterPage.tsx";
+import {useEffect} from "react";
+import {initializeAuth, selectAuthToken, refreshAccessToken} from '@store/slices/authSlice';
+import {isTokenExpired} from "@/utils/tokenUtils.ts";
+import {useAppDispatch, useAppSelector} from "@store/store.ts";
 
 function App() {
+    const dispatch = useAppDispatch();
+    const token = useAppSelector(selectAuthToken);
+
+    useEffect(() => {
+        if (token && isTokenExpired(token)) {
+            dispatch(refreshAccessToken())
+        }
+        dispatch(initializeAuth());
+    }, [dispatch]);
+
     return (
         <Router>
             <div className="App">
