@@ -14,7 +14,7 @@ export default function Main({children}: MainProps) {
                         <SideLeft/>
                     </div>
                 </aside>
-                <section className="lg:flex-[4] space-y-6">
+                <section className="lg:flex-[6] space-y-6">
                     {children}
                 </section>
             </div>

@@ -1,6 +1,6 @@
 // src/hooks/useAuth.ts
 import {useAppSelector} from '@store/store';
-import {logoutUser, selectIsAuthenticated, User} from "@store/slices/authSlice";
+import {User} from "@store/slices/authSlice";
 
 interface UseAuthReturn {
     user: User | null;

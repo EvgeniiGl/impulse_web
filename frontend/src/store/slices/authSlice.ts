@@ -1,7 +1,7 @@
 // src/store/slices/authSlice.ts
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import i18n from '@/i18n/i18n.ts';
-import {decodeToken, isTokenExpired} from "@/utils/tokenUtils.ts";
+import {decodeToken} from "@/utils/tokenUtils.ts";
 
 // Интерфейсы
 export interface User {
@@ -49,7 +49,7 @@ const initialState: AuthState = {
 };
 
 // API базовый URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:9501';
+const API_URL = window.location.origin
 
 // Async thunks
 export const registerUser = createAsyncThunk<
@@ -90,7 +90,7 @@ export const registerUser = createAsyncThunk<
             return data.data;
         } catch (error) {
             return rejectWithValue(
-                error instanceof Error ? error.message : 'Unknown error'
+                {errors: {'message': 'Unknown error'}}
             );
         }
     }
@@ -216,9 +216,6 @@ const authSlice = createSlice({
             state.error = null;
         },
         setErrors: (state: AuthState, action: PayloadAction<Record<string, string>>) => {
-            console.log("log--",
-                "\ndata--action.payload", action.payload,
-            );
             state.errors = action.payload;
         },
         setTokens: (state, action: PayloadAction<{ token: string; refreshToken: string }>) => {

@@ -66,7 +66,6 @@ export interface TranslationTypes {
             "orContinueWith": string,
             "errors": {
                 "nameRequired": string,
-                "lastNameRequired": string,
                 "emailRequired": string,
                 "emailInvalid": string,
                 "passwordRequired": string,

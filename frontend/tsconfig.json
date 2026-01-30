@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2020",
+    "types": [
+      "vite/client"
+    ],
     "useDefineForClassFields": true,
     "lib": [
       "ES2020",
@@ -38,6 +41,9 @@
       "@components/*": [
         "./src/components/*"
       ],
+      "@api/*": [
+        "src/api/*"
+      ],
       "@assets/*": [
         "./src/assets/*"
       ],
@@ -58,6 +64,12 @@
       ],
       "@hooks/*": [
         "./src/hooks/*"
+      ],
+      "@types/*": [
+        "src/types/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
       ]
     }
   },

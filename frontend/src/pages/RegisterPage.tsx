@@ -1,12 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAppDispatch, useAppSelector} from '@store/store.ts';
-import slice, {
+import {
     setErrors,
     registerUser,
     clearError,
     RegisterCredentials,
-    selectIsAuthenticated,
 } from '../store/slices/authSlice';
 import {useTranslation} from "react-i18next";
 import Header from "@modules/Header.tsx";
@@ -114,19 +113,10 @@ const Register: React.FC = () => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
         }));
-        console.log("log--",
-            "\ndata--name", name,
-            "\ndata--type", type,
-            "\ndata--value", value,
-            "\ndata--errors[name]", errors[name],
-        );
         // Очистка ошибки для конкретного поля
         if (errors[name]) {
             let newErrors = {...errors}
             delete newErrors[name];
-            console.log("log--",
-                "\ndata--newErrors", newErrors,
-            );
             dispatch(setErrors(newErrors))
         }
     };

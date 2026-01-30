@@ -1,10 +1,10 @@
-import React, {useState, useRef, useEffect} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {useDispatch} from "react-redux";
-import {AppDispatch, useAppSelector} from "@store/store.ts";
+import {AppDispatch} from "@store/store.ts";
 import {useAuth} from "@hooks/useAuth.ts";
-import {logoutUser, selectIsAuthenticated} from "@store/slices/authSlice";
+import {logoutUser} from "@store/slices/authSlice";
 
 const Profile = () => {
     const {t} = useTranslation();
@@ -13,7 +13,7 @@ const Profile = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-    const {user, isAuthenticated, loading, error} = useAuth();
+    const {user, isAuthenticated} = useAuth();
 
     // Определяем что показывать: имя или email
     const displayName = user?.name || user?.email;
@@ -84,19 +84,18 @@ const Profile = () => {
             <div
                 className="w-10 h-10 rounded-full overflow-hidden border-2 border-[var(--text-primary)] shadow-md flex-shrink-0 cursor-pointer hover:border-[var(--text-primary)] hover:shadow-lg transition-all duration-200"
             >
-                {user?.avatar ? (
-                    <img
-                        src={user.avatar}
-                        alt={displayName}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div
-                        className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold hover:from-indigo-500 hover:to-purple-600 transition-all duration-200"
-                    >
-                        <span>{getInitial()}</span>
-                    </div>
-                )}
+                {/*{user?.avatar ? (*/}
+                {/*    <img*/}
+                {/*        src={user.avatar}*/}
+                {/*        alt={displayName}*/}
+                {/*        className="w-full h-full object-cover"*/}
+                {/*    />*/}
+                {/*) : (*/}
+                <div
+                    className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold hover:from-indigo-500 hover:to-purple-600 transition-all duration-200">
+                    <span>{getInitial()}</span>
+                </div>
+                {/*)}*/}
             </div>
             {/* Имя или Email */}
             <div className="hidden sm:flex flex-col cursor-pointer">

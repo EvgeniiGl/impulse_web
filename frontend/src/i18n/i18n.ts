@@ -1,16 +1,15 @@
+// src/i18n/i18n.ts
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import {initReactI18next} from "react-i18next";
-import {TranslationTypes} from "./translations/TranslationTypes";
+// import type {TranslationTypes} from "./translations/TranslationTypes";
 import en from "./translations/en_translation.json";
 import ru from "./translations/ru_translation.json";
 
-// Если забудем добавить поле в один из языков,
-// здесь появится TypeScript ошибка
-const resources: Record<string, { translation: TranslationTypes }> = {
+const resources = {
     en: {translation: en},
     ru: {translation: ru},
-};
+} as const;
 
 i18n
     .use(LanguageDetector)

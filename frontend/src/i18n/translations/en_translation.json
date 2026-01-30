@@ -46,7 +46,11 @@
   "loading": "Loading",
   "common": {
     "back": "Back",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "cancel": "Cancel",
+    "error": "Error",
+    "success": "Success",
+    "remove": "Remove"
   },
   "register": {
     "title": "Create your account",
@@ -62,17 +66,43 @@
     "and": "and",
     "privacyPolicy": "Privacy Policy",
     "signUp": "Sign up",
-    "orContinueWith": "Or continue with",
-    "errors": {
-      "userNameRequired": "User name is required",
-      "lastNameRequired": "Last name is required",
-      "emailRequired": "Email is required",
-      "emailInvalid": "Please enter a valid email address",
-      "passwordRequired": "Password is required",
-      "passwordTooShort": "Password must be at least 8 characters",
-      "confirmPasswordRequired": "Please confirm your password",
-      "passwordsDoNotMatch": "Passwords do not match",
-      "termsRequired": "You must agree to the terms and conditions"
-    }
+    "orContinueWith": "Or continue with"
+  },
+  "errors": {
+    "nameRequired": "User name is required",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordRequired": "Password is required",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "confirmPasswordRequired": "Please confirm your password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "termsRequired": "You must agree to the terms and conditions",
+    "titleRequired": "Please enter card title",
+    "fileRequired": "Please select a file",
+    "invalidFileType": "Please select an image",
+    "fileTooLarge": "File is too large (max 5MB)",
+    "titleTooLong": "Title must not exceed 100 characters",
+    "descriptionTooLong": "Description must not exceed 5000 characters"
+  },
+  "createCard": {
+    "title": "Create Card",
+    "subtitle": "Fill out the form to create a new card",
+    "titleLabel": "Card Title",
+    "titlePlaceholder": "Enter title",
+    "accessType": "Access Type",
+    "public": "Public",
+    "private": "Private",
+    "fileLabel": "Image",
+    "uploadText": "Click to upload image",
+    "create": "Create Card",
+    "creating": "Creating...",
+    "success": "Card created successfully",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Enter description (optional)",
+    "publicDesc": "All users",
+    "publicInfo": "The card will be visible to all users",
+    "privateDesc": "Only you",
+    "privateInfo": "The card is visible only to you",
+    "fileSelected": "File selected"
   }
 }

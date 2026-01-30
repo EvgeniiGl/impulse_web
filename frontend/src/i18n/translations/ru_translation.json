@@ -45,8 +45,10 @@
   },
   "loading": "Загрузка",
   "common": {
-    "back": "Назад",
-    "backToHome": "На главную"
+    "cancel": "Отмена",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "remove": "Удалить"
   },
   "register": {
     "title": "Создайте аккаунт",
@@ -62,16 +64,43 @@
     "and": "и",
     "privacyPolicy": "Политикой конфиденциальности",
     "signUp": "Зарегистрироваться",
-    "orContinueWith": "Или продолжить с",
-    "errors": {
-      "nameRequired": "Имя обязательно",
-      "emailRequired": "Email обязателен",
-      "emailInvalid": "Введите корректный email адрес",
-      "passwordRequired": "Пароль обязателен",
-      "passwordTooShort": "Пароль должен содержать минимум 8 символов",
-      "confirmPasswordRequired": "Подтвердите пароль",
-      "passwordsDoNotMatch": "Пароли не совпадают",
-      "termsRequired": "Необходимо согласиться с условиями"
-    }
+    "orContinueWith": "Или продолжить с"
+  },
+  "errors": {
+    "nameRequired": "Имя обязательно",
+    "emailRequired": "Email обязателен",
+    "emailInvalid": "Введите корректный email адрес",
+    "passwordRequired": "Пароль обязателен",
+    "passwordTooShort": "Пароль должен содержать минимум 8 символов",
+    "confirmPasswordRequired": "Подтвердите пароль",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "termsRequired": "Необходимо согласиться с условиями",
+    "titleRequired": "Введите название карточки",
+    "titleTooLong": "Название не должно превышать 100 символов",
+    "descriptionTooLong": "Описание не должно превышать 5000 символов",
+    "fileRequired": "Выберите файл",
+    "invalidFileType": "Пожалуйста, выберите изображение",
+    "fileTooLarge": "Файл слишком большой (макс 5MB)"
+  },
+  "createCard": {
+    "title": "Создать карточку",
+    "subtitle": "Заполните форму для создания новой карточки",
+    "success": "Карточка успешно создана",
+    "titleLabel": "Название карточки",
+    "titlePlaceholder": "Введите название",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Введите описание (опционально)",
+    "accessType": "Тип доступа",
+    "public": "Публичная",
+    "publicDesc": "Все пользователи",
+    "publicInfo": "Карточка будет видна всем пользователям",
+    "private": "Приватная",
+    "privateDesc": "Только вы",
+    "privateInfo": "Карточка видна только вам",
+    "fileLabel": "Изображение",
+    "uploadText": "Нажмите для загрузки изображения",
+    "fileSelected": "Файл выбран",
+    "create": "Создать карточку",
+    "creating": "Создание..."
   }
 }

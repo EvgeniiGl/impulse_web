@@ -7,13 +7,14 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({mode}) => {
     // Загружаем env переменные
     const env = loadEnv(mode, process.cwd(), '')
-    
+
     return {
         plugins: [
             react(),
             svgr(),
             tailwindcss(),
         ],
+        envDir: process.cwd(),
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
@@ -25,6 +26,9 @@ export default defineConfig(({mode}) => {
                 '@base': path.resolve(__dirname, './src/base'),
                 '@store': path.resolve(__dirname, './src/store'),
                 '@hooks': path.resolve(__dirname, './src/hooks'),
+                '@api': path.resolve(__dirname, './src/api'),
+                '@types': path.resolve(__dirname, './src/types'),
+                '@utils': path.resolve(__dirname, './src/utils'),
             },
         },
         root: path.join(__dirname, "src"),
@@ -37,9 +41,9 @@ export default defineConfig(({mode}) => {
             rollupOptions: {
                 input: path.resolve(__dirname, 'src/main.tsx'),
                 output: {
-                    entryFileNames: `[name].js`,
-                    chunkFileNames: `[name].js`,
-                    assetFileNames: `[name].[ext]`,
+                    entryFileNames: '[name].js',
+                    chunkFileNames: '[name].js',
+                    assetFileNames: '[name].[ext]',
                 }
             }
         }
