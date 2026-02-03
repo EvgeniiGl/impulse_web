@@ -8,9 +8,9 @@ type MainProps = {
 export default function Main({children}: MainProps) {
     return (
         <main className="container mx-auto">
-            <div className="flex flex-col lg:flex-row gap-1">
+            <div className="flex flex-col lg:flex-row gap-1 h-full">
                 <aside className="lg:flex-[1] space-y-6">
-                    <div className="min-h-screen rounded-lg">
+                    <div className="h-full rounded-lg">
                         <SideLeft/>
                     </div>
                 </aside>

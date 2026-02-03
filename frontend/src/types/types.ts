@@ -1,0 +1,1 @@
+export type AccessType = 'private' | 'public' | 'shared';

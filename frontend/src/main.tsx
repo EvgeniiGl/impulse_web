@@ -7,6 +7,7 @@ import App from './App.tsx'
 import './i18n/i18n';
 import {store} from '@store/store';
 import {Provider} from 'react-redux';
+import {Toast} from "@components/Toast/Toast.tsx";
 
 const rootElement = document.getElementById('root');
 
@@ -16,6 +17,7 @@ if (rootElement) {
         <React.StrictMode>
             <Provider store={store}>
                 <App/>
+                <Toast/>
             </Provider>
         </React.StrictMode>
     );

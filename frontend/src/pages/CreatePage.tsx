@@ -5,12 +5,11 @@ import React, {useEffect, useState} from "react";
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
-import {createCard, clearError, clearSuccess, CreateCardData} from "@store/slices/cardSlice.ts";
+import {createCard, clearError, clearSuccess} from "@store/slices/cardSlice.ts";
+import {CreateCardRequest} from "@api/cardsApi.ts";
+import {AccessType} from "@types/types.ts";
 
-interface FormData {
-    title: string;
-    description: string;
-    access_type: 'public' | 'private';
+interface FormData extends CreateCardRequest {
     file: File | null;
 }
 
@@ -22,14 +21,16 @@ export default function CreatePage() {
     const [formData, setFormData] = useState<FormData>({
         title: '',
         description: '',
+        creator_id: '',
         access_type: 'private',
+        is_active: false,
         file: null,
     });
     const [preview, setPreview] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const {isCreating, error, success} = useAppSelector((state) => state.card);
-    const {isAuthenticated} = useAppSelector((state) => state.auth);
+    const {isAuthenticated, user} = useAppSelector((state) => state.auth);
 
     // Проверка авторизации
     useEffect(() => {
@@ -43,8 +44,8 @@ export default function CreatePage() {
         if (success) {
             setTimeout(() => {
                 dispatch(clearSuccess());
-                navigate('/cards');
-            }, 2000);
+                navigate('/my');
+            }, 1000);
         }
     }, [success, navigate, dispatch]);
 
@@ -74,7 +75,7 @@ export default function CreatePage() {
     const handleAccessTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFormData(prev => ({
             ...prev,
-            access_type: e.target.value as 'public' | 'private'
+            access_type: e.target.value as AccessType
         }));
     };
 
@@ -162,15 +163,20 @@ export default function CreatePage() {
             return;
         }
 
-        const cardData: CreateCardData = {
+        if (!user) {
+            return;
+        }
+
+        const cardData: CreateCardRequest = {
             title: formData.title.trim(),
-            description: formData.description.trim() || undefined,
+            description: formData.description?.trim() || null,
+            creator_id: user.id,
             access_type: formData.access_type,
-            file: formData.file!,
+            is_active: false,
         };
 
         try {
-            await dispatch(createCard(cardData)).unwrap();
+            await dispatch(createCard({card: cardData, file: formData.file!})).unwrap();
         } catch (error) {
             console.error('Card creation failed:', error);
         }
@@ -232,7 +238,7 @@ export default function CreatePage() {
                                     <textarea
                                         id="description"
                                         name="description"
-                                        value={formData.description}
+                                        value={formData.description || ''}
                                         onChange={handleInputChange}
                                         maxLength={5000}
                                         rows={4}
@@ -247,7 +253,7 @@ export default function CreatePage() {
                                         <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
                                     )}
                                     <p className="mt-1 text-xs text-gray-500">
-                                        {formData.description.length}/5000
+                                        {formData.description?.length}/5000
                                     </p>
                                 </div>
 
@@ -366,7 +372,7 @@ export default function CreatePage() {
                                     <button
                                         type="submit"
                                         disabled={isCreating}
-                                        className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
+                                        className="text-primary-color flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
                                     >
                                         {isCreating ? (
                                             <span className="flex items-center justify-center">
@@ -386,7 +392,7 @@ export default function CreatePage() {
 
                                     <button
                                         type="button"
-                                        onClick={() => navigate('/cards')}
+                                        onClick={() => navigate('/my')}
                                         className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium"
                                     >
                                         {t('common.cancel') || 'Отмена'}

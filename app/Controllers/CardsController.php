@@ -60,19 +60,17 @@ class CardsController extends BaseController
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
-                    'card' => [
-                        'id'            => $card->id,
-                        'title'         => $card->title,
-                        'description'   => $card->description,
-                        'url'           => $card->url,
-                        'object_path'   => $card->object_path,
-                        'file_name'     => $card->file_name,
-                        'original_name' => $card->original_name,
-                        'access_type'   => $card->access_type,
-                        'creator_id'    => $card->creator_id,
-                        'created_at'    => $card->created_at,
-                        'updated_at'    => $card->updated_at,
-                    ]
+                    'id'            => $card->id,
+                    'title'         => $card->title,
+                    'description'   => $card->description,
+                    'url'           => $card->url,
+                    'object_path'   => $card->object_path,
+                    'file_name'     => $card->file_name,
+                    'original_name' => $card->original_name,
+                    'access_type'   => $card->access_type,
+                    'creator_id'    => $card->creator_id,
+                    'created_at'    => $card->created_at,
+                    'updated_at'    => $card->updated_at,
                 ]
             ], 201);
 
