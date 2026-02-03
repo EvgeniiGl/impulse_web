@@ -162,6 +162,13 @@ export const refreshAccessToken = createAsyncThunk<
             const data = await response.json();
 
             if (!response.ok || !data.success) {
+                // Если refresh token тоже невалиден - выходим
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    // Опционально: редирект на страницу логина
+                    window.location.href = '/login';
+                }
                 return rejectWithValue(data.message || 'Token refresh error');
             }
 
@@ -170,9 +177,7 @@ export const refreshAccessToken = createAsyncThunk<
 
             return data.data;
         } catch (error) {
-            return rejectWithValue(
-                error instanceof Error ? error.message : 'Unknown error'
-            );
+            return rejectWithValue('Network error during token refresh');
         }
     }
 );
