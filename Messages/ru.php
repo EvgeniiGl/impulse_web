@@ -30,4 +30,8 @@ return [
     'Password must be at least 8 characters'                                                    => 'Пароль должен содержать не менее 8 символов',
     'Password must not exceed 72 characters'                                                    => 'Пароль не должен превышать 72 символа',
     'Password must contain at least one uppercase letter, one lowercase letter, and one number' => 'Пароль должен содержать хотя бы одну заглавную букву, одну строчную букву и одну цифру',
+    'Page not found'                                                                            => 'Страница не найдена',
+    'The page you are looking for does not exist or has been removed'                           => 'Запрашиваемая страница не существует или была удалена',
+    'Please check the URL and try again'                                                        => 'Пожалуйста, проверьте правильность адреса',
+    'Back to home'                                                                              => 'Вернуться на главную',
 ];

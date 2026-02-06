@@ -1,7 +1,7 @@
 // src/store/slices/authSlice.ts
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import i18n from '@/i18n/i18n.ts';
-import {decodeToken} from "@/utils/tokenUtils.ts";
+import {decodeToken} from "@utils/tokenUtils.ts";
 
 // Интерфейсы
 export interface User {

@@ -50,14 +50,13 @@ class CardService extends Injectable
             $card->access_type = $request->getAccessType();
             $card->creator_id  = $creator->id;
 
-            // Если есть файл - загружаем в MinIO
             if ($request->hasFile()) {
-                $file = $request->getFile();
-
+                $file         = $request->getFile();
                 $uploadResult = $this->storageService->uploadFile(
                     $file->getTempName(),
                     $file->getName(),
-                    $creator->id
+                    $creator->id,
+                    $card->access_type === 'public',
                 );
 
                 $card->url           = $uploadResult['url'];
@@ -82,8 +81,8 @@ class CardService extends Injectable
             }
 
             $this->db->commit();
+            
             return $card;
-
         } catch (Exception $e) {
             $this->db->rollback();
 

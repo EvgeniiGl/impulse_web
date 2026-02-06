@@ -27,10 +27,10 @@ class CollectionsController extends BaseController
     }
 
     /**
-     * GET /api/collections
+     * GET /api/collections/my
      * Получить все коллекции пользователя
      */
-    public function indexAction()
+    public function myAction()
     {
         $user        = $this->getAuthenticatedUser();
         $collections = (new Collection())->getUserCollections($user);

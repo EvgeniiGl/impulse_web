@@ -89,6 +89,11 @@ return function (): Router {
         'action'     => 'index'
     ]);
 
+    $router->add('/create', [
+        'controller' => 'index',
+        'action'     => 'index'
+    ]);
+
     $router->add('/today', [
         'controller' => 'index',
         'action'     => 'index'
@@ -107,6 +112,7 @@ return function (): Router {
 
 // Добавляем маршруты
     $collectionGroup->addGet('/collections', ['action' => 'index']);
+    $collectionGroup->addGet('/collections/my', ['action' => 'my']);
     $collectionGroup->addPost('/collections', ['action' => 'create']);
     $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'show']);
     $collectionGroup->addPut('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'update']);
@@ -123,6 +129,11 @@ return function (): Router {
 
 // Монтируем группу к роутеру
     $router->mount($collectionGroup);
+
+    $router->notFound([
+        'controller' => 'error',
+        'action'     => 'notFound'
+    ]);
 
     return $router;
 };

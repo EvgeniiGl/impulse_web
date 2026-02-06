@@ -29,6 +29,7 @@ export default defineConfig(({mode}) => {
                 '@api': path.resolve(__dirname, './src/api'),
                 '@types': path.resolve(__dirname, './src/types'),
                 '@utils': path.resolve(__dirname, './src/utils'),
+                '@features': path.resolve(__dirname, './src/features'),
             },
         },
         root: path.join(__dirname, "src"),

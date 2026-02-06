@@ -91,7 +91,7 @@ button {
 }
 
 button:hover {
-    border-color: #646cff;
+    border-color: var(--color-primary);
 }
 
 button:focus,

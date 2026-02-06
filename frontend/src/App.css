@@ -50,3 +50,8 @@
 .text-primary-color {
     color: var(--text-primary);
 }
+
+.border-primary {
+    border: 1px solid var(--text-primary);
+
+}

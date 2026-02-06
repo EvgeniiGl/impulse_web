@@ -2,7 +2,7 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import Header from "@modules/Header.tsx";
 import React, {useEffect, useState} from "react";
-import {clearError, RegisterCredentials, loginUser, setErrors} from "@store/slices/authSlice.ts";
+import {clearError, RegisterCredentials, loginUser, setErrors} from "@store/auth/authSlice.ts";
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
 
 

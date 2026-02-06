@@ -4,7 +4,7 @@ import {useTranslation} from "react-i18next";
 import {useDispatch} from "react-redux";
 import {AppDispatch} from "@store/store.ts";
 import {useAuth} from "@hooks/useAuth.ts";
-import {logoutUser} from "@store/slices/authSlice";
+import {logoutUser} from "@store/auth/authSlice.ts";
 
 const Profile = () => {
     const {t} = useTranslation();

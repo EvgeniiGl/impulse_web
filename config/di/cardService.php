@@ -1,13 +1,18 @@
 <?php
 
+use App\Factories\StorageServiceFactory;
+use App\Services\CardService;
+
 return function () {
     $config = $this->getConfig();
 
-    $storageService = new \App\Services\StorageService(
-        $this->get('storage'),
-        $config->minio->bucket,
-        $config->minio->publicUrl
-    );
+    $config = [
+        'driver'     => 'local',
+        'base_path'  => '/var/www',
+        'public_url' => $_SERVER['HTTP_HOST'],
+    ];
 
-    return new \App\Services\CardService($storageService);
+    $storageService = StorageServiceFactory::create($config);
+
+    return new CardService($storageService);
 };

@@ -3,125 +3,74 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use League\Flysystem\Filesystem;
-use League\Flysystem\FilesystemException;
-use League\Flysystem\UnableToWriteFile;
-use Ramsey\Uuid\Uuid;
 use Random\RandomException;
 
-class StorageService
+abstract class StorageService
 {
-    private Filesystem $filesystem;
-    private string     $bucket;
-    private string     $publicUrl;
+    protected string $publicUrl;
 
-    public function __construct(Filesystem $filesystem, string $bucket, string $publicUrl)
+    public function __construct(string $publicUrl)
     {
-        $this->filesystem = $filesystem;
-        $this->bucket     = $bucket;
-        $this->publicUrl  = $publicUrl;
+        $this->publicUrl = $publicUrl;
     }
 
     /**
-     * Загружает файл в MinIO
+     * Загружает файл в хранилище
      */
-    public function uploadFile(string $tempFilePath, string $originalName, string $userId): array
-    {
-        // Генерируем уникальное имя файла
-        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
-        $fileName  = sprintf(
-            '%s_%s_%s.%s',
-            $userId,
-            Uuid::uuid4()->toString(),
-            time(),
-            $extension ?: 'bin'
-        );
-
-        // Путь в хранилище
-        $objectPath = 'cards/' . $fileName;
-
-        try {
-            // Читаем содержимое файла
-            $fileContent = file_get_contents($tempFilePath);
-            if ($fileContent === false) {
-                throw new \RuntimeException('Failed to read file content');
-            }
-
-            // Загружаем в MinIO
-            $this->filesystem->write($objectPath, $fileContent, [
-                'ContentType' => mime_content_type($tempFilePath),
-                'Metadata'    => [
-                    'original_name' => $originalName,
-                    'user_id'       => $userId,
-                    'uploaded_at'   => date('Y-m-d H:i:s')
-                ]
-            ]);
-
-            // Формируем публичный URL
-            $publicUrl = rtrim($this->publicUrl, '/') . '/' . $this->bucket . '/' . $objectPath;
-
-            return [
-                'file_name'     => $fileName,
-                'original_name' => $originalName,
-                'object_path'   => $objectPath,
-                'url'           => $publicUrl,
-                'size'          => filesize($tempFilePath),
-                'mime_type'     => mime_content_type($tempFilePath)
-            ];
-        } catch (UnableToWriteFile $e) {
-            throw new \RuntimeException('Failed to upload file to storage: ' . $e->getMessage());
-        }
-    }
+    abstract public function uploadFile(string $tempFilePath, string $originalName, string $userId, bool $isPublic = false): array;
 
     /**
-     * Удаляет файл из MinIO
+     * Удаляет файл из хранилища
      */
-    public function deleteFile(string $objectPath): bool
-    {
-        try {
-            $this->filesystem->delete($objectPath);
-            return true;
-        } catch (\Exception $e) {
-            // Логируем ошибку, но не прерываем выполнение
-            error_log('Failed to delete file: ' . $e->getMessage());
-            return false;
-        }
-    }
+    abstract public function deleteFile(string $objectPath): bool;
 
     /**
      * Генерирует подписанный URL для временного доступа
      * @throws RandomException
      */
-    public function getSignedUrl(string $objectPath, int $expiresIn = 3600): string
-    {
-        // Для MinIO можно использовать пре-подписанные URL
-        // В зависимости от конфигурации MinIO и клиента
-        // Здесь упрощенная реализация
-        return rtrim($this->publicUrl, '/') . '/' . $this->bucket . '/' . $objectPath . '?token=' . bin2hex(random_bytes(16));
-    }
+    abstract public function getSignedUrl(string $objectPath, int $expiresIn = 3600): string;
 
     /**
      * Проверяет существование файла
-     * @throws FilesystemException
      */
-    public function fileExists(string $objectPath): bool
-    {
-        return $this->filesystem->fileExists($objectPath);
-    }
+    abstract public function fileExists(string $objectPath): bool;
 
     /**
      * Получает информацию о файле
      */
-    public function getFileInfo(string $objectPath): ?array
+    abstract public function getFileInfo(string $objectPath): ?array;
+
+    /**
+     * Генерирует уникальное имя файла
+     */
+    protected function generateFileName(string $originalName, string $userId): string
     {
-        try {
-            return [
-                'size'          => $this->filesystem->fileSize($objectPath),
-                'mime_type'     => $this->filesystem->mimeType($objectPath),
-                'last_modified' => $this->filesystem->lastModified($objectPath),
-            ];
-        } catch (\Exception|FilesystemException $e) {
-            return null;
-        }
+        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+        return sprintf(
+            '%s_%s_%s.%s',
+            $userId,
+            $this->generateUuid(),
+            time(),
+            $extension ?: 'bin'
+        );
+    }
+
+    /**
+     * Генерирует UUID
+     */
+    protected function generateUuid(): string
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 }
+

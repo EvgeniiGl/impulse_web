@@ -6,7 +6,7 @@ import {
     registerUser,
     clearError,
     RegisterCredentials,
-} from '../store/slices/authSlice';
+} from '@store/auth/authSlice.ts';
 import {useTranslation} from "react-i18next";
 import Header from "@modules/Header.tsx";
 

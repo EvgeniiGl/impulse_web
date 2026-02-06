@@ -5,10 +5,10 @@ import MyPage from './pages/MyPage';
 import LoginPage from './pages/LoginPage';
 import CreatePage from "@pages/CreatePage.tsx";
 import RegisterPage from "@pages/RegisterPage.tsx";
-import {initializeAuth, selectAuthToken, refreshAccessToken} from '@store/slices/authSlice';
+import {initializeAuth, selectAuthToken, refreshAccessToken} from '@store/auth/authSlice.ts';
 import {isTokenExpired} from "@/utils/tokenUtils.ts";
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
-import React, {useEffect} from 'react';
+import {useEffect} from 'react';
 
 function App() {
     const dispatch = useAppDispatch();

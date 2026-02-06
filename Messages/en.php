@@ -30,4 +30,8 @@ return [
     'Password must be at least 8 characters'                                                    => 'Password must be at least 8 characters',
     'Password must not exceed 72 characters'                                                    => 'Password must not exceed 72 characters',
     'Password must contain at least one uppercase letter, one lowercase letter, and one number' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+    'Page not found'                                                                            => 'Page not found',
+    'The page you are looking for does not exist or has been removed'                           => 'The page you are looking for does not exist or has been removed',
+    'Please check the URL and try again'                                                        => 'Please check the URL and try again',
+    'Back to home'                                                                              => 'Back to home',
 ];

@@ -1,7 +1,11 @@
 import ApiClient from "@/api/api";
-import {Card} from "@store/slices/cardSlice.ts";
 import {config} from "@api/api_config.ts";
-import {AccessType} from "@types/types.ts";
+import {AccessType, Card} from "@store/card/cardSlice.ts";
+
+export interface CreateCardResponse {
+    data: Card;
+    success?: boolean;
+}
 
 export interface CreateCardRequest {
     title: string;
@@ -9,11 +13,16 @@ export interface CreateCardRequest {
     creator_id: string;
     access_type: AccessType;
     is_active: boolean;
+    collection_ids: string[];
+    file: File | null;
 }
 
-export interface CreateCardResponse {
-    data: Card;
-    success?: boolean;
+export interface UpdateCardRequest {
+    title?: string;
+    description?: string | null;
+    access_type?: AccessType;
+    is_active?: boolean;
+    collection_ids: string[];
 }
 
 export class Api extends ApiClient {
@@ -42,8 +51,7 @@ export class Api extends ApiClient {
                 return response;
             }
         } catch (exception) {
-            console.error(exception);
-            return exception;
+            throw exception
         }
     }
 }

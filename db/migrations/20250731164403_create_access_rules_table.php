@@ -33,6 +33,7 @@ final class CreateAccessRulesTable extends AbstractMigration
             CREATE INDEX idx_access_rules_card_id ON access_rules(card_id);
             CREATE INDEX idx_access_rules_user_id ON access_rules(user_id);
             CREATE INDEX idx_access_rules_permission ON access_rules(permission);
+            CREATE INDEX idx_access_rules_composite ON access_rules(card_id, user_id);
         ";
 
         $this->execute($sql);

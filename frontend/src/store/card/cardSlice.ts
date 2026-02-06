@@ -1,6 +1,8 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {CardsApi, CreateCardRequest, CreateCardResponse} from "@/api/cardsApi.ts";
-import {AccessType} from "@types/types.ts";
+import {CardsApi, CreateCardRequest, CreateCardResponse} from "@api/cardsApi.ts";
+import {CollectionsApi} from "@api/collectionsApi.ts";
+
+export type AccessType = 'private' | 'public' | 'shared';
 
 export interface Card {
     id: string;
@@ -17,6 +19,16 @@ export interface Card {
     original_name: string;
 }
 
+export interface Collection {
+    id: string;
+    name: string;
+    creator_id: string;
+    access_type: AccessType;
+    is_active: boolean;
+}
+
+export type CreateCollectionInput = Omit<Collection, 'id'>;
+
 interface CardState {
     cards: Card[];
     currentCard: Card | null;
@@ -26,6 +38,8 @@ interface CardState {
     isDeleting: boolean;
     error: string | null;
     success: string | null;
+    collectionsLoading: boolean;
+    collections: Collection[];
 }
 
 const initialState: CardState = {
@@ -37,6 +51,8 @@ const initialState: CardState = {
     isDeleting: false,
     error: null,
     success: null,
+    collectionsLoading: false,
+    collections: [],
 };
 
 // Создание карточки
@@ -47,6 +63,22 @@ export const createCard = createAsyncThunk(
             const response = await CardsApi.create(data);
             if (!response) {
                 return rejectWithValue('Failed to create card');
+            }
+
+            return response;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
+export const myCollections = createAsyncThunk(
+    'collections/my',
+    async (_, {rejectWithValue}) => {  // Используйте _ для неиспользуемого параметра
+        try {
+            const response = await CollectionsApi.my();
+            if (!response) {
+                return rejectWithValue('Failed to fetch collections');
             }
 
             return response;

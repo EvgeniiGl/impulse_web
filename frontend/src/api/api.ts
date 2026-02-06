@@ -2,7 +2,7 @@ import Axios, {AxiosInstance, AxiosRequestConfig, AxiosError, InternalAxiosReque
 import {IApiConfiguration} from './api_config';
 import {showToast} from "@components/Toast/Toast.tsx";
 import {store} from '@/store/store.ts'; // Импорт вашего Redux store
-import {refreshAccessToken} from '@/store/slices/authSlice';
+import {refreshAccessToken} from '@store/auth/authSlice.ts';
 
 export interface IApiClient {
     post<TRequest, TResponse>(

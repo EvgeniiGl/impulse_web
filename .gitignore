@@ -7,3 +7,5 @@ composer.lock
 phinx.yml
 minio
 public/bundle
+storage/img
+public/img
