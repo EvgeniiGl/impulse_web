@@ -53,5 +53,28 @@
 
 .border-primary {
     border: 1px solid var(--text-primary);
-
 }
+
+/*.react-select__control {*/
+/*    @apply border-gray-300;*/
+/*}*/
+
+/*.react-select__control--is-focused {*/
+/*    @apply border-blue-500 ring-2 ring-blue-200;*/
+/*}*/
+
+/*.react-select__multi-value {*/
+/*    @apply bg-blue-100 rounded-full;*/
+/*}*/
+
+/*.react-select__multi-value__label {*/
+/*    @apply text-blue-800 font-medium;*/
+/*}*/
+
+/*.react-select__option--is-focused {*/
+/*    @apply bg-blue-50;*/
+/*}*/
+
+/*.react-select__option--is-selected {*/
+/*    @apply bg-blue-100 text-blue-800;*/
+/*}*/

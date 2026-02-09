@@ -3,12 +3,13 @@ import HomePage from './pages/HomePage';
 import TodayPage from './pages/TodayPage';
 import MyPage from './pages/MyPage';
 import LoginPage from './pages/LoginPage';
-import CreatePage from "@pages/CreatePage.tsx";
+import CreateCollectionPage from "@pages/CreateCollectionPage.tsx";
 import RegisterPage from "@pages/RegisterPage.tsx";
 import {initializeAuth, selectAuthToken, refreshAccessToken} from '@store/auth/authSlice.ts';
 import {isTokenExpired} from "@/utils/tokenUtils.ts";
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
 import {useEffect} from 'react';
+import CreateCardPage from "@pages/CreateCardPage.tsx";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -29,7 +30,8 @@ function App() {
                     <Route path="/today" element={<TodayPage/>}/>
                     <Route path="/my" element={<MyPage/>}/>
                     <Route path="/login" element={<LoginPage/>}/>
-                    <Route path="/create" element={<CreatePage/>}/>
+                    <Route path="/card/create" element={<CreateCardPage/>}/>
+                    <Route path="/collection/create" element={<CreateCollectionPage/>}/>
                     <Route path="/register" element={<RegisterPage/>}/>
                 </Routes>
             </div>

@@ -6,7 +6,9 @@
     "my": "My",
     "login": "Login",
     "create": "Create",
-    "logout": "Logout"
+    "logout": "Logout",
+    "createCard": "Card",
+    "createCollection": "Collection"
   },
   "home": {
     "welcome": "Welcome to Our App",
@@ -98,11 +100,15 @@
     "creating": "Creating...",
     "success": "Card created successfully",
     "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Enter description (optional)",
+    "descriptionPlaceholder": "Enter description",
     "publicDesc": "All users",
     "publicInfo": "The card will be visible to all users",
     "privateDesc": "Only you",
     "privateInfo": "The card is visible only to you",
-    "fileSelected": "File selected"
+    "fileSelected": "File selected",
+    "collections": "Collections",
+    "optional": "Optional",
+    "noCollections": "Collections not found",
+    "createCollection": "Create сollection"
   }
 }

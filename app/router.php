@@ -89,7 +89,12 @@ return function (): Router {
         'action'     => 'index'
     ]);
 
-    $router->add('/create', [
+    $router->add('/card/create', [
+        'controller' => 'index',
+        'action'     => 'index'
+    ]);
+
+    $router->add('/collection/create', [
         'controller' => 'index',
         'action'     => 'index'
     ]);

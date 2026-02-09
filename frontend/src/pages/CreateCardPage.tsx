@@ -5,10 +5,19 @@ import React, {useEffect, useState} from "react";
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
-import {createCard, clearError, clearSuccess, myCollections, AccessType} from "@store/card/cardSlice.ts";
+import {
+    createCard,
+    clearError,
+    clearSuccess,
+    myCollections,
+    AccessType,
+    createCollection,
+    setSelectedCollections
+} from "@store/card/cardSlice.ts";
 import {CreateCardRequest} from "@api/cardsApi.ts";
+import CollectionSelect from "@components/Form/Select/CollectionSelect.tsx";
 
-export default function CreatePage() {
+export default function CreateCardPage() {
     const {t} = useTranslation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
@@ -25,13 +34,22 @@ export default function CreatePage() {
     const [preview, setPreview] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-    const {isCreating, error, success, collectionsLoading, collections} = useAppSelector((state) => state.card);
+    const {
+        isCreating,
+        error,
+        success,
+        collectionsLoading,
+        collections,
+        selectedCollections
+    } = useAppSelector((state) => state.card);
     const {isAuthenticated, user} = useAppSelector((state) => state.auth);
 
     // Проверка авторизации
     useEffect(() => {
         if (!isAuthenticated) {
             navigate('/login');
+        } else {
+            dispatch(myCollections())
         }
     }, [isAuthenticated, navigate]);
 
@@ -53,17 +71,13 @@ export default function CreatePage() {
         };
     }, [dispatch]);
 
-    useEffect(() => {
-        dispatch(myCollections())
-    }, []);
-
-    const handleCollectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-        setFormData(prev => ({
-            ...prev,
-            collection_ids: selectedOptions
-        }));
-    };
+    // const handleCollectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         collection_ids: selectedOptions
+    //     }));
+    // };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
@@ -163,6 +177,18 @@ export default function CreatePage() {
         return Object.keys(errors).length === 0;
     };
 
+    const handleCreateCollection = async (name: string) => {
+        try {
+            await dispatch(createCollection({
+                name: name,
+                access_type: 'private'
+            }));
+        } catch (error) {
+            console.error('Ошибка создания коллекции:', error);
+            throw error;
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         dispatch(clearError());
@@ -257,7 +283,7 @@ export default function CreatePage() {
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
-                                        placeholder={t('createCard.descriptionPlaceholder') || 'Введите описание (опционально)'}
+                                        placeholder={t('createCard.descriptionPlaceholder') || 'Введите описание'}
                                     />
                                     {validationErrors.description && (
                                         <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
@@ -269,81 +295,14 @@ export default function CreatePage() {
 
                                 {/* Коллекции */}
                                 <div>
-                                    <label
-                                        htmlFor="collections"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        {t('createCard.collections') || 'Коллекции'}
-                                        <span
-                                            className="text-gray-400 ml-1">({t('createCard.optional') || 'необязательно'})</span>
-                                    </label>
-
-                                    {collectionsLoading ? (
-                                        <div className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                                            <p className="text-sm text-gray-500">{t('common.loading') || 'Загрузка...'}</p>
-                                        </div>
-                                    ) : collections.length === 0 ? (
-                                        <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
-                                            <p className="text-sm text-gray-500">
-                                                {t('createCard.noCollections') || 'У вас пока нет коллекций'}
-                                            </p>
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate('/collections/create')}
-                                                className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                                            >
-                                                {t('createCard.createCollection') || 'Создать коллекцию'}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <select
-                                                id="collections"
-                                                name="collections"
-                                                multiple
-                                                value={formData.collection_ids}
-                                                onChange={handleCollectionChange}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition min-h-[120px]"
-                                            >
-                                                {collections.map((collection) => (
-                                                    <option key={collection.id} value={collection.id}>
-                                                        {collection.name}
-                                                        {collection.access_type === 'public' && ' 🌐'}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <p className="mt-1 text-xs text-gray-500">
-                                                {t('createCard.collectionsHint') || 'Удерживайте Ctrl (Cmd на Mac) для выбора нескольких коллекций'}
-                                            </p>
-                                            {formData.collection_ids.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                    {formData.collection_ids.map(id => {
-                                                        const collection = collections.find(c => c.id === id);
-                                                        return collection ? (
-                                                            <span
-                                                                key={id}
-                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                                                            >
-                                                                {collection.name}
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setFormData(prev => ({
-                                                                            ...prev,
-                                                                            collection_ids: prev.collection_ids.filter(cId => cId !== id)
-                                                                        }));
-                                                                    }}
-                                                                    className="ml-2 text-blue-600 hover:text-blue-800"
-                                                                >
-                                                                ×
-                                                              </button>
-                                                            </span>
-                                                        ) : null;
-                                                    })}
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
+                                    <CollectionSelect
+                                        collections={collections}
+                                        collectionsLoading={collectionsLoading}
+                                        selectedCollections={selectedCollections}
+                                        onCollectionsChange={setSelectedCollections}
+                                        onCreateCollection={handleCreateCollection}
+                                        t={t}
+                                    />
                                 </div>
 
                                 {/* Тип доступа */}

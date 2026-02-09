@@ -6,7 +6,9 @@
     "my": "Мое",
     "login": "Вход",
     "create": "Создать",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "createCard": "Карточку",
+    "createCollection": "Коллекцию"
   },
   "home": {
     "welcome": "Добро пожаловать в наше приложение",
@@ -89,7 +91,7 @@
     "titleLabel": "Название карточки",
     "titlePlaceholder": "Введите название",
     "descriptionLabel": "Описание",
-    "descriptionPlaceholder": "Введите описание (опционально)",
+    "descriptionPlaceholder": "Введите описание",
     "accessType": "Тип доступа",
     "public": "Публичная",
     "publicDesc": "Все пользователи",
@@ -101,6 +103,10 @@
     "uploadText": "Нажмите для загрузки изображения",
     "fileSelected": "Файл выбран",
     "create": "Создать карточку",
-    "creating": "Создание..."
+    "creating": "Создание...",
+    "collections": "Коллекции",
+    "optional": "Опционально",
+    "noCollections": "Коллекции не найдены",
+    "createCollection": "Добавить"
   }
 }

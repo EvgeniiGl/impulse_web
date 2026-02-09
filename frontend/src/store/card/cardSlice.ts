@@ -40,6 +40,7 @@ interface CardState {
     success: string | null;
     collectionsLoading: boolean;
     collections: Collection[];
+    selectedCollections: Collection[];
 }
 
 const initialState: CardState = {
@@ -53,6 +54,7 @@ const initialState: CardState = {
     success: null,
     collectionsLoading: false,
     collections: [],
+    selectedCollections: [],
 };
 
 // Создание карточки
@@ -88,6 +90,22 @@ export const myCollections = createAsyncThunk(
     }
 );
 
+export const createCollection = createAsyncThunk(
+    'collections',
+    async (data: { name: string, access_type: AccessType }, {rejectWithValue}) => {  // Используйте _ для неиспользуемого параметра
+        try {
+            const response = await CollectionsApi.create(data);
+            if (!response) {
+                return rejectWithValue('Failed to create collection');
+            }
+
+            return response;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
 const cardSlice = createSlice({
     name: 'card',
     initialState,
@@ -100,6 +118,9 @@ const cardSlice = createSlice({
         },
         resetCurrentCard: (state) => {
             state.currentCard = null;
+        },
+        setSelectedCollections: (state: CardState, action: PayloadAction<Collection[]>) => {
+            state.selectedCollections = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -200,5 +221,5 @@ const cardSlice = createSlice({
     },
 });
 
-export const {clearError, clearSuccess, resetCurrentCard} = cardSlice.actions;
+export const {clearError, clearSuccess, resetCurrentCard, setSelectedCollections} = cardSlice.actions;
 export default cardSlice.reducer;

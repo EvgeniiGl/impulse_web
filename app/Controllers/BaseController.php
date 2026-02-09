@@ -27,7 +27,8 @@ class BaseController extends PhalconController
         '/my',
         '/today',
         '/login',
-        '/create',
+        '/card/create',
+        '/collection/create',
         '/register',
     ];
 
