@@ -2,10 +2,15 @@ import ApiClient from "@/api/api";
 import {config} from "@api/api_config.ts";
 import {AccessType, Collection} from "@store/card/cardSlice.ts";
 
+export interface MyCollectionsResponse {
+    data: Collection[];
+    success?: boolean;
+}
+
 export class Api extends ApiClient {
-    async my(): Promise<Collection[] | undefined> {
+    async my(): Promise<MyCollectionsResponse | undefined> {
         try {
-            const response = await this.get<Collection[]>(`${this.client.defaults.baseURL}/collections/my`);
+            const response = await this.get<MyCollectionsResponse>(`${this.client.defaults.baseURL}/collections/my`);
             if (response) {
                 return response;
             }

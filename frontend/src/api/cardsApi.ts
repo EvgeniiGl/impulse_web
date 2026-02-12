@@ -1,6 +1,6 @@
 import ApiClient from "@/api/api";
 import {config} from "@api/api_config.ts";
-import {AccessType, Card} from "@store/card/cardSlice.ts";
+import {AccessType, Card, Collection} from "@store/card/cardSlice.ts";
 
 export interface CreateCardResponse {
     data: Card;

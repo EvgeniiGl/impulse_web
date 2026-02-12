@@ -152,22 +152,28 @@ class Collection extends Model
     public function getUserCollections(User $user): array
     {
         $phql = "
-            SELECT 
-                c.*,
-                u.name as creator_name,
-                COUNT(DISTINCT cc.card_id) as card_count
-            FROM App\Models\Collection c
-            LEFT JOIN App\Models\User u ON c.creator_id = u.id
-            LEFT JOIN App\Models\CollectionCard cc ON c.id = cc.collection_id
-            WHERE c.creator_id = :userId: 
-               OR c.id IN (
-                   SELECT uc.collection_id 
-                   FROM App\Models\UserCollection uc 
-                   WHERE uc.user_id = :userId:
-               )
-            GROUP BY c.id, u.name
-            ORDER BY c.created_at DESC
-        ";
+        SELECT 
+            c.id,
+            c.name,
+            c.creator_id,
+            c.access_type,
+            c.is_active,
+            c.created_at,
+            c.updated_at,
+            u.name as creator_name,
+            COUNT(DISTINCT cc.card_id) as card_count
+        FROM App\Models\Collection c
+        LEFT JOIN App\Models\User u ON c.creator_id = u.id
+        LEFT JOIN App\Models\CollectionCard cc ON c.id = cc.collection_id
+        WHERE c.creator_id = :userId: 
+           OR c.id IN (
+               SELECT uc.collection_id 
+               FROM App\Models\UserCollection uc 
+               WHERE uc.user_id = :userId:
+           )
+        GROUP BY c.id, c.name, c.creator_id, c.access_type, c.is_active, c.created_at, c.updated_at, u.name
+        ORDER BY c.created_at DESC
+    ";
 
         $query = $this->getModelsManager()->createQuery($phql);
         return $query->execute(['userId' => $user->id])->toArray();

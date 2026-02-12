@@ -29,12 +29,14 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                                                                disabled = false
                                                            }) => {
     const [options, setOptions] = useState<SelectOption[]>([]);
-
+    console.log("log--",
+        "\ncollections--", collections,
+    );
     // Преобразуем коллекции в опции для react-select
     useEffect(() => {
         const collectionOptions = collections.map(collection => ({
             value: collection.id,
-            label: `${collection.name}${collection.access_type === 'public' ? ' 🌐' : ''}`
+            label: `${collection.name}${collection.access_type === 'public' ? ' 🌎' : ''}`
         }));
         setOptions(collectionOptions);
     }, [collections]);
@@ -42,7 +44,7 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
     // Преобразуем выбранные коллекции в формат react-select
     const selectedOptions = selectedCollections.map(collection => ({
         value: collection.id,
-        label: `${collection.name}${collection.access_type === 'public' ? ' 🌐' : ''}`
+        label: `${collection.name}${collection.access_type === 'public' ? ' 🌎' : ''}`
     }));
 
     const handleChange = (
@@ -158,7 +160,7 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                                         className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-blue-100 text-blue-800"
                                     >
                                         {collection.name}
-                                        {collection.access_type === 'public' && ' 🌐'}
+                                        {collection.access_type === 'public' && ' 🌎'}
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveCollection(collection.id)}

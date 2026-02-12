@@ -1,6 +1,6 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {CardsApi, CreateCardRequest, CreateCardResponse} from "@api/cardsApi.ts";
-import {CollectionsApi} from "@api/collectionsApi.ts";
+import {CollectionsApi, MyCollectionsResponse} from "@api/collectionsApi.ts";
 
 export type AccessType = 'private' | 'public' | 'shared';
 
@@ -25,6 +25,8 @@ export interface Collection {
     creator_id: string;
     access_type: AccessType;
     is_active: boolean;
+    card_count: number;
+    creator_name: string;
 }
 
 export type CreateCollectionInput = Omit<Collection, 'id'>;
@@ -144,6 +146,18 @@ const cardSlice = createSlice({
                 state.isCreating = false;
                 state.error = action.payload as string;
                 state.success = null;
+            });
+
+        builder
+            .addCase(myCollections.pending, (state: CardState) => {
+                state.isLoading = true;
+            })
+            .addCase(myCollections.fulfilled, (state: CardState, action: PayloadAction<MyCollectionsResponse>) => {
+                state.isLoading = false;
+                state.collections = action.payload.data;
+            })
+            .addCase(myCollections.rejected, (state: CardState, action) => {
+                state.isLoading = false;
             });
 
         // // Fetch Cards

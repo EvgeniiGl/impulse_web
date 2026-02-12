@@ -16,6 +16,7 @@ import {
 } from "@store/card/cardSlice.ts";
 import {CreateCardRequest} from "@api/cardsApi.ts";
 import CollectionSelect from "@components/Form/Select/CollectionSelect.tsx";
+import {defaultSerializeQueryArgs} from "@reduxjs/toolkit/query";
 
 export default function CreateCardPage() {
     const {t} = useTranslation();
@@ -175,18 +176,6 @@ export default function CreateCardPage() {
 
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
-    };
-
-    const handleCreateCollection = async (name: string) => {
-        try {
-            await dispatch(createCollection({
-                name: name,
-                access_type: 'private'
-            }));
-        } catch (error) {
-            console.error('Ошибка создания коллекции:', error);
-            throw error;
-        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
