@@ -300,7 +300,6 @@ export default function CreateCardPage() {
                                         collectionsLoading={collectionsLoading}
                                         selectedCollections={selectedCollections}
                                         onCollectionsChange={setSelectedCollections}
-                                        onCreateCollection={handleCreateCollection}
                                         t={t}
                                     />
                                 </div>

@@ -4,8 +4,6 @@ use App\Factories\StorageServiceFactory;
 use App\Services\CardService;
 
 return function () {
-    $config = $this->getConfig();
-
     $config = [
         'driver'     => 'local',
         'base_path'  => '/var/www',

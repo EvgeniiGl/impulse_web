@@ -1,4 +1,4 @@
-import {NavLink} from "react-router-dom";
+import {NavLink, useMatch, useLocation} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {useState, useRef, useEffect} from "react";
 import {HomeIcon} from "@UI/icons/HomeIcon.tsx";
@@ -6,9 +6,9 @@ import {CalendarIcon} from "@UI/icons/CalendarIcon.tsx";
 import {UserIcon} from "@UI/icons/UserIcon.tsx";
 import {DocumentIcon} from "@UI/icons/DocumentIcon.tsx";
 import {CollectionIcon} from "@UI/icons/CollectionIcon.tsx";
-import {CheckIcon} from "@UI/icons/CheckIcon.tsx";
 import {ChevronIcon} from "@UI/icons/ChevronIcon.tsx";
 import {PlusIcon} from "@UI/icons/PlusIcon.tsx";
+import css from './Menu.module.css'
 
 const Menu = () => {
     const {t} = useTranslation();
@@ -27,9 +27,13 @@ const Menu = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const isCreateActive = useMatch("/card/create") ||
+        useMatch("/collection/create");
+    console.log("log--",
+        "\nisCreateActive--", isCreateActive,
+    );
     const menuItems = [
         {
-            path: "/",
             path: "/",
             label: t('menu.home'),
             icon: <HomeIcon/>
@@ -83,7 +87,11 @@ const Menu = () => {
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
-                        className="w-full rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-between space-x-1"
+                        className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-between space-x-1 ${
+                            isCreateActive
+                                ? 'border-primary font-semibold'
+                                : `hover:bg-gray-50 border-0 ${css.btn_create}`
+                        }`}
                     >
                         <div className="flex items-center space-x-1">
                             <PlusIcon/>
@@ -91,32 +99,25 @@ const Menu = () => {
                         </div>
                         <ChevronIcon isOpen={isCreateMenuOpen}/>
                     </button>
-
                     {/* Выпадающий список */}
                     {isCreateMenuOpen && (
                         <div
-                            className="absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                            className="absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                             {createSubmenuItems.map((item) => (
                                 <NavLink
                                     key={item.path}
                                     to={item.path}
                                     onClick={() => setIsCreateMenuOpen(false)}
                                     className={(st) => {
-                                        return `px-3 py-2 text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
+                                        return `px-3 py-2 text-sm font-medium transition-colors duration-200 flex items-center space-x-2  rounded-lg ${
                                             st.isActive
-                                                ? 'bg-indigo-50 font-semibold'
+                                                ? 'border-primary bg-indigo-50 font-semibold'
                                                 : 'hover:bg-gray-50'
                                         }`
                                     }}
                                 >
                                     {item.icon}
                                     <span>{item.label}</span>
-                                    {/* Галочка для активного пункта */}
-                                    <NavLink to={item.path}>
-                                        {({isActive}) => isActive && (
-                                            <CheckIcon className="ml-auto text-indigo-600"/>
-                                        )}
-                                    </NavLink>
                                 </NavLink>
                             ))}
                         </div>

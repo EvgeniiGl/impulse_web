@@ -107,6 +107,7 @@
     "collections": "Коллекции",
     "optional": "Опционально",
     "noCollections": "Коллекции не найдены",
+    "noCollectionsAvailable": "Нет доступных коллекций",
     "createCollection": "Добавить"
   }
 }

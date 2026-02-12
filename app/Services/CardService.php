@@ -52,11 +52,12 @@ class CardService extends Injectable
 
             if ($request->hasFile()) {
                 $file         = $request->getFile();
+                $isPublic     = $card->access_type === 'public';
                 $uploadResult = $this->storageService->uploadFile(
                     $file->getTempName(),
                     $file->getName(),
                     $creator->id,
-                    $card->access_type === 'public',
+                    $isPublic
                 );
 
                 $card->url           = $uploadResult['url'];
@@ -81,12 +82,11 @@ class CardService extends Injectable
             }
 
             $this->db->commit();
-            
+
             return $card;
         } catch (Exception $e) {
             $this->db->rollback();
-
-            // Если был загружен файл, удаляем его из MinIO
+            // Если был загружен файл, удаляем его
             if (isset($uploadResult['object_path'])) {
                 $this->storageService->deleteFile($uploadResult['object_path']);
             }
@@ -94,6 +94,7 @@ class CardService extends Injectable
             throw new Exception('Failed to create card: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Удаляет карточку
@@ -199,5 +200,35 @@ class CardService extends Injectable
 
             throw new Exception('Failed to update card: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Получает карточку по ID с проверкой доступа
+     */
+    public function getCardWithAccess(string $cardId, ?User $user): ?Card
+    {
+        $card = Card::findFirst([
+            'conditions' => 'id = :id:',
+            'bind'       => ['id' => $cardId]
+        ]);
+
+        if (!$card) {
+            return null;
+        }
+
+        // Проверяем доступ
+        if (!$card->hasAccess($user)) {
+            throw new Exception('Access denied');
+        }
+
+        return $card;
+    }
+
+    /**
+     * Получает все доступные карточки пользователя
+     */
+    public function getUserAccessibleCards(User $user): array
+    {
+        return $user->getAllAccessibleCards();
     }
 }

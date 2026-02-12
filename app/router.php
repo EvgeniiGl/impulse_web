@@ -109,6 +109,11 @@ return function (): Router {
         'action'     => 'index'
     ]);
 
+    $router->addGet('/download/signed', [
+        'controller' => 'download',
+        'action'     => 'signed'
+    ]);
+
 // collections маршруты
 // Создаем группу отдельно
     $collectionGroup = new RouterGroup([

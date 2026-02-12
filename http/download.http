@@ -1,0 +1,9 @@
+GET {{url}}/download/signed?
+    path=storage%2Fimg%2F3b58fe5a-7c4c-44b3-b4b5-8cea42a5193d_831ac73f-6a3e-4cab-9d3d-ed6cd4a6f10a_1770882917.png&
+    token=c01bac6fcb2dfbc43a70fee67aeb9887&signature=9a4ffc2681b2dbff58368d1573259a6e5ae0837db37216f1204b0b6c943ea5d1
+Authorization: Bearer {{token}}
+Accept-Language: ru
+
+###
+
+#http://localhost:9501/download?path=storage%2Fimg%2F3b58fe5a-7c4c-44b3-b4b5-8cea42a5193d_ec7ce0cb-ee1f-49cb-bb6a-376f7b2137cd_1770798004.png&token=abf6f58cdd391b5f99944e811fe6e77f&expires=1770884404&signature=328be9aaa750f123c289e74e01b96610d9f7fe1db4dd828681d547adc3581eb0

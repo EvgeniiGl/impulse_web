@@ -109,6 +109,7 @@
     "collections": "Collections",
     "optional": "Optional",
     "noCollections": "Collections not found",
+    "noCollectionsAvailable": "No collections available",
     "createCollection": "Create сollection"
   }
 }
