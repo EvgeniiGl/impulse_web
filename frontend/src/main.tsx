@@ -2,8 +2,8 @@ import React from 'react';
 import {createRoot} from 'react-dom/client'
 import './styles/colors.css'
 import './styles/scrollbar.css'
-import './index.css'
 import './App.css'
+import './index.css'
 import App from './App.tsx'
 import './i18n/i18n';
 import {store} from '@store/store';

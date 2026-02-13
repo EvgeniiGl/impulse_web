@@ -1,6 +1,7 @@
 import {useRef, useState, useEffect} from 'react';
 import {Collection} from "@store/card/cardSlice.ts";
 import {useTranslation} from 'react-i18next';
+import css from './CollectionTabs.module.css'
 
 interface CollectionTabsProps {
     collections: Collection[];
@@ -14,7 +15,6 @@ export default function CollectionTabs({collections, selectedId, onSelect, isLoa
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
-
     const checkScroll = () => {
         if (scrollContainerRef.current) {
             const {scrollLeft, scrollWidth, clientWidth} = scrollContainerRef.current;
@@ -77,30 +77,37 @@ export default function CollectionTabs({collections, selectedId, onSelect, isLoa
                         onClick={() => onSelect(null)}
                         className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
                             selectedId === null
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? `${css.tabBtnActive}`
+                                : `${css.tabBtn}`
                         }`}
                     >
                         {t('collections.general') || 'Общая'}
                     </button>
 
                     {/* Остальные коллекции */}
-                    {collections.map((collection) => (
-                        <button
-                            key={collection.id}
-                            onClick={() => onSelect(collection.id)}
-                            className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                                selectedId === collection.id
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            {collection.name}
-                            <span className="ml-2 text-xs opacity-75">
+                    {collections.map((collection) => {
+
+                        console.log("log--",
+                            "\nselectedId--", selectedId,
+                            "\nselectedId--", collection.id,
+                        );
+                        return (
+                            <button
+                                key={collection.id}
+                                onClick={() => onSelect(collection.id)}
+                                className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
+                                    selectedId === collection.id
+                                        ? `${css.tabBtnActive}`
+                                        : `${css.tabBtn}`
+                                }`}
+                            >
+                                {collection.name}
+                                <span className="ml-2 text-xs opacity-75">
                                 ({collection.card_count})
                             </span>
-                        </button>
-                    ))}
+                            </button>
+                        )
+                    })}
                 </div>
 
                 {/* Правая кнопка прокрутки */}

@@ -1,0 +1,9 @@
+.tabBtn {
+    background: var(--color-white);
+    color: var(--color-primary);
+}
+
+.tabBtnActive {
+    color: var(--text-white);
+    background: var(--color-primary);
+}

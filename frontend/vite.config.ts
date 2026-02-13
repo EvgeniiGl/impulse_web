@@ -10,9 +10,9 @@ export default defineConfig(({mode}) => {
 
     return {
         plugins: [
+            tailwindcss(),
             react(),
             svgr(),
-            tailwindcss(),
         ],
         envDir: process.cwd(),
         resolve: {
