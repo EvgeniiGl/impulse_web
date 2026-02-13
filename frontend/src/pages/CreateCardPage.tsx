@@ -11,12 +11,10 @@ import {
     clearSuccess,
     myCollections,
     AccessType,
-    createCollection,
     setSelectedCollections
 } from "@store/card/cardSlice.ts";
 import {CreateCardRequest} from "@api/cardsApi.ts";
 import CollectionSelect from "@components/Form/Select/CollectionSelect.tsx";
-import {defaultSerializeQueryArgs} from "@reduxjs/toolkit/query";
 
 export default function CreateCardPage() {
     const {t} = useTranslation();

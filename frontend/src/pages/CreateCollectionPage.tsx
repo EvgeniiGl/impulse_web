@@ -106,7 +106,6 @@ export default function CreateCollectionPage() {
             await dispatch(createCollection({
                 name: formData.name.trim(),
                 access_type: formData.access_type,
-                creator_id: user.id
             })).unwrap();
         } catch (error) {
             console.error('Collection creation failed:', error);

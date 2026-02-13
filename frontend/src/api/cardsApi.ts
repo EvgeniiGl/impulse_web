@@ -1,6 +1,6 @@
 import ApiClient from "@/api/api";
 import {config} from "@api/api_config.ts";
-import {AccessType, Card, Collection} from "@store/card/cardSlice.ts";
+import {AccessType, Card} from "@store/card/cardSlice.ts";
 
 export interface CreateCardResponse {
     data: Card;
@@ -23,6 +23,16 @@ export interface UpdateCardRequest {
     access_type?: AccessType;
     is_active?: boolean;
     collection_ids: string[];
+}
+
+export interface GetCardsResponse {
+    success: boolean;
+    data: {
+        cards: Card[];
+        total: number;
+        page: number;
+        per_page: number;
+    };
 }
 
 export class Api extends ApiClient {
@@ -52,6 +62,28 @@ export class Api extends ApiClient {
             }
         } catch (exception) {
             throw exception
+        }
+    }
+
+    async getCards(page: number = 1, perPage: number = 12): Promise<GetCardsResponse | undefined> {
+        try {
+            const response = await this.get<GetCardsResponse>(
+                `${this.client.defaults.baseURL}/cards?page=${page}&per_page=${perPage}`
+            );
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    async getCardsByCollection(collectionId: string, page: number = 1, perPage: number = 12): Promise<GetCardsResponse | undefined> {
+        try {
+            const response = await this.get<GetCardsResponse>(
+                `${this.client.defaults.baseURL}/collections/${collectionId}?page=${page}&per_page=${perPage}`
+            );
+            return response;
+        } catch (exception) {
+            throw exception;
         }
     }
 }

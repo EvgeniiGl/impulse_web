@@ -1,13 +1,13 @@
-import {NavLink, useMatch, useLocation} from "react-router-dom";
+import {NavLink, useMatch} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {useState, useRef, useEffect} from "react";
-import {HomeIcon} from "@UI/icons/HomeIcon.tsx";
-import {CalendarIcon} from "@UI/icons/CalendarIcon.tsx";
-import {UserIcon} from "@UI/icons/UserIcon.tsx";
-import {DocumentIcon} from "@UI/icons/DocumentIcon.tsx";
-import {CollectionIcon} from "@UI/icons/CollectionIcon.tsx";
-import {ChevronIcon} from "@UI/icons/ChevronIcon.tsx";
-import {PlusIcon} from "@UI/icons/PlusIcon.tsx";
+import {HomeIcon} from "@ui/icons/HomeIcon.tsx";
+import {CalendarIcon} from "@ui/icons/CalendarIcon.tsx";
+import {UserIcon} from "@ui/icons/UserIcon.tsx";
+import {DocumentIcon} from "@ui/icons/DocumentIcon.tsx";
+import {CollectionIcon} from "@ui/icons/CollectionIcon.tsx";
+import {ChevronIcon} from "@ui/icons/ChevronIcon.tsx";
+import {PlusIcon} from "@ui/icons/PlusIcon.tsx";
 import css from './Menu.module.css'
 
 const Menu = () => {

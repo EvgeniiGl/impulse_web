@@ -20,7 +20,7 @@ export default defineConfig(function (_a) {
                 '@assets': path.resolve(__dirname, './src/assets'),
                 '@modules': path.resolve(__dirname, './src/modules'),
                 '@components': path.resolve(__dirname, './src/components'),
-                '@UI': path.resolve(__dirname, './src/UI'),
+                '@ui': path.resolve(__dirname, './src/ui'),
                 '@pages': path.resolve(__dirname, './src/pages'),
                 '@base': path.resolve(__dirname, './src/base'),
                 '@store': path.resolve(__dirname, './src/store'),

@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Header from "@modules/Header.tsx";
 import React, {useEffect, useState} from "react";
 import {clearError, RegisterCredentials, loginUser, setErrors} from "@store/auth/authSlice.ts";
@@ -15,7 +15,6 @@ export default function LoginPage() {
     const {t} = useTranslation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const location = useLocation();
 
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [formData, setFormData] = useState<FromData>({

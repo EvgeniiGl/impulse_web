@@ -50,8 +50,8 @@
       "@modules/*": [
         "./src/modules/*"
       ],
-      "@UI/*": [
-        "./src/UI/*"
+      "@ui/*": [
+        "./src/ui/*"
       ],
       "@pages/*": [
         "./src/pages/*"
