@@ -8,7 +8,13 @@ export default {
         extend: {
             fontFamily: {
                 comfortaa: ['Comfortaa', 'cursive'],
-                sans: ['Inter', 'system-ui', 'sans-serif'], // для основного текста
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+                'caveat': ['Caveat', 'cursive'],
+                'pacifico': ['Pacifico', 'cursive'],
+                'dancing': ['Dancing Script', 'cursive'],
+                'marck': ['Marck Script', 'cursive'],
+                'great-vibes': ['Great Vibes', 'cursive'],
+                'cormorant': ['Cormorant', 'serif'],
             },
         },
     },

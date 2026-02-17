@@ -14,6 +14,7 @@ export interface Card {
     creator_id: string;
     access_type: AccessType;
     is_active: boolean;
+    show_title_on_image: boolean;
     created_at: string;
     updated_at: string;
     object_path: string;

@@ -44,11 +44,12 @@ class CardService extends Injectable
         $this->db->begin();
 
         try {
-            $card              = new Card();
-            $card->title       = $request->getTitle();
-            $card->description = $request->getDescription() ?? '';
-            $card->access_type = $request->getAccessType();
-            $card->creator_id  = $creator->id;
+            $card                      = new Card();
+            $card->title               = $request->getTitle();
+            $card->description         = $request->getDescription() ?? '';
+            $card->access_type         = $request->getAccessType();
+            $card->show_title_on_image = $request->getShowTitleOnImage();
+            $card->creator_id          = $creator->id;
 
             if ($request->hasFile()) {
                 $file         = $request->getFile();

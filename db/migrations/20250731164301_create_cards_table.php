@@ -19,6 +19,7 @@ final class CreateCardsTable extends AbstractMigration
                 creator_id UUID NOT NULL,
                 access_type access_type NOT NULL DEFAULT 'private',
                 is_active BOOLEAN NOT NULL DEFAULT true,
+                show_title_on_image BOOLEAN NOT NULL DEFAULT false,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 

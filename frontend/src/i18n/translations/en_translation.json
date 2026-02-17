@@ -133,7 +133,9 @@
     "noCollectionsAvailable": "No collections available",
     "createCollection": "Create collection",
     "selectCollections": "Select collections",
-    "addToCollections": "Add to collections"
+    "addToCollections": "Add to collections",
+    "showTitleOnImage": "Show title on image",
+    "titleWillBeShown": "Title will be shown"
   },
   "createCollection": {
     "title": "Create Collection",

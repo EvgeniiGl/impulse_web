@@ -37,6 +37,11 @@ class CreateCardRequest
         return $this->data['access_type'] ?? 'private';
     }
 
+    public function getShowTitleOnImage(): ?bool
+    {
+        return $this->data['show_title_on_image'] === 'true';
+    }
+
     public function getFile(): File
     {
         return $this->file;

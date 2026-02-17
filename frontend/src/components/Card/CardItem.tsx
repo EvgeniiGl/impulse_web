@@ -1,6 +1,7 @@
 import {useNavigate} from 'react-router-dom';
 import {Card} from "@store/store.ts";
 import {useState, useRef, useEffect} from 'react';
+import {LiaSignatureSolid} from "react-icons/lia";
 
 interface CardItemProps {
     card: Card;
@@ -9,19 +10,40 @@ interface CardItemProps {
 export default function CardItem({card}: CardItemProps) {
     const navigate = useNavigate();
     const [imageError, setImageError] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
+    const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+
     const descriptionRef = useRef<HTMLDivElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
     const [hasScroll, setHasScroll] = useState(false);
     const [cardHeight, setCardHeight] = useState(0);
+
+    // Закрытие описания при клике вне области карточки
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                isDescriptionOpen &&
+                cardRef.current &&
+                !cardRef.current.contains(event.target as Node)
+            ) {
+                setIsDescriptionOpen(false);
+                if (descriptionRef.current) {
+                    descriptionRef.current.scrollTop = 0;
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDescriptionOpen]);
 
     // Проверяем, есть ли прокрутка у описания
     useEffect(() => {
         const checkScroll = () => {
             if (descriptionRef.current) {
                 const element = descriptionRef.current;
-                // Проверяем только когда блок видимый
-                if (isHovered && element.scrollHeight > 0) {
+                if (isDescriptionOpen && element.scrollHeight > 0) {
                     const hasVerticalScroll = element.scrollHeight > element.clientHeight;
                     setHasScroll(hasVerticalScroll);
                 } else {
@@ -30,10 +52,7 @@ export default function CardItem({card}: CardItemProps) {
             }
         };
 
-        // Добавляем небольшую задержку для завершения анимации появления
         const timeout = setTimeout(checkScroll, 300);
-
-        // Наблюдаем за изменениями размера
         const resizeObserver = new ResizeObserver(checkScroll);
         if (descriptionRef.current) {
             resizeObserver.observe(descriptionRef.current);
@@ -43,7 +62,7 @@ export default function CardItem({card}: CardItemProps) {
             clearTimeout(timeout);
             resizeObserver.disconnect();
         };
-    }, [isHovered, card.description]);
+    }, [isDescriptionOpen, card.description]);
 
     useEffect(() => {
         if (cardRef.current) {
@@ -52,24 +71,20 @@ export default function CardItem({card}: CardItemProps) {
         }
     }, []);
 
+    const handleDescriptionToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsDescriptionOpen(!isDescriptionOpen);
+    };
+
     return (
         <div
             onClick={() => navigate(`/card/${card.id}`)}
             className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => {
-                setIsHovered(false);
-                // Сбрасываем прокрутку при скрытии
-                if (descriptionRef.current) {
-                    descriptionRef.current.scrollTop = 0;
-                }
-            }}
-            key={card.id}
             ref={cardRef}
         >
             {/* Контейнер с фиксированным соотношением 9:20 (вертикальное) */}
             <div className="relative w-full bg-gray-200 overflow-hidden"
-                 style={{aspectRatio: '9/20'}}>
+                 style={{aspectRatio: '9/16'}}>
                 <div className="absolute inset-0 flex items-center justify-center">
                     {card.url && !imageError ? (
                         <img
@@ -90,23 +105,40 @@ export default function CardItem({card}: CardItemProps) {
                         </div>
                     )}
 
-                    {/* Заголовок по центру изображения */}
-                    <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-                        <div className="bg-black/60 backdrop-blur-sm rounded-xl px-4 py-2 max-w-[90%]">
-                            <h3 className="text-white font-bold text-lg text-center truncate">
-                                {card.title}
-                            </h3>
-                        </div>
-                    </div>
+                    {card.show_title_on_image &&
+                        <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+                            <div className="text-center group">
+                                <h3 className="font-['Pacifico'] text-white text-3xl md:text-4xl
+                       drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]
+                       mb-3 transition-all duration-300
+                       group-hover:text-[var(--color-primary-light2)]">
+                                    {card.title}
+                                </h3>
+
+                                {/* Основная линия - меняет цвет при наведении */}
+                                <div className="w-16 h-0.5 mx-auto
+                      bg-gradient-to-r from-transparent via-white to-transparent
+                      transition-all duration-500 ease-in-out
+                      group-hover:w-44
+                      group-hover:via-[var(--color-primary-light2)]">
+                                </div>
+
+                                {/* Нижняя линия (размытая) - тоже меняет цвет */}
+                                <div className="w-8 h-0.5 mx-auto mt-1
+                      bg-white/40 blur-sm
+                      transition-all duration-700 ease-in-out
+                      group-hover:w-36
+                      group-hover:bg-[var(--color-primary-light2)]/40">
+                                </div>
+                            </div>
+                        </div>}
 
                     {/* Статус доступа поверх изображения снизу слева */}
                     <div className="absolute bottom-3 left-3 z-20">
                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
-                            card.access_type === 'public'
-                                ? 'bg-green-500/90 backdrop-blur-sm text-white'
-                                : card.access_type === 'shared'
-                                    ? 'bg-blue-500/90 backdrop-blur-sm text-white'
-                                    : 'bg-gray-500/90 backdrop-blur-sm text-white'
+                            card.access_type === 'private'
+                                ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
+                                : 'bg-[var(--color-primary)] text-white'
                         }`}>
                             {card.access_type === 'public'
                                 ? 'Публичная'
@@ -116,10 +148,23 @@ export default function CardItem({card}: CardItemProps) {
                         </span>
                     </div>
 
-                    {/* Описание, которое выезжает снизу при наведении */}
+                    {/* Кнопка описания снизу справа - стилизована под статус доступа */}
+                    <button
+                        onClick={handleDescriptionToggle}
+                        className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1"
+                        style={{
+                            padding: '3px',
+                            borderRadius: '50%',
+                        }}
+                        title={isDescriptionOpen ? "Скрыть описание" : "Показать описание"}
+                    >
+                        <LiaSignatureSolid className="w-3.5 h-3.5"/>
+                    </button>
+
+                    {/* Описание, которое появляется при клике */}
                     <div
                         className={`absolute bottom-0 left-0 right-0 bg-black/80 rounded-t-xl rounded-b-none transition-all duration-300 ease-in-out overflow-hidden ${
-                            isHovered ? ' opacity-100' : 'max-h-0 opacity-0'
+                            isDescriptionOpen ? 'opacity-100' : 'max-h-0 opacity-0'
                         }`}
                         style={{zIndex: 15}}
                     >
@@ -135,6 +180,7 @@ export default function CardItem({card}: CardItemProps) {
                                     transition: 'max-height 0.3s ease-in-out',
                                     paddingBottom: '20px',
                                 }}
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 {card.description || 'Нет описания'}
                             </div>
@@ -142,7 +188,7 @@ export default function CardItem({card}: CardItemProps) {
                             {/* Индикатор прокрутки для длинных текстов */}
                             {hasScroll && (
                                 <div
-                                    className="absolute bottom-3 right-3 text-xs text-white/50 flex items-center gap-1">
+                                    className="absolute bottom-3 right-3 text-xs text-white/50 flex items-center gap-1 pointer-events-none">
                                     {descriptionRef.current?.scrollTop && descriptionRef.current.scrollTop > 0 && (
                                         <span className="animate-bounce">↑</span>
                                     )}

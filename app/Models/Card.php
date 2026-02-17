@@ -17,6 +17,7 @@ use Ramsey\Uuid\Uuid;
  * @property string $creator_id
  * @property string $access_type
  * @property bool $is_active
+ * @property bool $show_title_on_image
  * @property string $created_at
  * @property string $updated_at
  *
@@ -29,18 +30,19 @@ class Card extends Model
     public const string ACCESS_SHARED  = 'shared';
     public const string ACCESS_PUBLIC  = 'public';
 
-    public ?string $id            = null;
+    public ?string $id                  = null;
     public string  $title;
     public string  $description;
     public string  $url;
-    public string  $object_path   = '';
-    public string  $file_name     = '';
-    public string  $original_name = '';
+    public string  $object_path         = '';
+    public string  $file_name           = '';
+    public string  $original_name       = '';
     public string  $creator_id;
-    public string  $access_type   = self::ACCESS_PRIVATE;
-    public bool    $is_active     = true;
-    public ?string $created_at    = null;
-    public ?string $updated_at    = null;
+    public string  $access_type         = self::ACCESS_PRIVATE;
+    public bool    $is_active           = true;
+    public bool    $show_title_on_image = false;
+    public ?string $created_at          = null;
+    public ?string $updated_at          = null;
 
     public function initialize(): void
     {

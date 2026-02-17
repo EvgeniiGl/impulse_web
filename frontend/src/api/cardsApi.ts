@@ -10,11 +10,11 @@ export interface CreateCardResponse {
 export interface CreateCardRequest {
     title: string;
     description: string | null;
-    creator_id: string;
     access_type: AccessType;
     is_active: boolean;
     collection_ids: string[];
     file: File | null;
+    show_title_on_image: boolean;
 }
 
 export interface UpdateCardRequest {
@@ -45,9 +45,9 @@ export class Api extends ApiClient {
             // Добавляем все поля из CreateCardRequest
             formData.append("title", data.card.title);
             formData.append("description", data.card.description ?? "");
-            formData.append("creator_id", data.card.creator_id);
             formData.append("access_type", data.card.access_type);
             formData.append("is_active", data.card.is_active.toString());
+            formData.append("show_title_on_image", data.card.show_title_on_image.toString());
             const response = await this.post<FormData, CreateCardResponse>(
                 `${this.client.defaults.baseURL}/cards`,
                 formData,

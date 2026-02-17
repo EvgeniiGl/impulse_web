@@ -20,7 +20,7 @@ export default function CreateCardPage() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const [formData, setFormData] = useState<CreateCardRequest>({
+    const [formData, setFormData] = useState<CreateCardRequest & { show_title_on_image?: boolean }>({
         title: '',
         description: '',
         creator_id: '',
@@ -28,6 +28,7 @@ export default function CreateCardPage() {
         is_active: false,
         file: null,
         collection_ids: [],
+        show_title_on_image: false, // Добавлено новое поле
     });
     const [preview, setPreview] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -69,14 +70,6 @@ export default function CreateCardPage() {
         };
     }, [dispatch]);
 
-    // const handleCollectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //     const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-    //     setFormData(prev => ({
-    //         ...prev,
-    //         collection_ids: selectedOptions
-    //     }));
-    // };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
         setFormData(prev => ({
@@ -90,6 +83,15 @@ export default function CreateCardPage() {
                 [name]: ''
             }));
         }
+    };
+
+    // Обработчик для чекбокса
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, checked} = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: checked
+        }));
     };
 
     const handleAccessTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -190,11 +192,11 @@ export default function CreateCardPage() {
         const cardData: CreateCardRequest = {
             title: formData.title.trim(),
             description: formData.description?.trim() || null,
-            creator_id: user.id,
             access_type: formData.access_type,
             is_active: false,
             collection_ids: formData.collection_ids,
-            file: formData.file
+            file: formData.file,
+            show_title_on_image: formData.show_title_on_image
         };
 
         try {
@@ -227,11 +229,33 @@ export default function CreateCardPage() {
                         {/* Форма */}
                         <div className="bg-white shadow-md rounded-lg p-8">
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Название */}
+                                {/* Название с чекбоксом */}
                                 <div>
-                                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                                        {t('createCard.titleLabel') || 'Название карточки'} *
-                                    </label>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                                            {t('createCard.titleLabel') || 'Название карточки'} *
+                                        </label>
+
+                                        {/* Чекбокс "Отображать на картинке" */}
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="show_title_on_image"
+                                                name="show_title_on_image"
+                                                checked={formData.show_title_on_image}
+                                                onChange={handleCheckboxChange}
+                                                className="h-4 w-4 text-[var(--color-primary)] border-gray-300 rounded checked:bg-[var(--color-primary)] checked:hover:bg-[var(--color-primary-dark)] checked:focus:bg-[var(--color-primary-dark)] transition-colors"
+                                                style={{
+                                                    accentColor: 'var(--color-primary)'
+                                                }}
+                                            />
+                                            <label htmlFor="show_title_on_image"
+                                                   className="ml-2 block text-sm text-gray-700">
+                                                {t('createCard.showTitleOnImage') || 'Отображать на картинке'}
+                                            </label>
+                                        </div>
+                                    </div>
+
                                     <input
                                         type="text"
                                         id="title"
@@ -247,12 +271,21 @@ export default function CreateCardPage() {
                                         placeholder={t('createCard.titlePlaceholder') || 'Введите название'}
                                         required
                                     />
+
                                     {validationErrors.title && (
                                         <p className="mt-1 text-sm text-red-600">{validationErrors.title}</p>
                                     )}
-                                    <p className="mt-1 text-xs text-gray-500">
-                                        {formData.title.length}/100
-                                    </p>
+
+                                    <div className="flex justify-between mt-1">
+                                        <p className="text-xs text-gray-500">
+                                            {formData.title.length}/100
+                                        </p>
+                                        {formData.show_title_on_image && (
+                                            <p className="text-xs text-[var(--text-primary)]">
+                                                {t('createCard.titleWillBeShown') || 'Название будет отображаться на изображении'}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Описание */}
@@ -365,6 +398,15 @@ export default function CreateCardPage() {
                                                 alt="Preview"
                                                 className="w-full h-64 object-cover rounded-lg"
                                             />
+
+                                            {/* Пример отображения названия на превью (опционально) */}
+                                            {formData.show_title_on_image && formData.title && (
+                                                <div
+                                                    className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4 rounded-b-lg">
+                                                    <p className="text-lg font-semibold">{formData.title}</p>
+                                                </div>
+                                            )}
+
                                             <button
                                                 type="button"
                                                 onClick={handleRemoveFile}
@@ -444,5 +486,3 @@ export default function CreateCardPage() {
         </>
     );
 }
-
-

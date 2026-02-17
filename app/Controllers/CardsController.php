@@ -116,23 +116,24 @@ class CardsController extends BaseController
                 'success' => true,
                 'data'    => [
                     'card' => [
-                        'id'                => $card->id,
-                        'title'             => $card->title,
-                        'description'       => $card->description,
-                        'url'               => $card->url,
-                        'object_path'       => $card->object_path,
-                        'file_name'         => $card->file_name,
-                        'original_name'     => $card->original_name,
-                        'access_type'       => $card->access_type,
-                        'access_type_label' => $card->getAccessTypeLabel(),
-                        'is_active'         => $card->is_active,
-                        'creator'           => $creator ? [
+                        'id'                  => $card->id,
+                        'title'               => $card->title,
+                        'description'         => $card->description,
+                        'url'                 => $card->url,
+                        'object_path'         => $card->object_path,
+                        'file_name'           => $card->file_name,
+                        'original_name'       => $card->original_name,
+                        'access_type'         => $card->access_type,
+                        'access_type_label'   => $card->getAccessTypeLabel(),
+                        'is_active'           => $card->is_active,
+                        'show_title_on_image' => $card->show_title_on_image,
+                        'creator'             => $creator ? [
                             'id'    => $creator->id,
                             'name'  => $creator->name,
                             'email' => $creator->email
                         ] : null,
-                        'created_at'        => $card->created_at,
-                        'updated_at'        => $card->updated_at,
+                        'created_at'          => $card->created_at,
+                        'updated_at'          => $card->updated_at,
                     ]
                 ]
             ]);
@@ -314,17 +315,19 @@ class CardsController extends BaseController
                 /** @var Card $card */
                 $card    = $cardData['card'];
                 $cards[] = [
-                    'id'                => $card->id,
-                    'title'             => $card->title,
-                    'description'       => $card->description,
-                    'url'               => $card->url,
-                    'access_type'       => $card->access_type,
-                    'access_type_label' => $card->getAccessTypeLabel(),
-                    'access_level'      => $cardData['permission'],
-                    'is_owner'          => $cardData['access_type'] === 'owner',
-                    'creator_id'        => $card->creator_id,
-                    'created_at'        => $card->created_at,
-                    'updated_at'        => $card->updated_at,
+                    'id'                  => $card->id,
+                    'title'               => $card->title,
+                    'description'         => $card->description,
+                    'url'                 => $card->url,
+                    'access_type'         => $card->access_type,
+                    'access_type_label'   => $card->getAccessTypeLabel(),
+                    'access_level'        => $cardData['permission'],
+                    'is_owner'            => $cardData['access_type'] === 'owner',
+                    'creator_id'          => $card->creator_id,
+                    'created_at'          => $card->created_at,
+                    'updated_at'          => $card->updated_at,
+                    'show_title_on_image' => $card->show_title_on_image,
+                    'is_active'           => $card->is_active,
                 ];
             }
 

@@ -133,7 +133,9 @@
     "noCollectionsAvailable": "Нет доступных коллекций",
     "createCollection": "Создать коллекцию",
     "selectCollections": "Выберите коллекции",
-    "addToCollections": "Добавить в коллекции"
+    "addToCollections": "Добавить в коллекции",
+    "showTitleOnImage": "Отображать на картинке",
+    "titleWillBeShown": "Название будет отображено"
   },
   "createCollection": {
     "title": "Создать коллекцию",
