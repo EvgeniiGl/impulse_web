@@ -71,6 +71,12 @@ return function (): Router {
     ], [
         'PUT'
     ]);
+    $router->add('/api/cards/my', [
+        'controller' => 'cards',
+        'action'     => 'my'
+    ], [
+        'GET'
+    ]);
     $router->add('/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
         'controller' => 'cards',
         'action'     => 'delete'

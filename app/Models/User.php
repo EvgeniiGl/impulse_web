@@ -224,4 +224,53 @@ class User extends Model
     {
         return $this->is_active;
     }
+
+    /**
+     * Получает карточки, созданные пользователем и карточки с правом записи (write/admin) через правила доступа
+     * Исключает дубликаты и публичные карточки
+     */
+    public function getMyCardsWithWriteAccess(): array
+    {
+        $result = [];
+
+        // 1. Собственные карточки (владелец = текущий пользователь)
+        $ownCards = Card::find([
+            'conditions' => 'creator_id = :user_id:',
+            'bind'       => ['user_id' => $this->id]
+        ]);
+
+        foreach ($ownCards as $card) {
+            $result[] = [
+                'card'        => $card,
+                'access_type' => 'owner',
+                'permission'  => 'admin'
+            ];
+        }
+
+        // 2. Карточки с правом записи/администрирования через правила доступа (исключая свои)
+        $sharedCardsQuery = AccessRule::query()
+            ->where('user_id = :user_id:')
+            ->andWhere('permission IN ({permissions:array})')
+            ->andWhere('card_id NOT IN ({own_ids:array})')
+            ->bind([
+                'user_id'     => $this->id,
+                'permissions' => ['write', 'admin'],
+                'own_ids'     => $ownCards->count() > 0
+                    ? array_column($ownCards->toArray(), 'id')
+                    : ['0'] // Защита от пустого IN
+            ]);
+
+        foreach ($sharedCardsQuery->execute() as $rule) {
+            $card = Card::findFirst($rule->card_id);
+            if ($card && $card->is_active) {
+                $result[] = [
+                    'card'        => $card,
+                    'access_type' => 'shared',
+                    'permission'  => $rule->permission
+                ];
+            }
+        }
+
+        return $result;
+    }
 }

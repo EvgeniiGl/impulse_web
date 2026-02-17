@@ -1,6 +1,6 @@
-import {Card} from "@store/card/cardSlice.ts";
 import CardItem from './CardItem';
 import {useEffect} from 'react';
+import {Card} from "@store/store.ts";
 
 interface CardGridProps {
     cards: Card[];
@@ -26,14 +26,23 @@ export default function CardGrid({cards, isLoading, onLoadMore, hasMore}: CardGr
     }, [isLoading, hasMore, onLoadMore]);
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div
+            className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-fr">
             {cards.map((card) => (
                 <CardItem card={card}/>
             ))}
             {isLoading && (
                 <>
                     {[...Array(4)].map((_, i) => (
-                        <div key={`skeleton-${i}`} className="bg-gray-200 rounded-lg h-48 animate-pulse"/>
+                        <div key={`skeleton-${i}`} className="bg-gray-200 rounded-lg animate-pulse flex flex-col">
+                            <div className="w-full" style={{aspectRatio: '9/20'}}>
+                                <div className="w-full h-full bg-gray-300"/>
+                            </div>
+                            <div className="p-3 space-y-2 flex-1 flex flex-col">
+                                <div className="h-4 bg-gray-300 rounded w-3/4"/>
+                                <div className="h-3 bg-gray-300 rounded w-1/2 mt-auto"/>
+                            </div>
+                        </div>
                     ))}
                 </>
             )}

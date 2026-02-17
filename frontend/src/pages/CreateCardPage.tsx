@@ -4,17 +4,16 @@ import Footer from "@modules/Footer.tsx";
 import React, {useEffect, useState} from "react";
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {useAppDispatch, useAppSelector} from "@store/store.ts";
+import {AccessType, Collection, useAppDispatch, useAppSelector} from "@store/store.ts";
+import {CreateCardRequest} from "@api/cardsApi.ts";
+import CollectionSelect from "@components/Form/Select/CollectionSelect.tsx";
 import {
+    myCollections,
+    setSelectedCollections,
     createCard,
     clearError,
     clearSuccess,
-    myCollections,
-    AccessType,
-    setSelectedCollections
-} from "@store/card/cardSlice.ts";
-import {CreateCardRequest} from "@api/cardsApi.ts";
-import CollectionSelect from "@components/Form/Select/CollectionSelect.tsx";
+} from "@store/card/myCardSlice.ts";
 
 export default function CreateCardPage() {
     const {t} = useTranslation();
@@ -40,7 +39,7 @@ export default function CreateCardPage() {
         collectionsLoading,
         collections,
         selectedCollections
-    } = useAppSelector((state) => state.card);
+    } = useAppSelector((state) => state.myCards);
     const {isAuthenticated, user} = useAppSelector((state) => state.auth);
 
     // Проверка авторизации
@@ -205,6 +204,10 @@ export default function CreateCardPage() {
         }
     };
 
+    const onCollectionsChange = (collections: Collection[]) => {
+        dispatch(setSelectedCollections(collections))
+    }
+
     return (
         <>
             <Header/>
@@ -286,7 +289,7 @@ export default function CreateCardPage() {
                                         collections={collections}
                                         collectionsLoading={collectionsLoading}
                                         selectedCollections={selectedCollections}
-                                        onCollectionsChange={setSelectedCollections}
+                                        onCollectionsChange={onCollectionsChange}
                                         t={t}
                                     />
                                 </div>

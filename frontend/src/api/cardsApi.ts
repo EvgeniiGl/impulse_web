@@ -1,6 +1,6 @@
 import ApiClient from "@/api/api";
 import {config} from "@api/api_config.ts";
-import {AccessType, Card} from "@store/card/cardSlice.ts";
+import {AccessType, Card} from "@store/store.ts";
 
 export interface CreateCardResponse {
     data: Card;
@@ -81,6 +81,18 @@ export class Api extends ApiClient {
             const response = await this.get<GetCardsResponse>(
                 `${this.client.defaults.baseURL}/collections/${collectionId}?page=${page}&per_page=${perPage}`
             );
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    async getMyCards(page: number, perPage: number): Promise<GetCardsResponse | null> {
+        try {
+            const response = await this.get<GetCardsResponse>(
+                `${this.client.defaults.baseURL}/api/cards/my?page=${page}&perPage=${perPage}`
+            );
+
             return response;
         } catch (exception) {
             throw exception;

@@ -1,7 +1,7 @@
 import {useRef, useState, useEffect} from 'react';
-import {Collection} from "@store/card/cardSlice.ts";
 import {useTranslation} from 'react-i18next';
 import css from './CollectionTabs.module.css'
+import {Collection} from "@store/store.ts";
 
 interface CollectionTabsProps {
     collections: Collection[];

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import Select, {StylesConfig, MultiValue, ActionMeta} from 'react-select';
-import {Collection} from "@store/card/cardSlice.ts";
+import {Collection} from "@store/store.ts";
 
 interface CollectionSelectProps {
     collections: Collection[];
@@ -29,9 +29,6 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                                                                disabled = false
                                                            }) => {
     const [options, setOptions] = useState<SelectOption[]>([]);
-    console.log("log--",
-        "\ncollections--", collections,
-    );
     // Преобразуем коллекции в опции для react-select
     useEffect(() => {
         const collectionOptions = collections.map(collection => ({
@@ -150,9 +147,6 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                     {/* Показываем выбранные коллекции как теги */}
                     {selectedCollections.length > 0 && (
                         <div className="mt-3">
-                            <p className="text-xs text-gray-500 mb-2">
-                                {t('createCard.selectedCollections') || 'Выбранные коллекции:'}
-                            </p>
                             <div className="flex flex-wrap gap-2">
                                 {selectedCollections.map((collection) => (
                                     <div
@@ -174,11 +168,6 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                             </div>
                         </div>
                     )}
-
-                    <p className="mt-2 text-xs text-gray-500">
-                        {t('createCard.selectCollectionsHint') ||
-                            'Выберите коллекции из списка'}
-                    </p>
                 </>
             )}
         </div>

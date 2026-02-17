@@ -292,4 +292,63 @@ class CardsController extends BaseController
             ], 400);
         }
     }
+
+    /**
+     * Получение карточек пользователя: созданные им + с правом записи (write/admin)
+     */
+    public function myAction(): \Phalcon\Http\Response
+    {
+        try {
+            $user = $this->getAuthenticatedUser();
+            if (!$user) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'error'   => TranslationHelper::translate('Authentication required')
+                ], 401);
+            }
+
+            $accessibleCards = $user->getMyCardsWithWriteAccess();
+            $cards           = [];
+
+            foreach ($accessibleCards as $cardData) {
+                /** @var Card $card */
+                $card    = $cardData['card'];
+                $cards[] = [
+                    'id'                => $card->id,
+                    'title'             => $card->title,
+                    'description'       => $card->description,
+                    'url'               => $card->url,
+                    'access_type'       => $card->access_type,
+                    'access_type_label' => $card->getAccessTypeLabel(),
+                    'access_level'      => $cardData['permission'],
+                    'is_owner'          => $cardData['access_type'] === 'owner',
+                    'creator_id'        => $card->creator_id,
+                    'created_at'        => $card->created_at,
+                    'updated_at'        => $card->updated_at,
+                ];
+            }
+
+            // Сортировка: сначала свои, затем по дате создания (новые выше)
+            usort($cards, function ($a, $b) {
+                if ($a['is_owner'] !== $b['is_owner']) {
+                    return $b['is_owner'] <=> $a['is_owner']; // Свои в начало
+                }
+                return strtotime($b['created_at']) <=> strtotime($a['created_at']);
+            });
+
+            return $this->jsonResponse([
+                'success' => true,
+                'data'    => [
+                    'cards' => $cards,
+                    'total' => count($cards)
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }

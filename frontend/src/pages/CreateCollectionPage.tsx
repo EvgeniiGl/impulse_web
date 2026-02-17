@@ -4,13 +4,12 @@ import Footer from "@modules/Footer.tsx";
 import React, {useEffect, useState} from "react";
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {useAppDispatch, useAppSelector} from "@store/store.ts";
+import {AccessType, useAppDispatch, useAppSelector} from "@store/store.ts";
 import {
     createCollection,
     clearError,
-    clearSuccess,
-    AccessType
 } from "@store/card/cardSlice.ts";
+import {clearSuccess} from "@store/card/myCardSlice.ts";
 
 export default function CreateCollectionPage() {
     const {t} = useTranslation();

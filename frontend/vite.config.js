@@ -9,9 +9,9 @@ export default defineConfig(function (_a) {
     var env = loadEnv(mode, process.cwd(), '');
     return {
         plugins: [
+            tailwindcss(),
             react(),
             svgr(),
-            tailwindcss(),
         ],
         envDir: process.cwd(),
         resolve: {

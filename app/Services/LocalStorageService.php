@@ -35,7 +35,7 @@ class LocalStorageService extends StorageService
         $targetPath = $targetDir . '/' . $fileName;
 
         // Относительный путь для БД
-        $relativePath = ($isPublic ? 'public/img/' : 'storage/img/') . $fileName;
+        $relativePath = ($isPublic ? '/img/' : 'storage/img/') . $fileName;
 
         try {
             if (!copy($tempFilePath, $targetPath)) {
@@ -46,7 +46,7 @@ class LocalStorageService extends StorageService
             chmod($targetPath, $isPublic ? 0644 : 0640);
 
             $url = $isPublic
-                ? rtrim($this->publicUrl, '/') . '/img/' . $fileName
+                ? '/img/' . $fileName
                 : $this->getSignedUrl($relativePath); // Генерируем URL для приватного файла
 
             return [
@@ -222,7 +222,7 @@ class LocalStorageService extends StorageService
 //            . $expires
             , $token);
 
-        return rtrim($this->publicUrl, '/') . '/download/signed'
+        return '/download/signed'
             . '?path=' . urlencode($objectPath)
             . '&token=' . $token
 //            . '&expires=' . $expires

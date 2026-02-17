@@ -4,16 +4,18 @@ import Footer from "@modules/Footer.tsx";
 import Main from "@modules/Main.tsx";
 import {useEffect} from 'react';
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
-import {
-    myCollections,
-    fetchCards,
-    fetchCardsByCollection,
-    setSelectedCollectionId,
-    resetPagination
-} from "@store/card/cardSlice.ts";
 import CollectionTabs from "@components/Collections/CollectionTabs.tsx";
 import CardGrid from "@components/Card/CardGrid.tsx";
 import {useNavigate} from 'react-router-dom';
+import {
+    myCollections,
+    fetchMyCards,
+    resetMyCardsPagination,
+    fetchCardsByCollection,
+    setSelectedCollectionId,
+    resetPagination
+} from "@store/card/myCardSlice.ts";
+
 
 export default function MyPage() {
     const {t} = useTranslation();
@@ -21,14 +23,14 @@ export default function MyPage() {
     const dispatch = useAppDispatch();
 
     const {
-        cards,
+        myCards,
         collections,
         collectionsLoading,
         isLoading,
         selectedCollectionId,
         pagination,
         error
-    } = useAppSelector((state) => state.card);
+    } = useAppSelector((state) => state.myCards);
 
     const {isAuthenticated} = useAppSelector((state) => state.auth);
 
@@ -52,7 +54,7 @@ export default function MyPage() {
 
         if (selectedCollectionId === null) {
             // Загружаем все карточки пользователя
-            dispatch(fetchCards({page: 1, perPage: 12}));
+            dispatch(fetchMyCards({page: 1, perPage: 12}));
         } else {
             // Загружаем карточки коллекции
             dispatch(fetchCardsByCollection({
@@ -61,13 +63,16 @@ export default function MyPage() {
                 perPage: 12
             }));
         }
+        return () => {
+            dispatch(resetMyCardsPagination()); // Очистка при уходе
+        };
     }, [selectedCollectionId, isAuthenticated, dispatch]);
 
     const handleLoadMore = () => {
         const nextPage = pagination.page + 1;
 
         if (selectedCollectionId === null) {
-            dispatch(fetchCards({page: nextPage, perPage: 12}));
+            dispatch(fetchMyCards({page: nextPage, perPage: 12}));
         } else {
             dispatch(fetchCardsByCollection({
                 collectionId: selectedCollectionId,
@@ -126,16 +131,16 @@ export default function MyPage() {
                         )}
 
                         {/* Информация о количестве карточек */}
-                        {!isLoading && cards.length > 0 && (
+                        {!isLoading && myCards.length > 0 && (
                             <div className="mb-4 text-sm text-gray-600">
-                                {t('my.showing') || 'Показано'}: {cards.length} {t('my.of') || 'из'} {pagination.total}
+                                {t('my.showing') || 'Показано'}: {myCards.length} {t('my.of') || 'из'} {pagination.total}
                             </div>
                         )}
 
                         {/* Сетка карточек */}
-                        {cards.length > 0 ? (
+                        {myCards.length > 0 ? (
                             <CardGrid
-                                cards={cards}
+                                cards={myCards}
                                 isLoading={isLoading}
                                 onLoadMore={handleLoadMore}
                                 hasMore={pagination.hasMore}
