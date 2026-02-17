@@ -39,6 +39,7 @@ export class Api extends ApiClient {
     async create(data: { card: CreateCardRequest, file: File }): Promise<CreateCardResponse | undefined> {
         try {
             const formData = new FormData();
+
             // Добавляем файл
             formData.append("file", data.file, data.file.name);
 
@@ -48,6 +49,14 @@ export class Api extends ApiClient {
             formData.append("access_type", data.card.access_type);
             formData.append("is_active", data.card.is_active.toString());
             formData.append("show_title_on_image", data.card.show_title_on_image.toString());
+            console.log("log--",
+                "\ndata--", data,
+            );
+            // Добавляем collection_ids (массив строк)
+            data.card.collection_ids.forEach((id, index) => {
+                formData.append(`collection_ids[${index}]`, id);
+            });
+
             const response = await this.post<FormData, CreateCardResponse>(
                 `${this.client.defaults.baseURL}/cards`,
                 formData,
@@ -57,11 +66,12 @@ export class Api extends ApiClient {
                     },
                 }
             );
+
             if (response) {
                 return response;
             }
         } catch (exception) {
-            throw exception
+            throw exception;
         }
     }
 

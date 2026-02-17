@@ -207,6 +207,11 @@ export default function CreateCardPage() {
     };
 
     const onCollectionsChange = (collections: Collection[]) => {
+        const collectionIds = collections.map(i => i.id)
+        setFormData(prev => ({
+            ...prev,
+            collection_ids: collectionIds
+        }));
         dispatch(setSelectedCollections(collections))
     }
 

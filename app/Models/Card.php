@@ -23,6 +23,8 @@ use Ramsey\Uuid\Uuid;
  *
  * @property User $creator
  * @property AccessRule[] $accessRules
+ * @property Collection[] $collections
+ * @property CollectionCard[] $collectionCards
  */
 class Card extends Model
 {
@@ -83,6 +85,34 @@ class Card extends Model
                 'reusable' => true
             ]
         );
+
+        // Связь с коллекциями через промежуточную таблицу collection_cards
+        $this->hasManyToMany(
+            'id',
+            CollectionCard::class,
+            'card_id',
+            'collection_id',
+            Collection::class,
+            'id',
+            [
+                'alias'    => 'collections',
+                'reusable' => true,
+                'params'   => [
+                    'order' => '[App\Models\CollectionCard].[created_at] DESC' // Явно указываем таблицу для сортировки
+                ]
+            ]
+        );
+
+        // Связь с промежуточной таблицей collection_cards
+        $this->hasMany(
+            'id',
+            CollectionCard::class,
+            'card_id',
+            [
+                'alias'    => 'collectionCards',
+                'reusable' => true
+            ]
+        );
     }
 
     public function beforeCreate(): void
@@ -105,6 +135,146 @@ class Card extends Model
     public function beforeUpdate(): void
     {
         $this->updated_at = date('Y-m-d H:i:s');
+    }
+
+    /**
+     * Получить коллекции карточки
+     *
+     * @param array|null $params Дополнительные параметры запроса
+     * @return \Phalcon\Mvc\Model\Resultset\Simple
+     */
+    public function getCollections(?array $params = null): \Phalcon\Mvc\Model\Resultset\Simple
+    {
+        $r = $this->getRelated('collections', $params);
+
+        return $r;
+    }
+
+    /**
+     * Получить количество коллекций карточки
+     *
+     * @return int
+     */
+    public function getCollectionsCount(): int
+    {
+        return $this->getRelated('collections')->count();
+    }
+
+    /**
+     * Проверить, находится ли карточка в указанной коллекции
+     *
+     * @param string $collectionId
+     * @return bool
+     */
+    public function isInCollection(string $collectionId): bool
+    {
+        return CollectionCard::count([
+                'conditions' => 'card_id = :card_id: AND collection_id = :collection_id:',
+                'bind'       => [
+                    'card_id'       => $this->id,
+                    'collection_id' => $collectionId
+                ]
+            ]) > 0;
+    }
+
+    /**
+     * Добавить карточку в коллекцию
+     *
+     * @param string $collectionId
+     * @return bool
+     */
+    public function addToCollection(string $collectionId): bool
+    {
+        // Проверяем, не добавлена ли уже карточка в коллекцию
+        if ($this->isInCollection($collectionId)) {
+            return true;
+        }
+
+        $collectionCard                = new CollectionCard();
+        $collectionCard->card_id       = $this->id;
+        $collectionCard->collection_id = $collectionId;
+
+        return $collectionCard->save();
+    }
+
+    /**
+     * Удалить карточку из коллекции
+     *
+     * @param string $collectionId
+     * @return bool
+     */
+    public function removeFromCollection(string $collectionId): bool
+    {
+        $collectionCard = CollectionCard::findFirst([
+            'conditions' => 'card_id = :card_id: AND collection_id = :collection_id:',
+            'bind'       => [
+                'card_id'       => $this->id,
+                'collection_id' => $collectionId
+            ]
+        ]);
+
+        if ($collectionCard) {
+            return $collectionCard->delete();
+        }
+
+        return true;
+    }
+
+    /**
+     * Синхронизировать коллекции карточки
+     *
+     * @param array $collectionIds Массив ID коллекций
+     * @return bool
+     */
+    public function syncCollections(array $collectionIds): bool
+    {
+        // Начинаем транзакцию
+        $this->getDI()->get('db')->begin();
+
+        try {
+            // Удаляем все текущие связи
+            $this->getRelated('collectionCards')->delete();
+
+            // Добавляем новые связи
+            foreach ($collectionIds as $collectionId) {
+                if (empty($collectionId)) {
+                    continue;
+                }
+
+                $collectionCard                = new CollectionCard();
+                $collectionCard->card_id       = $this->id;
+                $collectionCard->collection_id = $collectionId;
+
+                if (!$collectionCard->save()) {
+                    $this->getDI()->get('db')->rollback();
+                    return false;
+                }
+            }
+
+            $this->getDI()->get('db')->commit();
+            return true;
+
+        } catch (\Exception $e) {
+            $this->getDI()->get('db')->rollback();
+            return false;
+        }
+    }
+
+    /**
+     * Получить ID всех коллекций карточки
+     *
+     * @return array
+     */
+    public function getCollectionIds(): array
+    {
+        $collectionIds   = [];
+        $collectionCards = $this->getRelated('collectionCards');
+
+        foreach ($collectionCards as $collectionCard) {
+            $collectionIds[] = $collectionCard->collection_id;
+        }
+
+        return $collectionIds;
     }
 
     public function getAccessTypeLabel(): string

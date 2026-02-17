@@ -226,16 +226,18 @@ class User extends Model
     }
 
     /**
-     * Получает карточки, созданные пользователем и карточки с правом записи (write/admin) через правила доступа
-     * Исключает дубликаты и публичные карточки
+     * Получить карточки пользователя с правом записи, которые не привязаны к коллекциям
      */
     public function getMyCardsWithWriteAccess(): array
     {
         $result = [];
 
-        // 1. Собственные карточки (владелец = текущий пользователь)
+        // Подзапрос для карточек, привязанных к коллекциям
+        $inCollectionSubquery = 'SELECT [App\Models\CollectionCard].card_id FROM [App\Models\CollectionCard]';
+
+        // 1. Собственные карточки (владелец = текущий пользователь) БЕЗ коллекций
         $ownCards = Card::find([
-            'conditions' => 'creator_id = :user_id:',
+            'conditions' => 'creator_id = :user_id: AND id NOT IN (' . $inCollectionSubquery . ')',
             'bind'       => ['user_id' => $this->id]
         ]);
 
@@ -247,17 +249,18 @@ class User extends Model
             ];
         }
 
-        // 2. Карточки с правом записи/администрирования через правила доступа (исключая свои)
+        // 2. Карточки с правом записи/администрирования через правила доступа (исключая свои и карточки в коллекциях)
         $sharedCardsQuery = AccessRule::query()
             ->where('user_id = :user_id:')
             ->andWhere('permission IN ({permissions:array})')
             ->andWhere('card_id NOT IN ({own_ids:array})')
+            ->andWhere('card_id NOT IN (' . $inCollectionSubquery . ')') // Исключаем карточки в коллекциях
             ->bind([
                 'user_id'     => $this->id,
                 'permissions' => ['write', 'admin'],
                 'own_ids'     => $ownCards->count() > 0
                     ? array_column($ownCards->toArray(), 'id')
-                    : ['0'] // Защита от пустого IN
+                    : ['0']
             ]);
 
         foreach ($sharedCardsQuery->execute() as $rule) {

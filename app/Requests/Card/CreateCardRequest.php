@@ -42,6 +42,35 @@ class CreateCardRequest
         return $this->data['show_title_on_image'] === 'true';
     }
 
+    public function getCollectionIds(): array
+    {
+        // Обработка различных форматов входящих данных
+        if (isset($this->data['collection_ids']) && is_array($this->data['collection_ids'])) {
+            // Если пришел как обычный массив
+            return array_values(array_filter($this->data['collection_ids']));
+        }
+
+        // Если пришел как collection_ids[] или collection_ids[0], collection_ids[1] и т.д.
+        $collectionIds = [];
+        foreach ($this->data as $key => $value) {
+            if (strpos($key, 'collection_ids') === 0) {
+                if (!empty($value)) {
+                    $collectionIds[] = $value;
+                }
+            }
+        }
+
+        // Если пришел как JSON строка
+        if (isset($this->data['collection_ids']) && is_string($this->data['collection_ids'])) {
+            $decoded = json_decode($this->data['collection_ids'], true);
+            if (is_array($decoded)) {
+                return array_values(array_filter($decoded));
+            }
+        }
+
+        return array_values(array_filter($collectionIds));
+    }
+
     public function getFile(): File
     {
         return $this->file;
@@ -93,6 +122,64 @@ class CreateCardRequest
             ])
         );
 
+        // Валидация collection_ids
+        $collectionIds = $this->getCollectionIds();
+
+        // Проверка, что collection_ids массив
+        if (!is_array($collectionIds)) {
+            $messages = new Messages();
+            $messages->appendMessage(
+                new \Phalcon\Messages\Message(
+                    TranslationHelper::translate('Collection IDs must be an array'),
+                    'collection_ids',
+                    'InvalidType'
+                )
+            );
+            return $messages;
+        }
+
+        // Проверка максимального количества коллекций (опционально)
+        $maxCollections = 10; // можно вынести в конфиг
+        if (count($collectionIds) > $maxCollections) {
+            $messages = new Messages();
+            $messages->appendMessage(
+                new \Phalcon\Messages\Message(
+                    TranslationHelper::translate('Maximum %d collections allowed', $maxCollections),
+                    'collection_ids',
+                    'TooMany'
+                )
+            );
+            return $messages;
+        }
+
+        // Валидация каждого ID коллекции (если нужно проверить формат UUID или другой формат)
+        foreach ($collectionIds as $index => $id) {
+            if (!is_string($id) || empty($id)) {
+                $messages = new Messages();
+                $messages->appendMessage(
+                    new \Phalcon\Messages\Message(
+                        TranslationHelper::translate('Each collection ID must be a non-empty string'),
+                        "collection_ids[{$index}]",
+                        'InvalidValue'
+                    )
+                );
+                return $messages;
+            }
+
+            // Если используете UUID, можно добавить проверку формата
+            if (!$this->isValidUuid($id)) {
+                $messages = new Messages();
+                $messages->appendMessage(
+                    new \Phalcon\Messages\Message(
+                        TranslationHelper::translate('Collection ID must be a valid UUID'),
+                        "collection_ids[{$index}]",
+                        'InvalidFormat'
+                    )
+                );
+                return $messages;
+            }
+        }
+
         return $validation->validate([
             'title'       => $this->getTitle(),
             'description' => $this->getDescription(),
@@ -127,5 +214,14 @@ class CreateCardRequest
         }
 
         return true;
+    }
+
+    /**
+     * Проверка валидности UUID (опционально)
+     */
+    private function isValidUuid(string $uuid): bool
+    {
+        // Базовая проверка формата UUID
+        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid) === 1;
     }
 }

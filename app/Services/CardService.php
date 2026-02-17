@@ -5,6 +5,8 @@ namespace App\Services;
 
 use App\Models\Card;
 use App\Models\User;
+use App\Models\Collection;
+use App\Models\CollectionCard;
 use App\Requests\Card\CreateCardRequest;
 use App\Requests\Card\UpdateCardRequest;
 use Exception;
@@ -22,7 +24,7 @@ class CardService extends Injectable
     }
 
     /**
-     * Создает карточку с загрузкой файла
+     * Создает карточку с загрузкой файла и связями с коллекциями
      */
     public function createCard(CreateCardRequest $request, User $creator): ?Card
     {
@@ -39,6 +41,14 @@ class CardService extends Injectable
         // Валидация файла
         if (!$request->validateFile($this->uploadConfig['allowedTypes'], $this->uploadConfig['maxFileSize'])) {
             throw new Exception('Invalid file. Check file type and size (max 32MB)');
+        }
+
+        // Получаем ID коллекций
+        $collectionIds = $request->getCollectionIds();
+
+        // Проверяем существование коллекций и права доступа к ним
+        if (!empty($collectionIds)) {
+            $this->validateCollectionsAccess($collectionIds, $creator);
         }
 
         $this->db->begin();
@@ -82,6 +92,13 @@ class CardService extends Injectable
                 throw new Exception(implode(', ', $messages));
             }
 
+            // Сохраняем связи с коллекциями
+            if (!empty($collectionIds)) {
+                if (!$this->saveCardCollections($card->id, $collectionIds)) {
+                    throw new Exception('Failed to save card collections');
+                }
+            }
+
             $this->db->commit();
 
             return $card;
@@ -96,43 +113,6 @@ class CardService extends Injectable
         }
     }
 
-
-    /**
-     * Удаляет карточку
-     */
-    public function deleteCard(Card $card, User $user): bool
-    {
-        // Проверяем права доступа
-        if ($card->creator_id !== $user->id && !$user->isAdmin()) {
-            throw new Exception('You do not have permission to delete this card');
-        }
-
-        $this->db->begin();
-
-        try {
-            // Удаляем файл из MinIO, если он существует
-            if (!empty($card->object_path)) {
-                $this->storageService->deleteFile($card->object_path);
-            }
-
-            // Удаляем карточку из базы
-            if (!$card->delete()) {
-                $messages = [];
-                foreach ($card->getMessages() as $message) {
-                    $messages[] = $message->getMessage();
-                }
-                throw new Exception(implode(', ', $messages));
-            }
-
-            $this->db->commit();
-            return true;
-
-        } catch (Exception $e) {
-            $this->db->rollback();
-            throw new Exception('Failed to delete card: ' . $e->getMessage());
-        }
-    }
-
     /**
      * Обновляет карточку
      */
@@ -141,6 +121,14 @@ class CardService extends Injectable
         // Проверяем права доступа
         if ($card->creator_id !== $user->id && !$user->hasAccess($card, 'write')) {
             throw new Exception('You do not have permission to update this card');
+        }
+
+        // Получаем ID коллекций из запроса (если есть)
+        $collectionIds = $request->getCollectionIds();
+
+        // Проверяем существование коллекций и права доступа
+        if (!empty($collectionIds)) {
+            $this->validateCollectionsAccess($collectionIds, $user);
         }
 
         $this->db->begin();
@@ -172,15 +160,41 @@ class CardService extends Injectable
             }
 
             // Обновляем остальные поля
-            $card->title       = $request->getTitle() ?? $card->title;
-            $card->description = $request->getDescription() ?? $card->description;
-            $card->access_type = $request->getAccessType() ?? $card->access_type;
+            if ($request->getTitle() !== null) {
+                $card->title = $request->getTitle();
+            }
+
+            if ($request->getDescription() !== null) {
+                $card->description = $request->getDescription();
+            }
+
+            if ($request->getAccessType() !== null) {
+                $card->access_type = $request->getAccessType();
+            }
+
+            if ($request->getIsActive() !== null) {
+                $card->is_active = $request->getIsActive();
+            }
+
             if (!$card->update()) {
                 $messages = [];
                 foreach ($card->getMessages() as $message) {
                     $messages[] = $message->getMessage();
                 }
                 throw new Exception(implode(', ', $messages));
+            }
+
+            // Обновляем связи с коллекциями
+            if ($collectionIds !== null) {
+                // Удаляем старые связи
+                $this->deleteCardCollections($card->id);
+
+                // Сохраняем новые связи
+                if (!empty($collectionIds)) {
+                    if (!$this->saveCardCollections($card->id, $collectionIds)) {
+                        throw new Exception('Failed to update card collections');
+                    }
+                }
             }
 
             // Удаляем старый файл после успешного обновления
@@ -200,6 +214,127 @@ class CardService extends Injectable
             }
 
             throw new Exception('Failed to update card: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Сохраняет связи карточки с коллекциями
+     *
+     * @param string $cardId
+     * @param array $collectionIds
+     * @return bool
+     * @throws Exception
+     */
+    private function saveCardCollections(string $cardId, array $collectionIds): bool
+    {
+        foreach ($collectionIds as $collectionId) {
+            if (empty($collectionId)) {
+                continue;
+            }
+
+            $collectionCard                = new CollectionCard();
+            $collectionCard->card_id       = $cardId;
+            $collectionCard->collection_id = $collectionId;
+
+            if (!$collectionCard->save()) {
+                $messages = [];
+                foreach ($collectionCard->getMessages() as $message) {
+                    $messages[] = $message->getMessage();
+                }
+                throw new Exception('Failed to save collection relation: ' . implode(', ', $messages));
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Удаляет все связи карточки с коллекциями
+     *
+     * @param string $cardId
+     * @return void
+     */
+    private function deleteCardCollections(string $cardId): void
+    {
+        $collectionCards = CollectionCard::find([
+            'conditions' => 'card_id = :card_id:',
+            'bind'       => ['card_id' => $cardId]
+        ]);
+
+        foreach ($collectionCards as $collectionCard) {
+            if (!$collectionCard->delete()) {
+                $messages = [];
+                foreach ($collectionCard->getMessages() as $message) {
+                    $messages[] = $message->getMessage();
+                }
+                throw new Exception('Failed to delete collection relation: ' . implode(', ', $messages));
+            }
+        }
+
+    }
+
+    /**
+     * Проверяет существование коллекций и права доступа к ним
+     *
+     * @param array $collectionIds
+     * @param User $user
+     * @throws Exception
+     */
+    private function validateCollectionsAccess(array $collectionIds, User $user): void
+    {
+        foreach ($collectionIds as $collectionId) {
+            $collection = Collection::findFirst([
+                'conditions' => 'id = :id:',
+                'bind'       => ['id' => $collectionId]
+            ]);
+
+            if (!$collection) {
+                throw new Exception("Collection with ID {$collectionId} not found");
+            }
+
+            // Проверяем, имеет ли пользователь доступ к коллекции
+            if (!$collection->hasAccess($user->id, 'write')) {
+                throw new Exception("You don't have permission to add cards to collection: {$collection->name}");
+            }
+        }
+    }
+
+    /**
+     * Удаляет карточку
+     */
+    public function deleteCard(Card $card, User $user): bool
+    {
+        // Проверяем права доступа
+        if ($card->creator_id !== $user->id && !$user->isAdmin()) {
+            throw new Exception('You do not have permission to delete this card');
+        }
+
+        $this->db->begin();
+
+        try {
+            // Удаляем связи с коллекциями
+            $this->deleteCardCollections($card->id);
+
+            // Удаляем файл из MinIO, если он существует
+            if (!empty($card->object_path)) {
+                $this->storageService->deleteFile($card->object_path);
+            }
+
+            // Удаляем карточку из базы
+            if (!$card->delete()) {
+                $messages = [];
+                foreach ($card->getMessages() as $message) {
+                    $messages[] = $message->getMessage();
+                }
+                throw new Exception(implode(', ', $messages));
+            }
+
+            $this->db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollback();
+            throw new Exception('Failed to delete card: ' . $e->getMessage());
         }
     }
 
@@ -231,5 +366,49 @@ class CardService extends Injectable
     public function getUserAccessibleCards(User $user): array
     {
         return $user->getAllAccessibleCards();
+    }
+
+    /**
+     * Получает карточки по коллекции
+     *
+     * @param string $collectionId
+     * @param User|null $user
+     * @return array
+     * @throws Exception
+     */
+    public function getCardsByCollection(string $collectionId, ?User $user): array
+    {
+        $collection = Collection::findFirst([
+            'conditions' => 'id = :id:',
+            'bind'       => ['id' => $collectionId]
+        ]);
+
+        if (!$collection) {
+            throw new Exception('Collection not found');
+        }
+
+        // Проверяем доступ к коллекции
+        if (!$collection->hasAccess($user, 'read')) {
+            throw new Exception('Access denied to collection');
+        }
+
+        $cards           = [];
+        $collectionCards = CollectionCard::find([
+            'conditions' => 'collection_id = :collection_id:',
+            'bind'       => ['collection_id' => $collectionId],
+            'order'      => 'created_at DESC'
+        ]);
+
+        foreach ($collectionCards as $collectionCard) {
+            $card = $collectionCard->getCard();
+            if ($card && $card->hasAccess($user, 'read')) {
+                $cards[] = [
+                    'card'     => $card,
+                    'added_at' => $collectionCard->created_at
+                ];
+            }
+        }
+
+        return $cards;
     }
 }

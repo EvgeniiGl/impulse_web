@@ -165,6 +165,7 @@ const myCardSlice = createSlice({
                 }
                 state.myCards.push(action.payload.data);
                 state.success = 'Карточка успешно создана';
+                state.selectedCollections = [];
             })
             .addCase(createCard.rejected, (state: MyCardState, action) => {
                 state.isCreating = false;

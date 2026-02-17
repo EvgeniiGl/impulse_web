@@ -1,19 +1,34 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Models;
 
 use Phalcon\Mvc\Model;
-use Phalcon\Mvc\Model\Relation;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * @property string $id
+ * @property string $name
+ * @property string $creator_id
+ * @property string $access_type
+ * @property bool $is_active
+ * @property string $created_at
+ * @property string $updated_at
+ *
+ * @property User $creator
+ * @property CollectionCard[] $collectionCards
+ * @property Card[] $cards
+ */
 class Collection extends Model
 {
+    public const string ACCESS_PRIVATE = 'private';
+    public const string ACCESS_SHARED  = 'shared';
+    public const string ACCESS_PUBLIC  = 'public';
+
     public ?string $id          = null;
     public string  $name;
     public string  $creator_id;
-    public string  $access_type = 'private';
+    public string  $access_type = self::ACCESS_PRIVATE;
     public bool    $is_active   = true;
     public ?string $created_at  = null;
     public ?string $updated_at  = null;
@@ -22,19 +37,29 @@ class Collection extends Model
     {
         $this->setSource('collections');
 
-        // Отношения
+        // Связь с создателем
         $this->belongsTo(
             'creator_id',
             User::class,
             'id',
             [
-                'alias'      => 'creator',
-                'foreignKey' => [
-                    'message' => 'Creator does not exist'
-                ]
+                'alias'    => 'creator',
+                'reusable' => true
             ]
         );
 
+        // Связь с промежуточной таблицей collection_card
+        $this->hasMany(
+            'id',
+            CollectionCard::class,
+            'collection_id',
+            [
+                'alias'    => 'collectionCards',
+                'reusable' => true
+            ]
+        );
+
+        // Связь с карточками через промежуточную таблицу с явным указанием полей
         $this->hasManyToMany(
             'id',
             CollectionCard::class,
@@ -43,34 +68,12 @@ class Collection extends Model
             Card::class,
             'id',
             [
-                'alias' => 'cards'
-            ]
-        );
-
-        $this->hasManyToMany(
-            'id',
-            UserCollection::class,
-            'collection_id',
-            'user_id',
-            User::class,
-            'id',
-            [
-                'alias' => 'sharedUsers'
-            ]
-        );
-
-        // Поведения
-        $this->addBehavior(
-            new \Phalcon\Mvc\Model\Behavior\Timestampable([
-                'beforeCreate' => [
-                    'field'  => ['created_at', 'updated_at'],
-                    'format' => 'Y-m-d H:i:s',
-                ],
-                'beforeUpdate' => [
-                    'field'  => 'updated_at',
-                    'format' => 'Y-m-d H:i:s',
+                'alias'    => 'cards',
+                'reusable' => true,
+                'params'   => [
+                    'order' => '[App\Models\CollectionCard].[created_at] DESC' // Явно указываем таблицу для сортировки
                 ]
-            ])
+            ]
         );
     }
 
@@ -93,9 +96,23 @@ class Collection extends Model
         );
 
         $validator->add(
+            'name',
+            new \Phalcon\Filter\Validation\Validator\StringLength([
+                'min'            => 2,
+                'max'            => 100,
+                'messageMinimum' => 'Collection name must be at least 2 characters',
+                'messageMaximum' => 'Collection name must not exceed 100 characters'
+            ])
+        );
+
+        $validator->add(
             'access_type',
             new \Phalcon\Filter\Validation\Validator\InclusionIn([
-                'domain'  => ['private', 'public', 'shared'],
+                'domain'  => [
+                    self::ACCESS_PRIVATE,
+                    self::ACCESS_SHARED,
+                    self::ACCESS_PUBLIC
+                ],
                 'message' => 'Invalid access type'
             ])
         );
@@ -122,20 +139,21 @@ class Collection extends Model
         if ($this->creator_id === $userId) {
             return true;
         }
+//
+//        if ($this->access_type === 'public') {
+//            return true;
+//        }
 
-        if ($this->access_type === 'public') {
-            return true;
-        }
-
-        $shared = UserCollection::findFirst([
-            'conditions' => 'collection_id = :collectionId: AND user_id = :userId:',
-            'bind'       => [
-                'collectionId' => $this->id,
-                'userId'       => $userId,
-            ]
-        ]);
-
-        return $shared !== false;
+//        $shared = UserCollection::findFirst([
+//            'conditions' => 'collection_id = :collectionId: AND user_id = :userId:',
+//            'bind'       => [
+//                'collectionId' => $this->id,
+//                'userId'       => $userId,
+//            ]
+//        ]);
+//
+//        return $shared !== false;
+        return false;
     }
 
     /**
