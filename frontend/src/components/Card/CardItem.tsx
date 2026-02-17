@@ -1,6 +1,6 @@
 import {useNavigate} from 'react-router-dom';
 import {Card} from "@store/store.ts";
-import {useState} from 'react';
+import {useState, useRef, useEffect} from 'react';
 
 interface CardItemProps {
     card: Card;
@@ -9,23 +9,67 @@ interface CardItemProps {
 export default function CardItem({card}: CardItemProps) {
     const navigate = useNavigate();
     const [imageError, setImageError] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const descriptionRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [hasScroll, setHasScroll] = useState(false);
+    const [cardHeight, setCardHeight] = useState(0);
 
-    // Форматирование даты с локализацией
-    const formattedDate = new Date(card.created_at).toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
+    // Проверяем, есть ли прокрутка у описания
+    useEffect(() => {
+        const checkScroll = () => {
+            if (descriptionRef.current) {
+                const element = descriptionRef.current;
+                // Проверяем только когда блок видимый
+                if (isHovered && element.scrollHeight > 0) {
+                    const hasVerticalScroll = element.scrollHeight > element.clientHeight;
+                    setHasScroll(hasVerticalScroll);
+                } else {
+                    setHasScroll(false);
+                }
+            }
+        };
+
+        // Добавляем небольшую задержку для завершения анимации появления
+        const timeout = setTimeout(checkScroll, 300);
+
+        // Наблюдаем за изменениями размера
+        const resizeObserver = new ResizeObserver(checkScroll);
+        if (descriptionRef.current) {
+            resizeObserver.observe(descriptionRef.current);
+        }
+
+        return () => {
+            clearTimeout(timeout);
+            resizeObserver.disconnect();
+        };
+    }, [isHovered, card.description]);
+
+    useEffect(() => {
+        if (cardRef.current) {
+            const rect = cardRef.current.getBoundingClientRect();
+            setCardHeight(rect.height)
+        }
+    }, []);
 
     return (
         <div
             onClick={() => navigate(`/card/${card.id}`)}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full"
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => {
+                setIsHovered(false);
+                // Сбрасываем прокрутку при скрытии
+                if (descriptionRef.current) {
+                    descriptionRef.current.scrollTop = 0;
+                }
+            }}
             key={card.id}
+            ref={cardRef}
         >
             {/* Контейнер с фиксированным соотношением 9:20 (вертикальное) */}
             <div className="relative w-full bg-gray-200 overflow-hidden"
-                 style={{aspectRatio: '9/20'}}>  {/* Явно задаем соотношение 9:20 */}
+                 style={{aspectRatio: '9/20'}}>
                 <div className="absolute inset-0 flex items-center justify-center">
                     {card.url && !imageError ? (
                         <img
@@ -54,31 +98,63 @@ export default function CardItem({card}: CardItemProps) {
                             </h3>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div className="p-3 flex-1 flex flex-col">
-                <p className="text-sm text-gray-700 line-clamp-2 min-h-[2.5rem] mb-2 flex-1">
-                    {card.description || 'Нет описания'}
-                </p>
+                    {/* Статус доступа поверх изображения снизу слева */}
+                    <div className="absolute bottom-3 left-3 z-20">
+                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
+                            card.access_type === 'public'
+                                ? 'bg-green-500/90 backdrop-blur-sm text-white'
+                                : card.access_type === 'shared'
+                                    ? 'bg-blue-500/90 backdrop-blur-sm text-white'
+                                    : 'bg-gray-500/90 backdrop-blur-sm text-white'
+                        }`}>
+                            {card.access_type === 'public'
+                                ? 'Публичная'
+                                : card.access_type === 'shared'
+                                    ? 'Общая'
+                                    : 'Приватная'}
+                        </span>
+                    </div>
 
-                <div className="flex items-center justify-between mt-auto">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                        card.access_type === 'public'
-                            ? 'bg-green-100 text-green-800'
-                            : card.access_type === 'shared'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
-                    }`}>
-                        {card.access_type === 'public'
-                            ? 'Публичная'
-                            : card.access_type === 'shared'
-                                ? 'Общая'
-                                : 'Приватная'}
-                    </span>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {formattedDate}
-                    </span>
+                    {/* Описание, которое выезжает снизу при наведении */}
+                    <div
+                        className={`absolute bottom-0 left-0 right-0 bg-black/80 rounded-t-xl rounded-b-none transition-all duration-300 ease-in-out overflow-hidden ${
+                            isHovered ? ' opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                        style={{zIndex: 15}}
+                    >
+                        <div className="p-4 text-white h-full flex flex-col relative">
+                            <p className="text-sm font-medium mb-2 flex-shrink-0">Описание:</p>
+                            <div
+                                ref={descriptionRef}
+                                className={`text-sm leading-relaxed pr-2 flex-1 overflow-y-auto scrollbar-custom ${
+                                    hasScroll ? 'scrollbar-thin' : ''
+                                }`}
+                                style={{
+                                    maxHeight: cardHeight / 100 * 80,
+                                    transition: 'max-height 0.3s ease-in-out',
+                                    paddingBottom: '20px',
+                                }}
+                            >
+                                {card.description || 'Нет описания'}
+                            </div>
+
+                            {/* Индикатор прокрутки для длинных текстов */}
+                            {hasScroll && (
+                                <div
+                                    className="absolute bottom-3 right-3 text-xs text-white/50 flex items-center gap-1">
+                                    {descriptionRef.current?.scrollTop && descriptionRef.current.scrollTop > 0 && (
+                                        <span className="animate-bounce">↑</span>
+                                    )}
+                                    {descriptionRef.current &&
+                                        descriptionRef.current.scrollTop <
+                                        (descriptionRef.current.scrollHeight - descriptionRef.current.clientHeight - 10) && (
+                                            <span className="animate-bounce">↓</span>
+                                        )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
