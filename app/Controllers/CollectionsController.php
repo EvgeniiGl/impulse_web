@@ -54,7 +54,8 @@ class CollectionsController extends BaseController
                 'error'   => TranslationHelper::translate('Authentication required')
             ], 401);
         }
-        $collection = Collection::getWithCards($id, $user);
+
+        $collection = (new Collection())->getWithCards($id, $user);
 
         if (!$collection) {
             return $this->response

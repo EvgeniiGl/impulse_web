@@ -10,6 +10,7 @@ import {isTokenExpired} from "@/utils/tokenUtils.ts";
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
 import {useEffect} from 'react';
 import CreateCardPage from "@pages/CreateCardPage.tsx";
+import CardPage from "@pages/CardPage.tsx";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -33,6 +34,7 @@ function App() {
                     <Route path="/card/create" element={<CreateCardPage/>}/>
                     <Route path="/collection/create" element={<CreateCollectionPage/>}/>
                     <Route path="/register" element={<RegisterPage/>}/>
+                    <Route path="/card/:id" element={<CardPage/>}/>
                 </Routes>
             </div>
         </Router>

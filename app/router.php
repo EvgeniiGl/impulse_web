@@ -59,7 +59,7 @@ return function (): Router {
     ], [
         'GET'
     ]);
-    $router->add('/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+    $router->add('/api/card/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
         'controller' => 'cards',
         'action'     => 'get'
     ], [
@@ -108,6 +108,13 @@ return function (): Router {
     $router->add('/today', [
         'controller' => 'index',
         'action'     => 'index'
+    ]);
+
+    $router->add('/card/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'index',
+        'action'     => 'index'
+    ], [
+        'GET'
     ]);
 
     $router->add('/login', [

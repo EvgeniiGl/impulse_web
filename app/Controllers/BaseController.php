@@ -30,13 +30,15 @@ class BaseController extends PhalconController
         '/card/create',
         '/collection/create',
         '/register',
+        '/card/*',
     ];
 
     public function onConstruct(): void
     {
-        // Исключаем публичные маршруты
-        $currentRoute = $this->request->getURI();
-        if (!in_array($currentRoute, $this->publicRoutes)) {
+        $currentRoute = strtok($this->request->getURI(), '?');
+
+        // Проверяем, является ли текущий маршрут публичным
+        if (!$this->isPublicRoute($currentRoute)) {
             $this->config = $this->di->get('config');
             $this->cache  = $this->di->get('cache');
             $authHeader   = $this->request->getHeader('Authorization');
@@ -69,6 +71,24 @@ class BaseController extends PhalconController
                 throw new UnauthorizedException();
             }
         }
+    }
+
+    /**
+     * Проверяет, является ли маршрут публичным
+     */
+    private function isPublicRoute(string $uri): bool
+    {
+        // Точное совпадение с публичными маршрутами
+        if (in_array($uri, $this->publicRoutes)) {
+            return true;
+        }
+
+        // Проверка для маршрутов карточек с UUID
+        if (preg_match('/^\/card\/[a-f0-9\-]{36}$/', $uri)) {
+            return true;
+        }
+
+        return false;
     }
 
     private function isTokenBlacklisted(string $token): bool

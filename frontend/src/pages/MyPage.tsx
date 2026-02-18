@@ -131,11 +131,11 @@ export default function MyPage() {
                         )}
 
                         {/* Информация о количестве карточек */}
-                        {!isLoading && myCards.length > 0 && (
-                            <div className="mb-4 text-sm text-gray-600">
-                                {t('my.showing') || 'Показано'}: {myCards.length} {t('my.of') || 'из'} {pagination.total}
-                            </div>
-                        )}
+                        {/*{!isLoading && myCards.length > 0 && (*/}
+                        {/*    <div className="mb-4 text-sm text-gray-600">*/}
+                        {/*        {t('my.showing') || 'Показано'}: {myCards.length} {t('my.of') || 'из'} {pagination.total}*/}
+                        {/*    </div>*/}
+                        {/*)}*/}
 
                         {/* Сетка карточек */}
                         {myCards.length > 0 ? (

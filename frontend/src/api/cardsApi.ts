@@ -35,6 +35,13 @@ export interface GetCardsResponse {
     };
 }
 
+export interface GetCardResponse {
+    success: boolean;
+    data: {
+        card: Card;
+    };
+}
+
 export class Api extends ApiClient {
     async create(data: { card: CreateCardRequest, file: File }): Promise<CreateCardResponse | undefined> {
         try {
@@ -101,6 +108,18 @@ export class Api extends ApiClient {
         try {
             const response = await this.get<GetCardsResponse>(
                 `${this.client.defaults.baseURL}/api/cards/my?page=${page}&perPage=${perPage}`
+            );
+
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    async getCard(id: string): Promise<GetCardResponse | null> {
+        try {
+            const response = await this.get<GetCardResponse>(
+                `${this.client.defaults.baseURL}/api/card/${id}`
             );
 
             return response;

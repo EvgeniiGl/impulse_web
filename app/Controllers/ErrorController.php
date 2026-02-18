@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Helpers\TranslationHelper;
+use Phalcon\Mvc\Controller as PhalconController;
 
-class ErrorController extends BaseController
+class ErrorController extends PhalconController
 {
     public function notFoundAction(): void
     {

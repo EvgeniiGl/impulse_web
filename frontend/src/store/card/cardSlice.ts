@@ -1,5 +1,5 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {CardsApi, GetCardsResponse} from "@api/cardsApi.ts";
+import {CardsApi, GetCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
 import {CollectionsApi} from "@api/collectionsApi.ts";
 import {CardState, AccessType} from "@store/store.ts";
 
@@ -76,6 +76,21 @@ export const fetchCardsByCollection = createAsyncThunk(
     }
 );
 
+export const fetchCard = createAsyncThunk(
+    'card/fetchCard',
+    async (id: string, {rejectWithValue}) => {
+        try {
+            const response = await CardsApi.getCard(id);
+            if (!response) {
+                return rejectWithValue('Failed to fetch card');
+            }
+            return response;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
 const cardSlice = createSlice({
     name: 'card',
     initialState,
@@ -141,6 +156,19 @@ const cardSlice = createSlice({
                 state.pagination.hasMore = newCards.length === state.pagination.perPage;
             })
             .addCase(fetchCardsByCollection.rejected, (state: CardState, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            });
+        builder
+            .addCase(fetchCard.pending, (state: CardState) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchCard.fulfilled, (state: CardState, action: PayloadAction<GetCardResponse>) => {
+                state.isLoading = false;
+                state.currentCard = action.payload.data.card;
+            })
+            .addCase(fetchCard.rejected, (state: CardState, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             });
