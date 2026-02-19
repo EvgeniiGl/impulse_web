@@ -4,15 +4,16 @@
   "type": "project",
   "require": {
     "php": ">=8.3",
+    "ext-fileinfo": "*",
     "ext-pdo": "*",
     "ext-pdo_pgsql": "*",
     "ext-phalcon": "^5.0",
     "firebase/php-jwt": "^6.11",
     "league/flysystem-aws-s3-v3": "^3.30",
+    "minishlink/web-push": "^10.0",
     "ramsey/uuid": "^4.9",
     "robmorgan/phinx": "^0.16.10",
-    "vlucas/phpdotenv": "^5.5",
-    "ext-fileinfo": "*"
+    "vlucas/phpdotenv": "^5.5"
   },
   "require-dev": {
     "phalcon/ide-stubs": "^5.8.0",
