@@ -1,21 +1,20 @@
 // CardPage.tsx
 import {useParams, useNavigate} from 'react-router-dom';
 import {useEffect} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import Header from "@modules/Header.tsx";
 import Footer from "@modules/Footer.tsx";
 import Main from "@modules/Main.tsx";
 import {fetchCard, resetCurrentCard} from '@store/card/cardSlice.ts';
 import {LiaSignatureSolid} from "react-icons/lia";
-import {CardState} from "@store/store.ts";
+import {CardState, useAppDispatch, useAppSelector} from "@store/store.ts";
 
 export default function CardPage() {
     const {id} = useParams<{ id: string }>();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const {t} = useTranslation();
-    const {currentCard, isLoading, error}: CardState = useSelector((state: any) => state.card);
+    const {currentCard, isLoading, error}: CardState = useAppSelector((state: any) => state.card);
 
     // Handle missing ID
     useEffect(() => {

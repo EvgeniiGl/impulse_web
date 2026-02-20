@@ -23,7 +23,6 @@ export default function CreateCardPage() {
     const [formData, setFormData] = useState<CreateCardRequest & { show_title_on_image?: boolean }>({
         title: '',
         description: '',
-        creator_id: '',
         access_type: 'private',
         is_active: false,
         file: null,

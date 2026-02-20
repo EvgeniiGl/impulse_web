@@ -1,14 +1,13 @@
 import {useState, useRef, useEffect} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {useDispatch} from "react-redux";
-import {AppDispatch} from "@store/store.ts";
+import {useAppDispatch} from "@store/store.ts";
 import {useAuth} from "@hooks/useAuth.ts";
 import {logoutUser} from "@store/auth/authSlice.ts";
 
 const Profile = () => {
     const {t} = useTranslation();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);

@@ -86,6 +86,22 @@ services:
     volumes:
       - './:/var/www'
 
+  notification-worker:
+    build:
+      context: .
+      dockerfile: notification.Dockerfile
+    volumes:
+      - './:/var/www'
+      - './logs:/var/log'
+    depends_on:
+      - app
+      - postgres
+    networks:
+      - app-network
+    restart: unless-stopped
+    env_file:
+      - .env
+
 networks:
   app-network:
     driver: bridge

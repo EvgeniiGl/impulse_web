@@ -84,6 +84,63 @@ return function (): Router {
         'DELETE'
     ]);
 
+// collections маршруты
+// Создаем группу отдельно
+    $collectionGroup = new RouterGroup([
+        'controller' => 'collections',
+    ]);
+
+// Добавляем маршруты
+    $collectionGroup->addGet('/collections', ['action' => 'index']);
+    $collectionGroup->addGet('/collections/my', ['action' => 'my']);
+    $collectionGroup->addPost('/collections', ['action' => 'create']);
+    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'show']);
+    $collectionGroup->addPut('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'update']);
+    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'delete']);
+
+// Карточки в коллекции
+    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards', ['action' => 'addCard']);
+    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards/{card_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'removeCard']);
+
+// Расшаривание
+    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share', ['action' => 'share']);
+    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share/{user_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'unshare']);
+    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/shared-users', ['action' => 'sharedUsers']);
+
+// Монтируем группу к роутеру
+    $router->mount($collectionGroup);
+
+// notifications маршруты
+    $router->addGet('/api/notifications/vapid-key', [
+        'controller' => 'notification',
+        'action'     => 'getVapidKey'
+    ]);
+
+    $router->addPost('/api/notifications/subscribe', [
+        'controller' => 'notification',
+        'action'     => 'subscribe'
+    ]);
+
+    $router->addPost('/api/notifications/schedules', [
+        'controller' => 'notification',
+        'action'     => 'createSchedule'
+    ]);
+
+    $router->addGet('/api/notifications/schedules', [
+        'controller' => 'notification',
+        'action'     => 'getSchedules'
+    ]);
+
+    $router->addPut('/api/notifications/schedules/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'notification',
+        'action'     => 'updateSchedule'
+    ]);
+
+    $router->addDelete('/api/notifications/schedules/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'notification',
+        'action'     => 'deleteSchedule'
+    ]);
+
 // Для React Router - все остальные пути на главную страницу
     $router->add('/', [
         'controller' => 'index',
@@ -126,32 +183,6 @@ return function (): Router {
         'controller' => 'download',
         'action'     => 'signed'
     ]);
-
-// collections маршруты
-// Создаем группу отдельно
-    $collectionGroup = new RouterGroup([
-        'controller' => 'collections',
-    ]);
-
-// Добавляем маршруты
-    $collectionGroup->addGet('/collections', ['action' => 'index']);
-    $collectionGroup->addGet('/collections/my', ['action' => 'my']);
-    $collectionGroup->addPost('/collections', ['action' => 'create']);
-    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'show']);
-    $collectionGroup->addPut('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'update']);
-    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'delete']);
-
-// Карточки в коллекции
-    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards', ['action' => 'addCard']);
-    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards/{card_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'removeCard']);
-
-// Расшаривание
-    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share', ['action' => 'share']);
-    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share/{user_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'unshare']);
-    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/shared-users', ['action' => 'sharedUsers']);
-
-// Монтируем группу к роутеру
-    $router->mount($collectionGroup);
 
     $router->notFound([
         'controller' => 'error',
