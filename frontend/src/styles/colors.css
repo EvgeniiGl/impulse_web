@@ -35,6 +35,8 @@
     --text-secondary: #5259cf;
     --text-tertiary: #d6d0ff;
     --text-white: #ffffff;
+    --text-gray-300: #d1d5db;
+    --text-gray-500: #6b7280;
 
     /* Border colors */
     --border-primary: #e5e7eb;

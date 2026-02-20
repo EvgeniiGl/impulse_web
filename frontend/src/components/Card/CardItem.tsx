@@ -100,6 +100,7 @@ export default function CardItem({card}: CardItemProps) {
     const handleCloseSchedule = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsScheduleOpen(false);
+        setIsDescriptionOpen(false);
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -191,7 +192,8 @@ export default function CardItem({card}: CardItemProps) {
                                 padding: '3px',
                                 borderRadius: '50%',
                                 backgroundColor: 'rgba(0,0,0,0.5)',
-                                color: 'white'
+                                color: 'white',
+                                border: '1px solid var(--color-white)',
                             }}
                             title={isDescriptionOpen ? "Скрыть описание" : "Показать описание"}
                         >
@@ -206,7 +208,8 @@ export default function CardItem({card}: CardItemProps) {
                                 padding: '3px',
                                 borderRadius: '50%',
                                 backgroundColor: 'rgba(0,0,0,0.5)',
-                                color: 'white'
+                                color: 'white',
+                                border: '1px solid var(--color-white)',
                             }}
                             title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
                         >
@@ -220,10 +223,7 @@ export default function CardItem({card}: CardItemProps) {
                             }`}
                             style={{zIndex: 40}}
                         >
-                            <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative"
-                                 style={{
-                                     background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)'
-                                 }}>
+                            <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
                                 {/* Крестик для закрытия */}
                                 <div
                                     onClick={handleCloseSchedule}
@@ -280,10 +280,7 @@ export default function CardItem({card}: CardItemProps) {
                             }`}
                             style={{zIndex: 40}}
                         >
-                            <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative"
-                                 style={{
-                                     background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)'
-                                 }}>
+                            <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
                                 {/* Крестик для закрытия */}
                                 <div
                                     onClick={handleCloseSchedule}
@@ -295,10 +292,7 @@ export default function CardItem({card}: CardItemProps) {
                                         className="w-5 h-5"/>
                                 </div>
 
-                                <div className="p-4 h-full flex flex-col">
-                                    <p className="text-sm font-medium mb-3 flex-shrink-0 text-[var(--color-primary-light2)]">
-                                        Настройка уведомлений
-                                    </p>
+                                <div className="p-4 h-full flex flex-col cursor-default">
                                     <div
                                         ref={scheduleRef}
                                         className="flex-1 overflow-y-auto scrollbar-custom scrollbar-thin"

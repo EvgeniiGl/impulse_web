@@ -67,51 +67,56 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
     const minDateTime = new Date().toISOString().slice(0, 16);
 
     return (
-        <form onSubmit={handleSubmit}
-              className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Частота
-                    уведомлений
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: 'var(--text-white)'}}>
+                    Частота уведомлений
                 </label>
                 <select
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value as NotificationFrequency)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        borderColor: 'var(--border-primary)',
+                        color: 'var(--text-primary)'
+                    }}
                 >
-                    {
-                        frequencyOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))
-                    }
+                    {frequencyOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
                 </select>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Дата
-                    и
-                    время
-                    первого
-                    уведомления *
+                <label className="block text-sm font-medium mb-1"
+                       style={{color: 'var(--text-white)'}}>
+                    Дата и время первого уведомления *
                 </label>
-                < input
+                <input
                     type="datetime-local"
                     value={scheduledAt}
                     onChange={(e) => setScheduledAt(e.target.value)}
                     min={minDateTime}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        borderColor: 'var(--border-primary)',
+                        color: 'var(--text-primary)'
+                    }}
                 />
             </div>
 
             {frequency !== 'once' && (
                 <>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Количество повторений(оставьте пустым для бесконечного)
+                        <label className="block text-sm font-medium mb-1"
+                               style={{color: 'var(--text-white)'}}>
+                            Количество повторений
                         </label>
                         <input
                             type="number"
@@ -119,32 +124,55 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                             onChange={(e) => setRepeatCount(e.target.value === '' ? '' : Number(e.target.value))}
                             min="1"
                             placeholder="Бесконечно"
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                            style={{
+                                backgroundColor: 'var(--bg-primary)',
+                                borderColor: 'var(--border-primary)',
+                                color: 'var(--text-primary)'
+                            }}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Дата окончания(опционально)
+                        <label className="block text-sm font-medium mb-1"
+                               style={{color: 'var(--text-white)'}}>
+                            Дата окончания
                         </label>
-                        < input
+                        <input
                             type="datetime-local"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            min={scheduledAt || minDateTime
-                            }
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            min={scheduledAt || minDateTime}
+                            className="w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+                            style={{
+                                backgroundColor: 'var(--bg-primary)',
+                                borderColor: 'var(--border-primary)',
+                                color: 'var(--text-primary)'
+                            }}
                         />
                     </div>
                 </>
-            )
-            }
+            )}
 
             <div className="flex gap-3 pt-4">
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 py-2 px-4 rounded-lg transition-colors"
+                    style={{
+                        backgroundColor: isLoading ? 'var(--color-gray-400)' : 'var(--bg-tertiary)',
+                        color: 'var(--text-primary)'
+                    }}
+                    // onMouseEnter={(e) => {
+                    //     if (!isLoading) {
+                    //         e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)';
+                    //     }
+                    // }}
+                    // onMouseLeave={(e) => {
+                    //     if (!isLoading) {
+                    //         e.currentTarget.style.backgroundColor = 'var(--color-primary)';
+                    //     }
+                    // }}
                 >
                     {isLoading ? 'Создание...' : 'Создать расписание'}
                 </button>
@@ -152,13 +180,22 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                        className="flex-1 py-2 px-4 rounded-lg transition-colors"
+                        style={{
+                            backgroundColor: 'var(--bg-tertiary)',
+                            color: 'var(--text-primary)'
+                        }}
+                        // onMouseEnter={(e) => {
+                        //     e.currentTarget.style.backgroundColor = 'var(--border-secondary)';
+                        // }}
+                        // onMouseLeave={(e) => {
+                        //     e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                        // }}
                     >
                         Отмена
                     </button>
-                )
-                }
+                )}
             </div>
         </form>
     );
-}
+};
