@@ -6,9 +6,8 @@ namespace App\Controllers;
 
 use App\Services\WebPushService;
 use App\Models\CardNotificationSchedule;
-use Phalcon\Mvc\Controller;
 
-class NotificationController extends Controller
+class NotificationController extends BaseController
 {
     private WebPushService $webPushService;
 
@@ -230,8 +229,8 @@ class NotificationController extends Controller
 
     private function getUserId(): string
     {
-        // Получение user_id из JWT токена
-        // Реализация зависит от вашей системы аутентификации
-        return $this->auth->getUserId();
+        $user = $this->getAuthenticatedUser();
+        
+        return $user->id;
     }
 }

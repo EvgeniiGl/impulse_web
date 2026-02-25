@@ -1,5 +1,6 @@
 import ApiClient from "@/api/api";
 import {config} from "@api/api_config.ts";
+import {GetCardsResponse} from "@api/cardsApi.ts";
 
 export type NotificationFrequency =
     | 'once'
@@ -58,8 +59,7 @@ export class Api extends ApiClient {
             );
             return response?.data || null;
         } catch (error) {
-            console.error('Failed to get VAPID key:', error);
-            return null;
+            throw error;
         }
     }
 
@@ -71,8 +71,7 @@ export class Api extends ApiClient {
             );
             return response?.success || false;
         } catch (error) {
-            console.error('Failed to subscribe:', error);
-            return false;
+            throw error;
         }
     }
 
@@ -84,7 +83,6 @@ export class Api extends ApiClient {
             );
             return response;
         } catch (error) {
-            console.error('Failed to create schedule:', error);
             throw error;
         }
     }
@@ -96,8 +94,7 @@ export class Api extends ApiClient {
             );
             return response;
         } catch (error) {
-            console.error('Failed to get schedules:', error);
-            return null;
+            throw error;
         }
     }
 
@@ -109,7 +106,6 @@ export class Api extends ApiClient {
             );
             return response;
         } catch (error) {
-            console.error('Failed to update schedule:', error);
             throw error;
         }
     }
@@ -121,8 +117,7 @@ export class Api extends ApiClient {
             );
             return response?.success || false;
         } catch (error) {
-            console.error('Failed to delete schedule:', error);
-            return false;
+            throw error;
         }
     }
 }

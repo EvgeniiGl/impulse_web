@@ -56,9 +56,6 @@ export class Api extends ApiClient {
             formData.append("access_type", data.card.access_type);
             formData.append("is_active", data.card.is_active.toString());
             formData.append("show_title_on_image", data.card.show_title_on_image.toString());
-            console.log("log--",
-                "\ndata--", data,
-            );
             // Добавляем collection_ids (массив строк)
             data.card.collection_ids.forEach((id, index) => {
                 formData.append(`collection_ids[${index}]`, id);

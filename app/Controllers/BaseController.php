@@ -31,6 +31,7 @@ class BaseController extends PhalconController
         '/collection/create',
         '/register',
         '/card/*',
+        '/notification',
     ];
 
     public function onConstruct(): void

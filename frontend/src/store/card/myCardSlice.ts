@@ -1,7 +1,8 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {CardsApi, CreateCardRequest, CreateCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
 import {CollectionsApi, MyCollectionsResponse} from "@api/collectionsApi.ts";
-import {Card, Collection, PaginationState} from "@store/store.ts"; // Импорт типов из основного slice
+import {Card, Collection, PaginationState} from "@store/store.ts";
+import {NotificationsApi, CreateScheduleRequest} from '@/api/notificationsApi';
 
 interface MyCardState {
     myCards: Card[];
@@ -16,6 +17,7 @@ interface MyCardState {
     isUpdating: boolean,
     isDeleting: boolean,
     success: string | null;
+    openScheduleCardId: string | null;
 }
 
 const initialState: MyCardState = {
@@ -30,6 +32,7 @@ const initialState: MyCardState = {
     collections: [],
     selectedCollections: [],
     selectedCollectionId: null,
+    openScheduleCardId: null,
     pagination: {
         page: 1,
         perPage: 12,
@@ -51,6 +54,21 @@ export const fetchMyCards = createAsyncThunk(
             }
 
             return response as GetCardsResponse;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
+export const createSchedule = createAsyncThunk(
+    'myCards/createSchedule',
+    async (data: CreateScheduleRequest, {rejectWithValue}) => {
+        try {
+            const response = await NotificationsApi.createSchedule(data);
+            if (!response?.success) {
+                return rejectWithValue('Failed to create schedule');
+            }
+            return {success: true, cardId: data.card_id};
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -149,6 +167,15 @@ const myCardSlice = createSlice({
             };
             state.myCards = [];
         },
+        openScheduleForm: (state, action: PayloadAction<string>) => {
+            state.openScheduleCardId = action.payload;
+        },
+        closeScheduleForm: (state) => {
+            state.openScheduleCardId = null;
+        },
+        toggleScheduleForm: (state, action: PayloadAction<string>) => {
+            state.openScheduleCardId = state.openScheduleCardId === action.payload ? null : action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -232,6 +259,20 @@ const myCardSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload as string;
             });
+        builder
+            .addCase(createSchedule.pending, (state: MyCardState) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(createSchedule.fulfilled, (state: MyCardState) => {
+                state.isLoading = false;
+                state.success = 'Расписание успешно создано';
+                state.openScheduleCardId = null;
+            })
+            .addCase(createSchedule.rejected, (state: MyCardState, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            });
     },
 });
 
@@ -244,6 +285,9 @@ export const {
     resetPagination,
     clearSuccess,
     clearError,
+    openScheduleForm,
+    closeScheduleForm,
+    toggleScheduleForm,
 } = myCardSlice.actions;
 
 export default myCardSlice.reducer;

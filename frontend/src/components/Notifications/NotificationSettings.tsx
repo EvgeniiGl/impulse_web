@@ -41,10 +41,40 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
 
     const handleTestNotification = async () => {
         try {
+            // 1. Сначала проверяем поддержку
+            if (!notificationManager.isSupported()) {
+                alert('Ваш браузер не поддерживает уведомления');
+                return;
+            }
+
+            // 2. Проверяем разрешение
+            const permission = notificationManager.getPermissionStatus();
+
+            if (permission !== 'granted') {
+                // Если разрешение не дано, пробуем его получить
+                const newPermission = await notificationManager.requestPermission();
+
+                if (newPermission !== 'granted') {
+                    alert('Необходимо разрешить уведомления');
+                    return;
+                }
+            }
+
+            // 3. Регистрируем Service Worker (если еще не зарегистрирован)
+            console.log("log--",
+                "\nnotificationManager--", notificationManager,
+            );
+            if (!notificationManager['registration']) {
+                await notificationManager.registerServiceWorker();
+            }
+
+            // 4. Показываем тестовое уведомление
             await notificationManager.showTestNotification();
+
+            console.log('Тестовое уведомление отправлено');
         } catch (error) {
             console.error('Error showing test notification:', error);
-            alert('Ошибка при показе тестового уведомления');
+            alert('Ошибка при показе тестового уведомления: ' + error.message);
         }
     };
 

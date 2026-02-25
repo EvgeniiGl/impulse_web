@@ -189,8 +189,10 @@ class WebPushService
     public function sendScheduledNotification(CardNotificationSchedule $schedule): bool
     {
         try {
-            $card = Card::findFirst($schedule->card_id);
-
+            $card = Card::findFirst([
+                'conditions' => 'id = :id:',
+                'bind'       => ['id' => $schedule->card_id]
+            ]);
             if (!$card) {
                 error_log("Card not found: {$schedule->card_id}");
                 throw new \Exception("Card not found");

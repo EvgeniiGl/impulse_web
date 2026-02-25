@@ -1,3 +1,7 @@
+// frontend/src/utils/notificationUtils.ts
+
+import {NotificationsApi} from '@/api/notificationsApi';
+
 export interface NotificationSubscription {
     endpoint: string;
     keys: {
@@ -10,6 +14,7 @@ export class NotificationManager {
     private static instance: NotificationManager;
     private vapidPublicKey: string | null = null;
     private registration: ServiceWorkerRegistration | null = null;
+    private registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
 
     private constructor() {
     }
@@ -60,31 +65,63 @@ export class NotificationManager {
             throw new Error('Service Worker not supported');
         }
 
+        // Если уже есть промис регистрации, возвращаем его
+        if (this.registrationPromise) {
+            return this.registrationPromise;
+        }
+
         try {
-            this.registration = await navigator.serviceWorker.register('/js/sw.js');
+            console.log('Attempting to register Service Worker from /sw.js');
+
+            // Проверяем и удаляем существующие регистрации для чистоты
+            const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of existingRegistrations) {
+                if (reg.scope.includes(window.location.origin)) {
+                    console.log('Unregistering existing SW with scope:', reg.scope);
+                    await reg.unregister();
+                }
+            }
+
+            // Регистрируем новый Service Worker
+            this.registrationPromise = navigator.serviceWorker.register('/sw.js', {
+                scope: '/'
+            });
+
+            this.registration = await this.registrationPromise;
             console.log('Service Worker registered:', this.registration);
 
-            // Ждем, пока SW станет активным
+            // Обработка состояний Service Worker
+            if (this.registration.installing) {
+                const sw = this.registration.installing;
+                sw.addEventListener('statechange', () => {
+                    console.log('Service Worker state changed to:', sw.state);
+                });
+            }
+
+            // Ждем готовности
             await navigator.serviceWorker.ready;
+            console.log('Service Worker is ready');
 
             return this.registration;
+
         } catch (error) {
             console.error('Service Worker registration failed:', error);
+            this.registrationPromise = null;
             throw error;
         }
     }
 
     /**
-     * Получение VAPID ключа с сервера
+     * Получение VAPID ключа с сервера через ApiClient
      */
     async fetchVapidKey(): Promise<string> {
         try {
-            const response = await fetch('/api/notifications/vapid-key');
-            const data = await response.json();
+            // Используем NotificationsApi вместо fetch
+            const result = await NotificationsApi.getVapidKey();
 
-            if (data.success && data.data.publicKey) {
-                this.vapidPublicKey = data.data.publicKey;
-                return data.data.publicKey;
+            if (result?.publicKey) {
+                this.vapidPublicKey = result.publicKey;
+                return this.vapidPublicKey;
             }
 
             throw new Error('Failed to fetch VAPID key');
@@ -150,23 +187,13 @@ export class NotificationManager {
     }
 
     /**
-     * Отправка подписки на сервер
+     * Отправка подписки на сервер через ApiClient
      */
     async sendSubscriptionToServer(subscription: NotificationSubscription): Promise<boolean> {
         try {
-            const token = localStorage.getItem('token');
-
-            const response = await fetch('/api/notifications/subscribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({subscription})
-            });
-
-            const data = await response.json();
-            return data.success;
+            // Используем NotificationsApi вместо fetch
+            const success = await NotificationsApi.subscribe(subscription);
+            return success;
         } catch (error) {
             console.error('Failed to send subscription to server:', error);
             return false;
@@ -246,7 +273,7 @@ export class NotificationManager {
             body: 'Уведомления работают!',
             icon: '/icon-192x192.png',
             badge: '/icon-badge.png',
-            // vibrate: [200, 100, 200]
+            vibrate: [200, 100, 200]
         });
     }
 }

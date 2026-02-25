@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Phalcon\Mvc\Model;
+use Ramsey\Uuid\Uuid;
 
 class PushSubscription extends Model
 {
-    public string  $id;
+    public ?string $id         = null;
     public string  $user_id;
     public string  $endpoint;
     public string  $p256dh_key;
     public string  $auth_key;
     public ?string $user_agent;
     public bool    $is_active;
-    public string  $created_at;
-    public string  $updated_at;
+    public ?string $created_at = null;
+    public ?string $updated_at = null;
 
     public function initialize()
     {
@@ -30,6 +31,7 @@ class PushSubscription extends Model
 
     public function beforeCreate()
     {
+        $this->id         = Uuid::uuid4()->toString();
         $this->created_at = date('Y-m-d H:i:s');
         $this->updated_at = date('Y-m-d H:i:s');
     }

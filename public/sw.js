@@ -1,4 +1,18 @@
-// Service Worker для обработки push-уведомлений
+// public/js/sw.js
+
+const SW_VERSION = '1.0.1';
+console.log('Service Worker loading...', SW_VERSION);
+
+// Обработка сообщений от клиента
+self.addEventListener('message', function (event) {
+    console.log('Message received:', event.data);
+
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        console.log('SKIP_WAITING received, activating...');
+        self.skipWaiting();
+    }
+});
+
 self.addEventListener('push', function (event) {
     console.log('Push received:', event);
 
@@ -24,8 +38,11 @@ self.addEventListener('push', function (event) {
         actions: data.actions || [],
         tag: data.data?.card_id || 'notification',
         requireInteraction: false,
-        vibrate: [200, 100, 200]
+        vibrate: [200, 100, 200],
+        timestamp: Date.now()
     };
+
+    console.log('Showing notification:', title, options);
 
     event.waitUntil(
         self.registration.showNotification(title, options)
@@ -78,17 +95,18 @@ self.addEventListener('notificationclick', function (event) {
     }
 });
 
-// Обработка закрытия уведомления
 self.addEventListener('notificationclose', function (event) {
     console.log('Notification closed:', event);
 });
 
+// Немедленная активация
 self.addEventListener('install', function (event) {
-    console.log('Service Worker installing.');
-    self.skipWaiting();
+    console.log('Service Worker installing...', SW_VERSION);
+    self.skipWaiting(); // Пропускаем ожидание
 });
 
+// Получение контроля над страницей сразу после активации
 self.addEventListener('activate', function (event) {
-    console.log('Service Worker activating.');
-    event.waitUntil(clients.claim());
+    console.log('Service Worker activating...', SW_VERSION);
+    event.waitUntil(clients.claim()); // Немедленно получаем контроль
 });

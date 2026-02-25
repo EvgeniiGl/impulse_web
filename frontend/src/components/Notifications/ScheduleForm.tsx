@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
-import {NotificationsApi, NotificationFrequency, CreateScheduleRequest} from '@/api/notificationsApi';
+import {NotificationFrequency, CreateScheduleRequest} from '@/api/notificationsApi';
+import {useAppDispatch} from '@store/store.ts';
+import {createSchedule} from '@store/card/myCardSlice.ts';
 
 interface ScheduleFormProps {
     cardId: string;
@@ -12,6 +14,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                                                               onSuccess,
                                                               onCancel
                                                           }) => {
+    const dispatch = useAppDispatch();
     const [frequency, setFrequency] = useState<NotificationFrequency>('once');
     const [scheduledAt, setScheduledAt] = useState('');
     const [repeatCount, setRepeatCount] = useState<number | ''>('');
@@ -32,7 +35,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
         e.preventDefault();
 
         if (!scheduledAt) {
-            alert('Укажите дату и время');
+            // alert('Укажите дату и время');
             return;
         }
 
@@ -47,17 +50,14 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                 end_date: endDate ? new Date(endDate).toISOString() : null
             };
 
-            const response = await NotificationsApi.createSchedule(data);
+            const result = await dispatch(createSchedule(data)).unwrap();
 
-            if (response?.success) {
-                alert('Расписание создано!');
-                onSuccess?.();
-            } else {
-                alert('Ошибка при создании расписания');
+            if (result) {
+                onSuccess?.(); // Вызовем onSuccess, который закроет форму
             }
         } catch (error) {
             console.error('Error creating schedule:', error);
-            alert('Ошибка при создании расписания');
+            //  alert('Ошибка при создании расписания');
         } finally {
             setIsLoading(false);
         }

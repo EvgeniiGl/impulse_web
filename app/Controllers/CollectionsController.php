@@ -271,8 +271,8 @@ class CollectionsController extends BaseController
      */
     public function unshareAction(int $id, int $userId)
     {
-        $currentUserId = $this->auth->getUserId();
-        $result        = $this->collectionService->unshare($id, $userId, $currentUserId);
+        $user   = $this->getAuthenticatedUser();
+        $result = $this->collectionService->unshare($id, $userId, $user->id);
 
         if (!$result) {
             return $this->response
@@ -295,8 +295,8 @@ class CollectionsController extends BaseController
      */
     public function sharedUsersAction(int $id)
     {
-        $userId = $this->auth->getUserId();
-        $users  = $this->collectionService->getSharedUsers($id, $userId);
+        $user  = $this->getAuthenticatedUser();
+        $users = $this->collectionService->getSharedUsers($id, $user->id);
 
         if ($users === false) {
             return $this->response->setStatusCode(403)

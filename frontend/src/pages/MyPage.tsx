@@ -28,8 +28,7 @@ export default function MyPage() {
         collectionsLoading,
         isLoading,
         selectedCollectionId,
-        pagination,
-        error
+        pagination
     } = useAppSelector((state) => state.myCards);
 
     const {isAuthenticated} = useAppSelector((state) => state.auth);
@@ -124,11 +123,11 @@ export default function MyPage() {
                         />
 
                         {/* Ошибка */}
-                        {error && (
-                            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                                {error}
-                            </div>
-                        )}
+                        {/*{error && (*/}
+                        {/*    <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">*/}
+                        {/*        {error}*/}
+                        {/*    </div>*/}
+                        {/*)}*/}
 
                         {/* Информация о количестве карточек */}
                         {/*{!isLoading && myCards.length > 0 && (*/}

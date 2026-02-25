@@ -5,21 +5,22 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Phalcon\Mvc\Model;
+use Ramsey\Uuid\Uuid;
 
 class CardNotificationSchedule extends Model
 {
-    public string  $id;
+    public ?string $id           = null;
     public string  $card_id;
     public string  $user_id;
     public string  $frequency;
     public string  $scheduled_at;
-    public ?string $last_sent_at;
+    public ?string $last_sent_at = null;
     public string  $next_send_at;
-    public bool    $is_active;
-    public string  $created_at;
-    public string  $updated_at;
+    public ?bool   $is_active    = true;
+    public ?string $created_at   = null;
+    public ?string $updated_at   = null;
     public ?int    $repeat_count;
-    public int     $sent_count;
+    public int     $sent_count   = 0;
     public ?string $end_date;
 
     public function initialize()
@@ -43,6 +44,7 @@ class CardNotificationSchedule extends Model
 
     public function beforeCreate()
     {
+        $this->id         = Uuid::uuid4()->toString();
         $this->created_at = date('Y-m-d H:i:s');
         $this->updated_at = date('Y-m-d H:i:s');
         $this->sent_count = 0;

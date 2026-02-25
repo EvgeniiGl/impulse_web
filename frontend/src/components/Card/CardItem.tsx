@@ -5,6 +5,8 @@ import {LiaSignatureSolid} from "react-icons/lia";
 import {MdOutlineSchedule} from "react-icons/md";
 import {IoCloseCircleOutline} from "react-icons/io5";
 import {ScheduleForm} from '@/components/Notifications/ScheduleForm';
+import {useAppDispatch, useAppSelector} from '@store/store.ts';
+import {closeScheduleForm, toggleScheduleForm} from '@store/card/myCardSlice.ts';
 
 interface CardItemProps {
     card: Card;
@@ -12,15 +14,20 @@ interface CardItemProps {
 
 export default function CardItem({card}: CardItemProps) {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+
+    const openScheduleCardId = useAppSelector(state => state.myCards.openScheduleCardId);
+
     const [imageError, setImageError] = useState(false);
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
-    const [isScheduleOpen, setIsScheduleOpen] = useState(false);
 
     const descriptionRef = useRef<HTMLDivElement | null>(null);
     const scheduleRef = useRef<HTMLDivElement | null>(null);
     const cardRef = useRef<HTMLDivElement | null>(null);
     const [hasDescriptionScroll, setHasDescriptionScroll] = useState(false);
     const [cardHeight, setCardHeight] = useState(0);
+
+    const isScheduleOpen = openScheduleCardId === card.id;
 
     // Закрытие описания и формы уведомлений при клике вне области карточки
     useEffect(() => {
@@ -31,7 +38,9 @@ export default function CardItem({card}: CardItemProps) {
                 !cardRef.current.contains(event.target as Node)
             ) {
                 setIsDescriptionOpen(false);
-                setIsScheduleOpen(false);
+                if (isScheduleOpen) {
+                    dispatch(closeScheduleForm());
+                }
                 if (descriptionRef.current) {
                     descriptionRef.current.scrollTop = 0;
                 }
@@ -42,7 +51,7 @@ export default function CardItem({card}: CardItemProps) {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isDescriptionOpen, isScheduleOpen]);
+    }, [isDescriptionOpen, isScheduleOpen, dispatch]);
 
     // Проверяем, есть ли прокрутка у описания
     useEffect(() => {
@@ -79,28 +88,33 @@ export default function CardItem({card}: CardItemProps) {
 
     const handleDescriptionToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsScheduleOpen(false);
+        if (isScheduleOpen) {
+            dispatch(closeScheduleForm());
+        }
         setIsDescriptionOpen(!isDescriptionOpen);
     };
 
     const handleScheduleToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsDescriptionOpen(false);
-        setIsScheduleOpen(!isScheduleOpen);
+        dispatch(toggleScheduleForm(card.id));
     };
 
-    const handleCloseDescription = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    // const handleCloseDescription = (e: React.MouseEvent) => {
+    //     e.stopPropagation();
+    //     setIsDescriptionOpen(false);
+    //     if (descriptionRef.current) {
+    //         descriptionRef.current.scrollTop = 0;
+    //     }
+    // };
+
+    const handleCloseSchedule = () => {
+        dispatch(closeScheduleForm());
         setIsDescriptionOpen(false);
-        if (descriptionRef.current) {
-            descriptionRef.current.scrollTop = 0;
-        }
     };
 
-    const handleCloseSchedule = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsScheduleOpen(false);
-        setIsDescriptionOpen(false);
+    const handleScheduleSuccess = () => {
+        dispatch(closeScheduleForm());
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -304,8 +318,8 @@ export default function CardItem({card}: CardItemProps) {
                                     >
                                         <ScheduleForm
                                             cardId={card.id}
-                                            onSuccess={() => setIsScheduleOpen(false)}
-                                            onCancel={() => setIsScheduleOpen(false)}
+                                            onSuccess={handleScheduleSuccess}
+                                            onCancel={handleCloseSchedule}
                                         />
                                     </div>
                                 </div>

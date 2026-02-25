@@ -11,6 +11,7 @@ import {useAppDispatch, useAppSelector} from "@store/store.ts";
 import {useEffect} from 'react';
 import CreateCardPage from "@pages/CreateCardPage.tsx";
 import CardPage from "@pages/CardPage.tsx";
+import {NotificationsPage} from "@pages/NotificationsPage.tsx";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -35,6 +36,7 @@ function App() {
                     <Route path="/collection/create" element={<CreateCollectionPage/>}/>
                     <Route path="/register" element={<RegisterPage/>}/>
                     <Route path="/card/:id" element={<CardPage/>}/>
+                    <Route path="/notification" element={<NotificationsPage/>}/>
                 </Routes>
             </div>
         </Router>
