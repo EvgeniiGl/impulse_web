@@ -1,6 +1,5 @@
 import ApiClient from "@/api/api";
 import {config} from "@api/api_config.ts";
-import {GetCardsResponse} from "@api/cardsApi.ts";
 
 export type NotificationFrequency =
     | 'once'

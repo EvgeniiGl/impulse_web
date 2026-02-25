@@ -1,4 +1,4 @@
-// frontend/src/utils/notificationUtils.ts
+// frontend/src/utils/notificationManager.ts
 
 import {NotificationsApi} from '@/api/notificationsApi';
 
@@ -13,7 +13,7 @@ export interface NotificationSubscription {
 export class NotificationManager {
     private static instance: NotificationManager;
     private vapidPublicKey: string | null = null;
-    private registration: ServiceWorkerRegistration | null = null;
+    registration: ServiceWorkerRegistration | null = null;
     private registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
 
     private constructor() {
@@ -164,6 +164,7 @@ export class NotificationManager {
         try {
             const subscription = await this.registration!.pushManager.subscribe({
                 userVisibleOnly: true,
+                // @ts-ignore
                 applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey!)
             });
 
@@ -273,8 +274,93 @@ export class NotificationManager {
             body: 'Уведомления работают!',
             icon: '/icon-192x192.png',
             badge: '/icon-badge.png',
-            vibrate: [200, 100, 200]
+            // vibrate: [200, 100, 200]
         });
+    }
+
+    /**
+     * Проверка активной подписки
+     */
+    async checkSubscriptionStatus(): Promise<{
+        isSubscribed: boolean;
+        subscription: PushSubscriptionJSON | null;
+    }> {
+        try {
+            if (!this.registration) {
+                await this.registerServiceWorker();
+            }
+
+            const subscription = await this.registration!.pushManager.getSubscription();
+
+            return {
+                isSubscribed: !!subscription,
+                subscription: subscription?.toJSON() || null
+            };
+        } catch (error) {
+            console.error('Error checking subscription:', error);
+            return {
+                isSubscribed: false,
+                subscription: null
+            };
+        }
+    }
+
+    /**
+     * Проверка валидности подписки на сервере
+     */
+    async validateSubscription(): Promise<boolean> {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/notifications/validate-subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            return data.success && data.data?.isValid === true;
+        } catch (error) {
+            console.error('Error validating subscription:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Переподписка (если подписка неактивна)
+     */
+    async resubscribeIfNeeded(): Promise<boolean> {
+        try {
+            // Проверяем локальную подписку
+            const {isSubscribed} = await this.checkSubscriptionStatus();
+
+            if (!isSubscribed) {
+                console.log('No local subscription, need to resubscribe');
+                return false;
+            }
+
+            // Проверяем валидность на сервере
+            const isValid = await this.validateSubscription();
+
+            if (!isValid) {
+                console.log('Subscription invalid on server, resubscribing...');
+
+                // Отписываемся локально
+                await this.unsubscribe();
+
+                // Подписываемся заново
+                const subscription = await this.subscribe();
+                const success = await this.sendSubscriptionToServer(subscription);
+
+                return success;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error in resubscribeIfNeeded:', error);
+            return false;
+        }
     }
 }
 

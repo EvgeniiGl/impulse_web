@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\PushSubscription;
 use App\Services\WebPushService;
 use App\Models\CardNotificationSchedule;
 
@@ -250,5 +251,36 @@ class NotificationController extends BaseController
         $user = $this->getAuthenticatedUser();
 
         return $user->id;
+    }
+
+    /**
+     * Валидация подписки
+     * POST /api/notifications/validate-subscription
+     */
+    public function validateSubscriptionAction()
+    {
+        try {
+            $userId = $this->getUserId();
+
+            // Проверяем, есть ли активные подписки
+            $activeSubscription = PushSubscription::findFirst([
+                'conditions' => 'user_id = :user_id: AND is_active = true',
+                'bind'       => ['user_id' => $userId]
+            ]);
+
+            return $this->response->setJsonContent([
+                'success' => true,
+                'data'    => [
+                    'isValid'         => $activeSubscription !== null,
+                    'hasSubscription' => $activeSubscription !== null
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setJsonContent([
+                'success' => false,
+                'message' => $e->getMessage()
+            ])->setStatusCode(500);
+        }
     }
 }

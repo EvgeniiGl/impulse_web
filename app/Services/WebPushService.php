@@ -110,15 +110,15 @@ class WebPushService
     /**
      * Отправка уведомления конкретному пользователю
      */
-    public function sendNotification(string $userId, array $payload): array
+    public function sendNotification(CardNotificationSchedule $schedule, array $payload): array
     {
         $subscriptions = PushSubscription::find([
             'conditions' => 'user_id = :user_id: AND is_active = true',
-            'bind'       => ['user_id' => $userId]
+            'bind'       => ['user_id' => $schedule->user_id]
         ]);
 
         if (count($subscriptions) === 0) {
-            error_log("No active subscriptions found for user: {$userId}");
+            error_log("No active subscriptions found for user: {$schedule->user_id}");
             return [];
         }
 
@@ -172,6 +172,16 @@ class WebPushService
                         $failedSub->is_active = false;
                         $failedSub->save();
                     }
+                    $log                = new NotificationLog();
+                    $log->schedule_id   = $schedule->id;
+                    $log->user_id       = $schedule->user_id;
+                    $log->card_id       = $schedule->card_id;
+                    $log->error_message = $report->getReason();
+                    $log->status        = 'failed';
+
+                    if (!$log->save()) {
+                        error_log("Failed to save notification log");
+                    }
                 } else {
                     error_log("Successfully sent notification to: {$endpoint}");
                 }
@@ -220,7 +230,7 @@ class WebPushService
                 ]
             ];
 
-            $results = $this->sendNotification($schedule->user_id, $payload);
+            $results = $this->sendNotification($schedule, $payload);
 
             $success = false;
             foreach ($results as $result) {

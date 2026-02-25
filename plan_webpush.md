@@ -976,7 +976,7 @@ self.addEventListener('activate', function (event) {
 
 3.2. Утилита для работы с push-уведомлениями
 
-frontend/src/utils/notificationUtils.ts
+frontend/src/utils/notificationManager.ts
 
 ```typescript
 export interface NotificationSubscription {

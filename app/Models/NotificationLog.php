@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Phalcon\Mvc\Model;
+use Ramsey\Uuid\Uuid;
 
 class NotificationLog extends Model
 {
-    public string  $id;
+    public ?string $id            = null;
     public string  $schedule_id;
     public string  $user_id;
     public string  $card_id;
     public string  $status;
-    public ?string $error_message;
-    public string  $sent_at;
-    public ?string $clicked_at;
+    public ?string $error_message = null;
+    public ?string $sent_at       = null;
+    public ?string $clicked_at    = null;
 
     public function initialize()
     {
@@ -39,6 +40,7 @@ class NotificationLog extends Model
 
     public function beforeCreate()
     {
+        $this->id      = Uuid::uuid4()->toString();
         $this->sent_at = date('Y-m-d H:i:s');
     }
 }

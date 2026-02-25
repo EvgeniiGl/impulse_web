@@ -8,8 +8,9 @@ import {Link} from 'react-router-dom';
 
 // Заглушка для изображения, если не загрузится
 const ImagePlaceholder = () => (
-    <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+    <div
+        className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+        <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
             <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
         </svg>
     </div>
@@ -126,19 +127,23 @@ export const NotificationsPage: React.FC = () => {
                                                 <Link
                                                     to={`/card/${schedule.card_id}`}
                                                     className="flex-shrink-0 hover:opacity-80 transition-opacity"
-                                                    title={schedule.title}
+                                                    title={schedule.title || ''}
                                                 >
-                                                    {schedule.url && !imageErrors[schedule.card_id] ? (
-                                                        <img
-                                                            src={getImageUrl(schedule.url)}
-                                                            alt={schedule.title}
-                                                            className="w-18  rounded-lg object-cover border border-gray-200"
-                                                            onError={() => handleImageError(schedule.card_id)}
-                                                            loading="lazy"
-                                                        />
-                                                    ) : (
-                                                        <ImagePlaceholder/>
-                                                    )}
+                                                    <div
+                                                        className="w-18 h-26 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                                                        {schedule.url && !imageErrors[schedule.card_id] ? (
+                                                            <img
+                                                                src={getImageUrl(schedule.url || '')}
+                                                                alt={schedule.title || ''}
+                                                                className="w-full h-full object-cover"
+                                                                style={{aspectRatio: '9/16'}}
+                                                                onError={() => handleImageError(schedule.card_id)}
+                                                                loading="lazy"
+                                                            />
+                                                        ) : (
+                                                            <ImagePlaceholder/>
+                                                        )}
+                                                    </div>
                                                 </Link>
 
                                                 {/* Информация о карточке и расписании */}
@@ -147,7 +152,7 @@ export const NotificationsPage: React.FC = () => {
                                                         <Link
                                                             to={`/card/${schedule.card_id}`}
                                                             className="font-medium text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px]"
-                                                            title={schedule.title}
+                                                            title={schedule.title || ''}
                                                         >
                                                             {schedule.title || 'Без названия'}
                                                         </Link>
