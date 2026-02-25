@@ -114,12 +114,30 @@ class NotificationController extends BaseController
             $schedules = CardNotificationSchedule::find([
                 'conditions' => 'user_id = :user_id:',
                 'bind'       => ['user_id' => $userId],
-                'order'      => 'next_send_at ASC'
+                'order'      => 'next_send_at ASC',
+                'with'       => ['card'] // Важно: предзагружаем связанные карточки
             ]);
+
+            $data = [];
+            foreach ($schedules as $schedule) {
+                $scheduleData = $schedule->toArray();
+
+                // Добавляем данные карточки, если она существует
+                if ($schedule->card) {
+                    $scheduleData['title'] = $schedule->card->title;
+                    $scheduleData['url']   = $schedule->card->url;
+                } else {
+                    // Обработка случая, когда карточка удалена
+                    $scheduleData['title'] = null;
+                    $scheduleData['url']   = null;
+                }
+
+                $data[] = $scheduleData;
+            }
 
             return $this->response->setJsonContent([
                 'success' => true,
-                'data'    => $schedules
+                'data'    => $data
             ]);
         } catch (\Exception $e) {
             return $this->response->setJsonContent([
@@ -230,7 +248,7 @@ class NotificationController extends BaseController
     private function getUserId(): string
     {
         $user = $this->getAuthenticatedUser();
-        
+
         return $user->id;
     }
 }

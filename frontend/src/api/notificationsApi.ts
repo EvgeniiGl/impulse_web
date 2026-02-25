@@ -25,6 +25,8 @@ export interface NotificationSchedule {
     repeat_count: number | null;
     sent_count: number;
     end_date: string | null;
+    title: string | null;
+    url: string | null;
 }
 
 export interface CreateScheduleRequest {
