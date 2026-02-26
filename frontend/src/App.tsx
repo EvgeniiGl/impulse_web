@@ -13,7 +13,8 @@ import CreateCardPage from "@pages/CreateCardPage.tsx";
 import CardPage from "@pages/CardPage.tsx";
 import {NotificationsPage} from "@pages/NotificationsPage.tsx";
 import {SubscriptionWarning} from "@components/Notifications/SubscriptionWarning.tsx";
-import {notificationManager} from '@utils/notificationManager.ts';
+
+// import {notificationManager} from '@utils/notificationManager.ts';
 
 function App() {
     const dispatch = useAppDispatch();
@@ -26,31 +27,31 @@ function App() {
         dispatch(initializeAuth());
     }, [dispatch]);
 
-
-    useEffect(() => {
-        // Проверяем подписку при загрузке приложения
-        const checkSubscriptionOnLoad = async () => {
-            try {
-                if (notificationManager.isSupported()) {
-                    const permission = notificationManager.getPermissionStatus();
-
-                    if (permission === 'granted') {
-                        // Проверяем валидность подписки
-                        const isValid = await notificationManager.validateSubscription();
-
-                        if (!isValid) {
-                            console.log('Subscription invalid, attempting to resubscribe...');
-                            await notificationManager.resubscribeIfNeeded();
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking subscription on load:', error);
-            }
-        };
-
-        checkSubscriptionOnLoad();
-    }, []);
+    //
+    // useEffect(() => {
+    //     // Проверяем подписку при загрузке приложения
+    //     const checkSubscriptionOnLoad = async () => {
+    //         try {
+    //             if (notificationManager.isSupported()) {
+    //                 const permission = notificationManager.getPermissionStatus();
+    //
+    //                 if (permission === 'granted') {
+    //                     // Проверяем валидность подписки
+    //                     const isValid = await notificationManager.validateSubscription();
+    //
+    //                     if (!isValid) {
+    //                         console.log('Subscription invalid, attempting to resubscribe...');
+    //                         await notificationManager.resubscribeIfNeeded();
+    //                     }
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             console.error('Error checking subscription on load:', error);
+    //         }
+    //     };
+    //
+    //     checkSubscriptionOnLoad();
+    // }, []);
 
     return (
         <>

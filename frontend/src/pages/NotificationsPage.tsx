@@ -5,6 +5,8 @@ import moment from 'moment';
 import Header from "@modules/Header.tsx";
 import Main from "@modules/Main.tsx";
 import {Link} from 'react-router-dom';
+import {useAppDispatch, useAppSelector} from "@store/store.ts";
+import {fetchSchedules, selectFilteredSchedules} from "@store/notification/notificationSlice.ts";
 
 // Заглушка для изображения, если не загрузится
 const ImagePlaceholder = () => (
@@ -17,26 +19,18 @@ const ImagePlaceholder = () => (
 );
 
 export const NotificationsPage: React.FC = () => {
-    const [schedules, setSchedules] = useState<NotificationSchedule[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+    const schedules = useAppSelector(selectFilteredSchedules);
+    const dispatch = useAppDispatch();
+    const isLoading = useAppSelector(state => state.notifications.isLoading);
 
     useEffect(() => {
         loadSchedules();
     }, []);
 
     const loadSchedules = async () => {
-        setIsLoading(true);
-        try {
-            const response = await NotificationsApi.getSchedules();
-            if (response?.success) {
-                setSchedules(response.data);
-            }
-        } catch (error) {
-            console.error('Error loading schedules:', error);
-        } finally {
-            setIsLoading(false);
-        }
+        dispatch(fetchSchedules(null));
     };
 
     const handleToggleActive = async (schedule: NotificationSchedule) => {

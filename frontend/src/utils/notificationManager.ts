@@ -1,5 +1,3 @@
-// frontend/src/utils/notificationManager.ts
-
 import {NotificationsApi} from '@/api/notificationsApi';
 
 export interface NotificationSubscription {
@@ -289,9 +287,13 @@ export class NotificationManager {
             if (!this.registration) {
                 await this.registerServiceWorker();
             }
-
-            const subscription = await this.registration!.pushManager.getSubscription();
-
+            let subscription = await this.registration!.pushManager.getSubscription();
+            if (window.location.origin.includes('localhost') && subscription === null) {
+                return {
+                    isSubscribed: true,
+                    subscription: null
+                }
+            }
             return {
                 isSubscribed: !!subscription,
                 subscription: subscription?.toJSON() || null

@@ -52,6 +52,14 @@ export interface CreateScheduleResponse {
     data: NotificationSchedule;
 }
 
+export interface ValidateSubscriptionResponse {
+    success: boolean;
+    data: {
+        isValid: boolean;
+        hasSubscription: boolean;
+    };
+}
+
 export class Api extends ApiClient {
     async getVapidKey(): Promise<{ publicKey: string } | null> {
         try {
@@ -88,11 +96,15 @@ export class Api extends ApiClient {
         }
     }
 
-    async getSchedules(): Promise<GetSchedulesResponse | null> {
+    async getSchedules(isActive: boolean | null): Promise<GetSchedulesResponse> {
         try {
-            const response = await this.get<GetSchedulesResponse>(
-                `${this.client.defaults.baseURL}/api/notifications/schedules`
-            );
+            // Добавляем query параметр для фильтрации
+            let url = `${this.client.defaults.baseURL}/api/notifications/schedules`;
+            if (isActive !== null) {
+                url += `?is_active=${isActive}`;
+            }
+            const response = await this.get<GetSchedulesResponse>(url);
+
             return response;
         } catch (error) {
             throw error;
@@ -117,6 +129,18 @@ export class Api extends ApiClient {
                 `${this.client.defaults.baseURL}/api/notifications/schedules/${id}`
             );
             return response?.success || false;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async validateSubscription(): Promise<ValidateSubscriptionResponse> {
+        try {
+            const response = await this.post<null, ValidateSubscriptionResponse>(
+                `${this.client.defaults.baseURL}/api/notifications/validate-subscription`,
+                null
+            );
+            return response;
         } catch (error) {
             throw error;
         }

@@ -3,6 +3,7 @@ import {TypedUseSelectorHook, useDispatch, useSelector} from 'react-redux';
 import authReducer from './auth/authSlice.ts';
 import cardReducer from './card/cardSlice.ts';
 import myCardReducer from './card/myCardSlice.ts';
+import notificationReducer from './notification/notificationSlice';
 
 export type AccessType = 'private' | 'public' | 'shared';
 
@@ -62,6 +63,7 @@ export const store = configureStore({
         auth: authReducer,
         card: cardReducer,
         myCards: myCardReducer,
+        notifications: notificationReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware(),

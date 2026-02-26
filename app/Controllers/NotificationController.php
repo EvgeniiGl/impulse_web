@@ -104,17 +104,34 @@ class NotificationController extends BaseController
     }
 
     /**
-     * Получение расписаний пользователя
+     * Получение расписаний пользователя с фильтром по активности
      * GET /api/notifications/schedules
+     * Query parameters:
+     * - is_active: boolean (optional) - фильтр по активности
      */
     public function getSchedulesAction(): \Phalcon\Http\ResponseInterface
     {
         try {
             $userId = $this->getUserId();
 
+            // Получаем параметр фильтрации из query string
+            $isActive = $this->request->getQuery('is_active');
+
+            // Базовые условия
+            $conditions = 'user_id = :user_id:';
+            $bind       = ['user_id' => $userId];
+
+            // Добавляем фильтр по активности, если параметр передан
+            if ($isActive !== null) {
+                // Преобразуем строковый параметр в булево значение
+                $isActiveBool      = filter_var($isActive, FILTER_VALIDATE_BOOLEAN);
+                $conditions        .= ' AND is_active = :is_active: ';
+                $bind['is_active'] = (int)$isActiveBool;
+            }
+
             $schedules = CardNotificationSchedule::find([
-                'conditions' => 'user_id = :user_id:',
-                'bind'       => ['user_id' => $userId],
+                'conditions' => $conditions,
+                'bind'       => $bind,
                 'order'      => 'next_send_at ASC',
                 'with'       => ['card'] // Важно: предзагружаем связанные карточки
             ]);

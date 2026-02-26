@@ -8,32 +8,28 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# Create supervisor log directory
-RUN mkdir -p /var/log/supervisor
-
-# Copy supervisor configuration
-COPY docker/notification/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Создаем все необходимые директории
+RUN mkdir -p /var/log/supervisor /var/run/supervisor /var/log/notification
 
 # Set working directory
 WORKDIR /var/www
 
+# Копируем скрипт воркера и даем права
+COPY docker/notification/worker.sh /var/www/docker/notification/worker.sh
+RUN chmod +x /var/www/docker/notification/worker.sh
+
+# Копируем composer и устанавливаем зависимости (если нужно)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Copy composer files (если нужно)
 COPY composer.json composer.lock* ./
+RUN if [ -f composer.json ]; then composer install --optimize-autoloader --no-dev; fi
 
-# Install PHP dependencies (если нужно)
-RUN composer install --optimize-autoloader
+# Копируем конфигурацию supervisor
+COPY docker/notification/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy existing application directory contents (раскомментируйте если нужно)
-# COPY . /var/www
-
-# Create log file and set permissions
+# Создаем лог-файлы и устанавливаем права
 RUN touch /var/log/web_push.log && \
-    chmod 666 /var/log/web_push.log
-
-# Expose port if needed (обычно не требуется для воркера)
-# EXPOSE 9000
+    chmod 666 /var/log/web_push.log && \
+    chown -R www-data:www-data /var/log/notification /var/log/web_push.log
 
 # Start supervisord
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+CMD ["/bin/bash", "/var/www/docker/notification/worker.sh"]

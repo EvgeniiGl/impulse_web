@@ -141,6 +141,11 @@ return function (): Router {
         'action'     => 'deleteSchedule'
     ]);
 
+    $router->addPost('/api/notifications/validate-subscription', [
+        'controller' => 'notification',
+        'action'     => 'validateSubscription'
+    ]);
+
 // Для React Router - все остальные пути на главную страницу
     $router->add('/', [
         'controller' => 'index',
