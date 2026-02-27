@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {NotificationsApi, NotificationSchedule} from '@/api/notificationsApi';
 import {NotificationSettings} from '@/components/Notifications/NotificationSettings';
 import moment from 'moment';
@@ -7,6 +7,7 @@ import Main from "@modules/Main.tsx";
 import {Link} from 'react-router-dom';
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
 import {fetchSchedules, selectFilteredSchedules} from "@store/notification/notificationSlice.ts";
+import Button from "@ui/buttons/Button.tsx";
 
 // Заглушка для изображения, если не загрузится
 const ImagePlaceholder = () => (
@@ -34,6 +35,21 @@ export const NotificationsPage: React.FC = () => {
     };
 
     const handleToggleActive = async (schedule: NotificationSchedule) => {
+        // Проверяем, можно ли включить расписание
+        if (!schedule.is_active) {
+            // Проверка на истекший срок
+            if (schedule.end_date && moment(schedule.end_date).isBefore(moment())) {
+                alert('Нельзя включить расписание: срок действия истек');
+                return;
+            }
+
+            // Проверка на превышение лимита отправок
+            if (schedule.repeat_count && schedule.sent_count >= schedule.repeat_count) {
+                alert('Нельзя включить расписание: достигнут лимит отправок');
+                return;
+            }
+        }
+
         try {
             await NotificationsApi.updateSchedule(schedule.id, {
                 is_active: !schedule.is_active
@@ -82,13 +98,38 @@ export const NotificationsPage: React.FC = () => {
 
     // Форматирование URL изображения (если нужно добавить базовый URL)
     const getImageUrl = (url: string) => {
-        // Если URL уже абсолютный или начинается с http
         if (url.startsWith('http') || url.startsWith('//')) {
             return url;
         }
-        // Если нужен базовый URL API
-        // return `${API_BASE_URL}${url}`;
         return url;
+    };
+
+    // Функция для проверки статуса расписания
+    const getScheduleStatus = (schedule: NotificationSchedule) => {
+        const now = moment();
+
+        // Проверка на истекший срок
+        if (schedule.end_date && moment(schedule.end_date).isBefore(now)) {
+            return {
+                isExpired: true,
+                message: 'Срок действия истек',
+                canBeActive: false
+            };
+        }
+
+        // Проверка на превышение лимита отправок
+        if (schedule.repeat_count && schedule.sent_count >= schedule.repeat_count) {
+            return {
+                isLimitReached: true,
+                message: 'Достигнут лимит отправок',
+                canBeActive: false
+            };
+        }
+
+        return {
+            canBeActive: true,
+            message: null
+        };
     };
 
     return (
@@ -114,122 +155,140 @@ export const NotificationsPage: React.FC = () => {
                                 </div>
                             ) : (
                                 <div className="divide-y">
-                                    {schedules.map(schedule => (
-                                        <div key={schedule.id} className="p-4 hover:bg-gray-50 transition-colors">
-                                            <div className="flex items-start gap-3">
-                                                {/* Изображение карточки */}
-                                                <Link
-                                                    to={`/card/${schedule.card_id}`}
-                                                    className="flex-shrink-0 hover:opacity-80 transition-opacity"
-                                                    title={schedule.title || ''}
-                                                >
-                                                    <div
-                                                        className="w-18 h-26 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-                                                        {schedule.url && !imageErrors[schedule.card_id] ? (
-                                                            <img
-                                                                src={getImageUrl(schedule.url || '')}
-                                                                alt={schedule.title || ''}
-                                                                className="w-full h-full object-cover"
-                                                                style={{aspectRatio: '9/16'}}
-                                                                onError={() => handleImageError(schedule.card_id)}
-                                                                loading="lazy"
-                                                            />
-                                                        ) : (
-                                                            <ImagePlaceholder/>
-                                                        )}
-                                                    </div>
-                                                </Link>
+                                    {schedules.map(schedule => {
+                                        const status = getScheduleStatus(schedule);
+                                        const isExpiredOrLimitReached = !status.canBeActive;
 
-                                                {/* Информация о карточке и расписании */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <Link
-                                                            to={`/card/${schedule.card_id}`}
-                                                            className="font-medium text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px]"
-                                                            title={schedule.title || ''}
-                                                        >
-                                                            {schedule.title || 'Без названия'}
-                                                        </Link>
-                                                        <span
-                                                            className={`text-xs px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                                                                schedule.is_active
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : 'bg-gray-100 text-gray-800'
-                                                            }`}>
-                                                            {schedule.is_active ? 'Активно' : 'Неактивно'}
-                                                        </span>
-                                                    </div>
-
-                                                    <div
-                                                        className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="font-medium">Частота:</span>
-                                                            <span>{getFrequencyLabel(schedule.frequency)}</span>
+                                        return (
+                                            <div key={schedule.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-start gap-3">
+                                                    {/* Изображение карточки */}
+                                                    <Link
+                                                        to={`/card/${schedule.card_id}`}
+                                                        className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                                                        title={schedule.title || ''}
+                                                    >
+                                                        <div
+                                                            className="w-18 h-26 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                                                            {schedule.url && !imageErrors[schedule.card_id] ? (
+                                                                <img
+                                                                    src={getImageUrl(schedule.url || '')}
+                                                                    alt={schedule.title || ''}
+                                                                    className="w-full h-full object-cover"
+                                                                    style={{aspectRatio: '9/16'}}
+                                                                    onError={() => handleImageError(schedule.card_id)}
+                                                                    loading="lazy"
+                                                                />
+                                                            ) : (
+                                                                <ImagePlaceholder/>
+                                                            )}
                                                         </div>
+                                                    </Link>
 
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="font-medium">Следующая:</span>
-                                                            <span>{moment(schedule.next_send_at).format('DD.MM HH:mm')}</span>
-                                                        </div>
-
-                                                        {schedule.last_sent_at && (
-                                                            <div className="flex items-center gap-1">
-                                                                <span className="font-medium">Последняя:</span>
-                                                                <span>{moment(schedule.last_sent_at).format('DD.MM HH:mm')}</span>
-                                                            </div>
-                                                        )}
-
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="font-medium">Отправлено:</span>
-                                                            <span>
-                                                                {schedule.sent_count}
-                                                                {schedule.repeat_count ? `/${schedule.repeat_count}` : ''}
-                                                                {schedule.sent_count === 1 ? ' раз' : schedule.sent_count > 1 ? ' раз' : ''}
+                                                    {/* Информация о карточке и расписании */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <Link
+                                                                to={`/card/${schedule.card_id}`}
+                                                                className="font-medium text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px]"
+                                                                title={schedule.title || ''}
+                                                            >
+                                                                {schedule.title || 'Без названия'}
+                                                            </Link>
+                                                            <span
+                                                                className={`text-xs px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                                                                    isExpiredOrLimitReached
+                                                                        ? 'bg-gray-100 text-gray-600'
+                                                                        : schedule.is_active
+                                                                            ? 'bg-green-100 text-green-800'
+                                                                            : 'bg-gray-100 text-gray-800'
+                                                                }`}
+                                                            >
+                                                                {isExpiredOrLimitReached
+                                                                    ? status.message
+                                                                    : schedule.is_active
+                                                                        ? 'Активно'
+                                                                        : 'Неактивно'}
                                                             </span>
                                                         </div>
 
-                                                        {schedule.frequency !== 'once' && schedule.repeat_count && (
-                                                            <div
-                                                                className="flex items-center gap-1 col-span-2 text-gray-500">
-                                                                <span className="font-medium">Осталось:</span>
+                                                        <div
+                                                            className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="font-medium">Частота:</span>
+                                                                <span>{getFrequencyLabel(schedule.frequency)}</span>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="font-medium">Следующая:</span>
                                                                 <span>
-                                                                    {Math.max(0, schedule.repeat_count - schedule.sent_count)} из {schedule.repeat_count} отправок
+                                                                    {schedule.next_send_at && !isExpiredOrLimitReached
+                                                                        ? moment(schedule.next_send_at).format('DD.MM HH:mm')
+                                                                        : '—'}
                                                                 </span>
                                                             </div>
-                                                        )}
 
-                                                        {schedule.end_date && (
-                                                            <div
-                                                                className="flex items-center gap-1 col-span-2 text-gray-500">
-                                                                <span className="font-medium">Действует до:</span>
-                                                                <span>{moment(schedule.end_date).format('DD.MM.YYYY HH:mm')}</span>
+                                                            {schedule.last_sent_at && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="font-medium">Последняя:</span>
+                                                                    <span>{moment(schedule.last_sent_at).format('DD.MM HH:mm')}</span>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="font-medium">Отправлено:</span>
+                                                                <span>
+                                                                    {schedule.sent_count}
+                                                                    {schedule.repeat_count ? `/${schedule.repeat_count}` : ''}
+                                                                </span>
                                                             </div>
-                                                        )}
+
+                                                            {schedule.frequency !== 'once' && schedule.repeat_count && (
+                                                                <div
+                                                                    className={`flex items-center gap-1 col-span-2 ${
+                                                                        schedule.sent_count >= schedule.repeat_count
+                                                                            ? 'text-orange-600'
+                                                                            : 'text-gray-500'
+                                                                    }`}
+                                                                >
+                                                                    <span className="font-medium">Осталось:</span>
+                                                                    <span>
+                                                                        {Math.max(0, schedule.repeat_count - schedule.sent_count)} из {schedule.repeat_count} отправок
+                                                                    </span>
+                                                                </div>
+                                                            )}
+
+                                                            {schedule.end_date && (
+                                                                <div
+                                                                    className={`flex items-center gap-1 col-span-2 ${
+                                                                        moment(schedule.end_date).isBefore(moment())
+                                                                            ? 'text-orange-600'
+                                                                            : 'text-gray-500'
+                                                                    }`}
+                                                                >
+                                                                    <span className="font-medium">Действует до:</span>
+                                                                    <span>{moment(schedule.end_date).format('DD.MM.YYYY HH:mm')}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Кнопки управления */}
+                                                    <div className="flex flex-col gap-1.5 ml-2">
+                                                        <Button
+                                                            onClick={() => handleToggleActive(schedule)}
+                                                            disabled={!schedule.is_active && isExpiredOrLimitReached}
+                                                        >
+                                                            {schedule.is_active ? 'Отключить' : 'Включить'}
+                                                        </Button>
+                                                        <Button onClick={() => handleDelete(schedule.id)}>
+                                                            Удалить
+                                                        </Button>
                                                     </div>
                                                 </div>
-
-                                                {/* Кнопки управления */}
-                                                <div className="flex flex-col gap-1.5 ml-2">
-                                                    <button
-                                                        onClick={() => handleToggleActive(schedule)}
-                                                        className={`px-3 py-1.5 rounded text-xs font-medium min-w-[82px] transition-colors ${
-                                                            schedule.is_active
-                                                                ? 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                                                                : 'bg-green-600 hover:bg-green-700 text-white'
-                                                        }`}
-                                                    >
-                                                        {schedule.is_active ? 'Отключить' : 'Включить'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(schedule.id)}
-                                                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium min-w-[82px] transition-colors"
-                                                    >
-                                                        Удалить
-                                                    </button>
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
