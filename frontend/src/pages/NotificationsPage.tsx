@@ -1,12 +1,17 @@
-import React, {useState, useEffect, useMemo} from 'react';
-import {NotificationsApi, NotificationSchedule} from '@/api/notificationsApi';
+import React, {useState, useEffect} from 'react';
+import {
+    NotificationsApi,
+    NotificationSchedule,
+    UpdateScheduleRequest
+} from '@/api/notificationsApi';
 import {NotificationSettings} from '@/components/Notifications/NotificationSettings';
+import {ScheduleForm} from '@/components/Notifications/ScheduleForm';
 import moment from 'moment';
 import Header from "@modules/Header.tsx";
 import Main from "@modules/Main.tsx";
 import {Link} from 'react-router-dom';
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
-import {fetchSchedules, selectFilteredSchedules} from "@store/notification/notificationSlice.ts";
+import {fetchSchedules, selectFilteredSchedules, updateSchedule} from "@store/notification/notificationSlice.ts";
 import Button from "@ui/buttons/Button.tsx";
 
 // Заглушка для изображения, если не загрузится
@@ -20,8 +25,8 @@ const ImagePlaceholder = () => (
 );
 
 export const NotificationsPage: React.FC = () => {
-
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+    const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
     const schedules = useAppSelector(selectFilteredSchedules);
     const dispatch = useAppDispatch();
     const isLoading = useAppSelector(state => state.notifications.isLoading);
@@ -51,10 +56,25 @@ export const NotificationsPage: React.FC = () => {
         }
 
         try {
-            await NotificationsApi.updateSchedule(schedule.id, {
+            // Создаем полный объект для обновления, используя существующие данные
+            const updateData: UpdateScheduleRequest = {
+                id: schedule.id,
+                card_id: schedule.card_id,
+                frequency: schedule.frequency,
+                scheduled_at: schedule.scheduled_at,
+                repeat_count: schedule.repeat_count,
+                end_date: schedule.end_date,
                 is_active: !schedule.is_active
-            });
-            await loadSchedules();
+            };
+
+            // Используем dispatch с thunk вместо прямого вызова API
+            const result = await dispatch(updateSchedule(updateData)).unwrap();
+
+            if (result) {
+                // Не нужно вызывать loadSchedules, так как состояние обновится через Redux
+                // Но если хотите принудительно обновить, можно использовать:
+                // dispatch(fetchSchedules(null));
+            }
         } catch (error) {
             console.error('Error toggling schedule:', error);
             alert('Ошибка при изменении статуса');
@@ -77,6 +97,19 @@ export const NotificationsPage: React.FC = () => {
             console.error('Error deleting schedule:', error);
             alert('Ошибка при удалении');
         }
+    };
+
+    const handleEdit = (scheduleId: string) => {
+        setEditingScheduleId(scheduleId);
+    };
+
+    const handleEditCancel = () => {
+        setEditingScheduleId(null);
+    };
+
+    const handleEditSuccess = async () => {
+        setEditingScheduleId(null);
+        await loadSchedules();
     };
 
     const getFrequencyLabel = (frequency: string): string => {
@@ -132,6 +165,11 @@ export const NotificationsPage: React.FC = () => {
         };
     };
 
+    // Находим редактируемое расписание
+    const editingSchedule = editingScheduleId
+        ? schedules.find(s => s.id === editingScheduleId)
+        : null;
+
     return (
         <>
             <Header/>
@@ -158,7 +196,23 @@ export const NotificationsPage: React.FC = () => {
                                     {schedules.map(schedule => {
                                         const status = getScheduleStatus(schedule);
                                         const isExpiredOrLimitReached = !status.canBeActive;
+                                        const isEditing = editingScheduleId === schedule.id;
 
+                                        // Если расписание редактируется, показываем форму
+                                        if (isEditing && editingSchedule) {
+                                            return (
+                                                <div key={schedule.id} className="p-4">
+                                                    <ScheduleForm
+                                                        cardId={schedule.card_id}
+                                                        schedule={editingSchedule}
+                                                        onSuccess={handleEditSuccess}
+                                                        onCancel={handleEditCancel}
+                                                    />
+                                                </div>
+                                            );
+                                        }
+
+                                        // Иначе показываем информацию о расписании
                                         return (
                                             <div key={schedule.id} className="p-4 hover:bg-gray-50 transition-colors">
                                                 <div className="flex items-start gap-3">
@@ -278,10 +332,20 @@ export const NotificationsPage: React.FC = () => {
                                                         <Button
                                                             onClick={() => handleToggleActive(schedule)}
                                                             disabled={!schedule.is_active && isExpiredOrLimitReached}
+                                                            size="xs"
                                                         >
                                                             {schedule.is_active ? 'Отключить' : 'Включить'}
                                                         </Button>
-                                                        <Button onClick={() => handleDelete(schedule.id)}>
+                                                        <Button
+                                                            onClick={() => handleEdit(schedule.id)}
+                                                            size="xs"
+                                                        >
+                                                            Редактировать
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => handleDelete(schedule.id)}
+                                                            size="xs"
+                                                        >
                                                             Удалить
                                                         </Button>
                                                     </div>

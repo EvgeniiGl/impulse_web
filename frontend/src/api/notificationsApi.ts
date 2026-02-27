@@ -37,9 +37,13 @@ export interface CreateScheduleRequest {
 }
 
 export interface UpdateScheduleRequest {
-    is_active?: boolean;
-    frequency?: NotificationFrequency;
-    scheduled_at?: string;
+    id: string;
+    card_id: string;
+    frequency: NotificationFrequency;
+    scheduled_at: string;
+    repeat_count?: number | null;
+    end_date?: string | null;
+    is_active: boolean
 }
 
 export interface GetSchedulesResponse {

@@ -2,7 +2,6 @@ import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {CardsApi, CreateCardRequest, CreateCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
 import {CollectionsApi, MyCollectionsResponse} from "@api/collectionsApi.ts";
 import {Card, Collection, PaginationState} from "@store/store.ts";
-import {NotificationsApi, CreateScheduleRequest} from '@/api/notificationsApi';
 
 interface MyCardState {
     myCards: Card[];
@@ -54,21 +53,6 @@ export const fetchMyCards = createAsyncThunk(
             }
 
             return response as GetCardsResponse;
-        } catch (error) {
-            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
-        }
-    }
-);
-
-export const createSchedule = createAsyncThunk(
-    'myCards/createSchedule',
-    async (data: CreateScheduleRequest, {rejectWithValue}) => {
-        try {
-            const response = await NotificationsApi.createSchedule(data);
-            if (!response?.success) {
-                return rejectWithValue('Failed to create schedule');
-            }
-            return {success: true, cardId: data.card_id};
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -256,20 +240,6 @@ const myCardSlice = createSlice({
                 state.pagination.hasMore = newCards.length === state.pagination.perPage;
             })
             .addCase(fetchCardsByCollection.rejected, (state: MyCardState, action) => {
-                state.isLoading = false;
-                state.error = action.payload as string;
-            });
-        builder
-            .addCase(createSchedule.pending, (state: MyCardState) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(createSchedule.fulfilled, (state: MyCardState) => {
-                state.isLoading = false;
-                state.success = 'Расписание успешно создано';
-                state.openScheduleCardId = null;
-            })
-            .addCase(createSchedule.rejected, (state: MyCardState, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             });

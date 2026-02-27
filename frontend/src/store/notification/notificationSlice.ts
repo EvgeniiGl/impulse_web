@@ -74,9 +74,9 @@ export const createSchedule = createAsyncThunk(
 
 export const updateSchedule = createAsyncThunk(
     'notifications/updateSchedule',
-    async ({id, data}: { id: string; data: UpdateScheduleRequest }, {rejectWithValue}) => {
+    async (data: UpdateScheduleRequest, {rejectWithValue}) => {
         try {
-            const response = await NotificationsApi.updateSchedule(id, data);
+            const response = await NotificationsApi.updateSchedule(data.id, data);
             if (!response || !response.success) {
                 return rejectWithValue('Failed to update schedule');
             }

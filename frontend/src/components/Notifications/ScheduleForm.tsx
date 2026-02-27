@@ -1,16 +1,24 @@
-import React, {useState} from 'react';
-import {NotificationFrequency, CreateScheduleRequest} from '@/api/notificationsApi';
+import React, {useState, useEffect} from 'react';
+import {
+    NotificationFrequency,
+    CreateScheduleRequest,
+    NotificationSchedule,
+    UpdateScheduleRequest
+} from '@/api/notificationsApi';
 import {useAppDispatch} from '@store/store.ts';
-import {createSchedule} from '@store/card/myCardSlice.ts';
+import {updateSchedule, createSchedule} from '@store/notification/notificationSlice.ts';
+import moment from 'moment';
 
 interface ScheduleFormProps {
     cardId: string;
+    schedule?: NotificationSchedule; // Добавляем опциональный пропс для редактирования
     onSuccess?: () => void;
     onCancel?: () => void;
 }
 
 export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                                                               cardId,
+                                                              schedule, // Добавляем schedule
                                                               onSuccess,
                                                               onCancel
                                                           }) => {
@@ -20,6 +28,27 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
     const [repeatCount, setRepeatCount] = useState<number | ''>('');
     const [endDate, setEndDate] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const isEditMode = !!schedule; // Режим редактирования, если передан schedule
+
+    // Заполняем форму данными при редактировании
+    useEffect(() => {
+        if (schedule) {
+            setFrequency(schedule.frequency);
+
+            // Форматируем scheduled_at для input type="datetime-local"
+            if (schedule.scheduled_at) {
+                setScheduledAt(moment(schedule.scheduled_at).format('YYYY-MM-DDTHH:mm'));
+            }
+
+            setRepeatCount(schedule.repeat_count || '');
+
+            // Форматируем end_date для input type="datetime-local"
+            if (schedule.end_date) {
+                setEndDate(moment(schedule.end_date).format('YYYY-MM-DDTHH:mm'));
+            }
+        }
+    }, [schedule]);
 
     const frequencyOptions: { value: NotificationFrequency; label: string }[] = [
         {value: 'once', label: 'Один раз'},
@@ -35,29 +64,49 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
         e.preventDefault();
 
         if (!scheduledAt) {
-            // alert('Укажите дату и время');
+            alert('Укажите дату и время');
             return;
         }
 
         setIsLoading(true);
 
         try {
-            const data: CreateScheduleRequest = {
-                card_id: cardId,
-                frequency,
-                scheduled_at: new Date(scheduledAt).toISOString(),
-                repeat_count: repeatCount === '' ? null : Number(repeatCount),
-                end_date: endDate ? new Date(endDate).toISOString() : null
-            };
+            if (isEditMode && schedule) {
+                // Режим редактирования - обновляем существующее расписание
+                const data: UpdateScheduleRequest = {
+                    id: schedule.id,
+                    card_id: cardId,
+                    frequency: schedule.frequency,
+                    scheduled_at: new Date(scheduledAt).toISOString(),
+                    repeat_count: repeatCount === '' ? null : Number(repeatCount),
+                    end_date: endDate ? new Date(endDate).toISOString() : null,
+                    is_active: true,
+                };
 
-            const result = await dispatch(createSchedule(data)).unwrap();
+                const result = await dispatch(updateSchedule(data)).unwrap();
 
-            if (result) {
-                onSuccess?.(); // Вызовем onSuccess, который закроет форму
+                if (result) {
+                    onSuccess?.();
+                }
+            } else {
+                // Режим создания - создаем новое расписание
+                const data: CreateScheduleRequest = {
+                    card_id: cardId,
+                    frequency,
+                    scheduled_at: new Date(scheduledAt).toISOString(),
+                    repeat_count: repeatCount === '' ? null : Number(repeatCount),
+                    end_date: endDate ? new Date(endDate).toISOString() : null
+                };
+
+                const result = await dispatch(createSchedule(data)).unwrap();
+
+                if (result) {
+                    onSuccess?.();
+                }
             }
         } catch (error) {
-            console.error('Error creating schedule:', error);
-            //  alert('Ошибка при создании расписания');
+            console.error(`Error ${isEditMode ? 'updating' : 'creating'} schedule:`, error);
+            alert(`Ошибка при ${isEditMode ? 'обновлении' : 'создании'} расписания`);
         } finally {
             setIsLoading(false);
         }
@@ -163,18 +212,10 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                         backgroundColor: isLoading ? 'var(--color-gray-400)' : 'var(--bg-tertiary)',
                         color: 'var(--text-primary)'
                     }}
-                    // onMouseEnter={(e) => {
-                    //     if (!isLoading) {
-                    //         e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)';
-                    //     }
-                    // }}
-                    // onMouseLeave={(e) => {
-                    //     if (!isLoading) {
-                    //         e.currentTarget.style.backgroundColor = 'var(--color-primary)';
-                    //     }
-                    // }}
                 >
-                    {isLoading ? 'Создание...' : 'Создать расписание'}
+                    {isLoading
+                        ? (isEditMode ? 'Сохранение...' : 'Создание...')
+                        : (isEditMode ? 'Сохранить изменения' : 'Создать расписание')}
                 </button>
                 {onCancel && (
                     <button
@@ -185,12 +226,6 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
                             backgroundColor: 'var(--bg-tertiary)',
                             color: 'var(--text-primary)'
                         }}
-                        // onMouseEnter={(e) => {
-                        //     e.currentTarget.style.backgroundColor = 'var(--border-secondary)';
-                        // }}
-                        // onMouseLeave={(e) => {
-                        //     e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                        // }}
                     >
                         Отмена
                     </button>
