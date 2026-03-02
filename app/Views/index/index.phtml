@@ -74,6 +74,10 @@
 </head>
 <body>
 <div id="root"></div>
-<script type="module" src="/bundle/main.js"></script>
+<?php
+$filePath = APP_PATH . '/public/bundle/main.js';
+$version  = file_exists($filePath) ? filemtime($filePath) : time();
+?>
+<script type="module" src="/bundle/main.js?v=<?php echo $version; ?>"></script>
 </body>
 </html>

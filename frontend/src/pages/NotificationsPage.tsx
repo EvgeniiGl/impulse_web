@@ -276,7 +276,7 @@ export const NotificationsPage: React.FC = () => {
                                                             <div className="flex items-center gap-1">
                                                                 <span className="font-medium">Следующая:</span>
                                                                 <span>
-                                                                    {schedule.next_send_at && !isExpiredOrLimitReached
+                                                                    {schedule.next_send_at && !isExpiredOrLimitReached && schedule.is_active
                                                                         ? moment(schedule.next_send_at).format('DD.MM HH:mm')
                                                                         : '—'}
                                                                 </span>

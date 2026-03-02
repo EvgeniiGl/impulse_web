@@ -3,7 +3,7 @@ import Main from "@modules/Main.tsx";
 import Footer from "@modules/Footer.tsx";
 import React, {useEffect, useState} from "react";
 import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {AccessType, Collection, useAppDispatch, useAppSelector} from "@store/store.ts";
 import {CreateCardRequest} from "@api/cardsApi.ts";
 import CollectionSelect from "@components/Form/Select/CollectionSelect.tsx";
@@ -18,7 +18,9 @@ import {
 export default function CreateCardPage() {
     const {t} = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useAppDispatch();
+    const collectionId = location.state?.selectedCollectionId;
 
     const [formData, setFormData] = useState<CreateCardRequest & { show_title_on_image?: boolean }>({
         title: '',
@@ -60,6 +62,29 @@ export default function CreateCardPage() {
             }, 1000);
         }
     }, [success, navigate, dispatch]);
+
+    useEffect(() => {
+        if (collections.length > 0 && collectionId) {
+            const collectionToSelect = collections.find(c => c.id === collectionId);
+            if (collectionToSelect) {
+                // Устанавливаем в selectedCollections
+                dispatch(setSelectedCollections([collectionToSelect]));
+
+                // Устанавливаем в formData
+                setFormData(prev => ({
+                    ...prev,
+                    collection_ids: [collectionToSelect.id]
+                }));
+            }
+        } else {
+            dispatch(setSelectedCollections([]));
+            setFormData(prev => ({
+                ...prev,
+                collection_ids: []
+            }));
+        }
+
+    }, [collections, collectionId]);
 
     // Очистка ошибок при размонтировании
     useEffect(() => {
