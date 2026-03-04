@@ -1,5 +1,5 @@
 ### Обновление коллекции
-PUT {{url}}/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556
+PUT {{url}}/api/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556
 Authorization: Bearer {{token}}
 Accept-Language: ru
 Content-Type: application/json

@@ -1,5 +1,5 @@
 ### Создание полной коллекции со всеми полями
-POST {{url}}/collections
+POST {{url}}/api/collections
 Authorization: Bearer {{token}}
 Accept-Language: ru
 Content-Type: application/json

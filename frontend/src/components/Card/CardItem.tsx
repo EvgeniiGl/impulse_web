@@ -7,12 +7,15 @@ import {IoCloseCircleOutline} from "react-icons/io5";
 import {ScheduleForm} from '@/components/Notifications/ScheduleForm';
 import {useAppDispatch, useAppSelector} from '@store/store.ts';
 import {closeScheduleForm, toggleScheduleForm} from '@store/card/myCardSlice.ts';
+import {useDrag} from 'react-dnd';
+import {ItemTypes} from '@/types/dnd';
 
 interface CardItemProps {
     card: Card;
+    onDrop?: (cardId: string, targetCollectionId: string | null) => void;
 }
 
-export default function CardItem({card}: CardItemProps) {
+export default function CardItem({card, onDrop}: CardItemProps) {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
@@ -29,6 +32,27 @@ export default function CardItem({card}: CardItemProps) {
 
     const isScheduleOpen = openScheduleCardId === card.id;
 
+    // Настройка drag
+    const [{isDragging}, drag] = useDrag(() => ({
+        type: ItemTypes.CARD,
+        item: {
+            id: card.id,
+            collectionIds: card.collections?.map(c => c.id) || []
+        },
+        end: (item, monitor) => {
+            const dropResult = monitor.getDropResult() as { collectionId: string | null } | null;
+            if (item && dropResult && onDrop) {
+                // onDrop(item.id, dropResult.collectionId);
+            }
+        },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    }));
+    // Объединяем refs
+    const setRefs = (element: HTMLDivElement | null) => {
+        drag(element);
+    };
     // Закрытие описания и формы уведомлений при клике вне области карточки
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -127,21 +151,24 @@ export default function CardItem({card}: CardItemProps) {
     };
 
     return (
-        <>
+        <div key={card.id}>
             <div
                 onClick={handleCardClick}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full relative"
                 ref={cardRef}
+                style={{touchAction: 'none'}}
             >
                 {/* Контейнер с фиксированным соотношением 9:16 (вертикальное) */}
                 <div className="relative w-full bg-gray-200 overflow-hidden"
                      style={{aspectRatio: '9/16'}}>
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center cursor-${isDragging ? 'grabbing' : 'grab'} ${isDragging ? 'opacity-50 scale-105 rotate-1 shadow-2xl' : ''}`}
+                        ref={setRefs}>
                         {card.url && !imageError ? (
                             <img
                                 src={card.url}
                                 alt={card.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                                 loading="lazy"
                                 onError={() => setImageError(true)}
                             />
@@ -182,9 +209,9 @@ export default function CardItem({card}: CardItemProps) {
                                     </div>
                                 </div>
                             </div>}
-
-                        {/* Статус доступа поверх изображения снизу слева - z-index 20 */}
-                        <div className="absolute bottom-3 left-3 z-20">
+                    </div>
+                    {/* Статус доступа поверх изображения снизу слева - z-index 20 */}
+                    <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
                             card.access_type === 'private'
                                 ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
@@ -196,138 +223,137 @@ export default function CardItem({card}: CardItemProps) {
                                     ? 'Общая'
                                     : 'Приватная'}
                         </span>
-                        </div>
+                    </div>
 
-                        {/* Кнопка описания снизу справа - z-index 30 */}
-                        <button
-                            onClick={handleDescriptionToggle}
-                            className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1"
-                            style={{
-                                padding: '3px',
-                                borderRadius: '50%',
-                                backgroundColor: 'rgba(0,0,0,0.5)',
-                                color: 'white',
-                                border: '1px solid var(--color-white)',
-                            }}
-                            title={isDescriptionOpen ? "Скрыть описание" : "Показать описание"}
-                        >
-                            <LiaSignatureSolid className="w-3.5 h-3.5"/>
-                        </button>
+                    {/* Кнопка описания снизу справа - z-index 30 */}
+                    <button
+                        onClick={handleDescriptionToggle}
+                        className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1"
+                        style={{
+                            padding: '3px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            color: 'white',
+                            border: '1px solid var(--color-white)',
+                        }}
+                        title={isDescriptionOpen ? "Скрыть описание" : "Показать описание"}
+                    >
+                        <LiaSignatureSolid className="w-3.5 h-3.5"/>
+                    </button>
 
-                        {/* Кнопка уведомлений рядом с кнопкой описания - z-index 30 */}
-                        <button
-                            onClick={handleScheduleToggle}
-                            className="absolute bottom-3 right-12 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
-                            style={{
-                                padding: '3px',
-                                borderRadius: '50%',
-                                backgroundColor: 'rgba(0,0,0,0.5)',
-                                color: 'white',
-                                border: '1px solid var(--color-white)',
-                            }}
-                            title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
-                        >
-                            <MdOutlineSchedule className="w-3.5 h-3.5"/>
-                        </button>
+                    {/* Кнопка уведомлений рядом с кнопкой описания - z-index 30 */}
+                    <button
+                        onClick={handleScheduleToggle}
+                        className="absolute bottom-3 right-12 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                        style={{
+                            padding: '3px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            color: 'white',
+                            border: '1px solid var(--color-white)',
+                        }}
+                        title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
+                    >
+                        <MdOutlineSchedule className="w-3.5 h-3.5"/>
+                    </button>
 
-                        {/* Описание, которое появляется при клике - z-index 40 (выше кнопок) */}
-                        <div
-                            className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
-                                isDescriptionOpen ? 'opacity-100' : 'max-h-0 opacity-0'
-                            }`}
-                            style={{zIndex: 40}}
-                        >
-                            <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
-                                {/* Крестик для закрытия */}
+                    {/* Описание, которое появляется при клике - z-index 40 (выше кнопок) */}
+                    <div
+                        className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
+                            isDescriptionOpen ? 'opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                        style={{zIndex: 40}}
+                    >
+                        <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
+                            {/* Крестик для закрытия */}
+                            <div
+                                onClick={handleCloseSchedule}
+                                className="absolute top-2 right-2 z-50 rounded-full p-1"
+                                style={{color: 'white'}}
+                                title="Закрыть"
+                            >
+                                <IoCloseCircleOutline
+                                    className="w-5 h-5"/>
+                            </div>
+
+                            <div className="p-4 h-full flex flex-col">
+                                <p className="text-sm font-medium mb-2 flex-shrink-0 text-[var(--color-primary-light2)]">
+                                    Описание:
+                                </p>
                                 <div
-                                    onClick={handleCloseSchedule}
-                                    className="absolute top-2 right-2 z-50 rounded-full p-1"
-                                    style={{color: 'white'}}
-                                    title="Закрыть"
+                                    ref={descriptionRef}
+                                    className={`text-sm leading-relaxed pr-2 flex-1 overflow-y-auto scrollbar-custom ${
+                                        hasDescriptionScroll ? 'scrollbar-thin' : ''
+                                    }`}
+                                    style={{
+                                        maxHeight: cardHeight / 100 * 80,
+                                        transition: 'max-height 0.3s ease-in-out',
+                                        paddingBottom: '20px',
+                                        color: 'var(--text-white)'
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
                                 >
-                                    <IoCloseCircleOutline
-                                        className="w-5 h-5"/>
+                                    {card.description || 'Нет описания'}
                                 </div>
 
-                                <div className="p-4 h-full flex flex-col">
-                                    <p className="text-sm font-medium mb-2 flex-shrink-0 text-[var(--color-primary-light2)]">
-                                        Описание:
-                                    </p>
+                                {/* Индикатор прокрутки для длинных текстов */}
+                                {hasDescriptionScroll && (
                                     <div
-                                        ref={descriptionRef}
-                                        className={`text-sm leading-relaxed pr-2 flex-1 overflow-y-auto scrollbar-custom ${
-                                            hasDescriptionScroll ? 'scrollbar-thin' : ''
-                                        }`}
-                                        style={{
-                                            maxHeight: cardHeight / 100 * 80,
-                                            transition: 'max-height 0.3s ease-in-out',
-                                            paddingBottom: '20px',
-                                            color: 'var(--text-white)'
-                                        }}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        {card.description || 'Нет описания'}
-                                    </div>
-
-                                    {/* Индикатор прокрутки для длинных текстов */}
-                                    {hasDescriptionScroll && (
-                                        <div
-                                            className="absolute bottom-3 right-3 text-xs text-white/50 flex items-center gap-1 pointer-events-none">
-                                            {descriptionRef.current?.scrollTop && descriptionRef.current.scrollTop > 0 && (
-                                                <span className="animate-bounce">↑</span>
+                                        className="absolute bottom-3 right-3 text-xs text-white/50 flex items-center gap-1 pointer-events-none">
+                                        {descriptionRef.current?.scrollTop && descriptionRef.current.scrollTop > 0 && (
+                                            <span className="animate-bounce">↑</span>
+                                        )}
+                                        {descriptionRef.current &&
+                                            descriptionRef.current.scrollTop <
+                                            (descriptionRef.current.scrollHeight - descriptionRef.current.clientHeight - 10) && (
+                                                <span className="animate-bounce">↓</span>
                                             )}
-                                            {descriptionRef.current &&
-                                                descriptionRef.current.scrollTop <
-                                                (descriptionRef.current.scrollHeight - descriptionRef.current.clientHeight - 10) && (
-                                                    <span className="animate-bounce">↓</span>
-                                                )}
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
+                    </div>
 
-                        {/* Форма уведомлений, которая появляется при клике - z-index 40 (выше кнопок) */}
-                        <div
-                            className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
-                                isScheduleOpen ? 'opacity-100' : 'max-h-0 opacity-0'
-                            }`}
-                            style={{zIndex: 40}}
-                        >
-                            <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
-                                {/* Крестик для закрытия */}
+                    {/* Форма уведомлений, которая появляется при клике - z-index 40 (выше кнопок) */}
+                    <div
+                        className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
+                            isScheduleOpen ? 'opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                        style={{zIndex: 40}}
+                    >
+                        <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
+                            {/* Крестик для закрытия */}
+                            <div
+                                onClick={handleCloseSchedule}
+                                className="absolute top-2 right-2 z-50 rounded-full p-1"
+                                style={{color: 'white'}}
+                                title="Закрыть"
+                            >
+                                <IoCloseCircleOutline
+                                    className="w-5 h-5"/>
+                            </div>
+
+                            <div className="p-4 h-full flex flex-col cursor-default">
                                 <div
-                                    onClick={handleCloseSchedule}
-                                    className="absolute top-2 right-2 z-50 rounded-full p-1"
-                                    style={{color: 'white'}}
-                                    title="Закрыть"
+                                    ref={scheduleRef}
+                                    className="flex-1 overflow-y-auto scrollbar-custom scrollbar-thin"
+                                    style={{
+                                        maxHeight: cardHeight / 100 * 80,
+                                        color: 'var(--text-white)'
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
                                 >
-                                    <IoCloseCircleOutline
-                                        className="w-5 h-5"/>
-                                </div>
-
-                                <div className="p-4 h-full flex flex-col cursor-default">
-                                    <div
-                                        ref={scheduleRef}
-                                        className="flex-1 overflow-y-auto scrollbar-custom scrollbar-thin"
-                                        style={{
-                                            maxHeight: cardHeight / 100 * 80,
-                                            color: 'var(--text-white)'
-                                        }}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <ScheduleForm
-                                            cardId={card.id}
-                                            onSuccess={handleScheduleSuccess}
-                                            onCancel={handleCloseSchedule}
-                                        />
-                                    </div>
+                                    <ScheduleForm
+                                        cardId={card.id}
+                                        onSuccess={handleScheduleSuccess}
+                                        onCancel={handleCloseSchedule}
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

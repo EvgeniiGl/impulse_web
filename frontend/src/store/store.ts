@@ -21,6 +21,7 @@ export interface Card {
     object_path: string;
     file_name: string;
     original_name: string;
+    collections: Collection[]
 }
 
 export interface Collection {

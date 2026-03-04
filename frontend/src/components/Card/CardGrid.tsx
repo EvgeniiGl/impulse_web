@@ -1,3 +1,4 @@
+// components/Card/CardGrid.tsx
 import CardItem from './CardItem';
 import {useEffect} from 'react';
 import {Card} from "@store/store.ts";
@@ -7,9 +8,10 @@ interface CardGridProps {
     isLoading: boolean;
     onLoadMore: () => void;
     hasMore: boolean;
+    onCardDrop?: (cardId: string, targetCollectionId: string | null) => void;
 }
 
-export default function CardGrid({cards, isLoading, onLoadMore, hasMore}: CardGridProps) {
+export default function CardGrid({cards, isLoading, onLoadMore, hasMore, onCardDrop}: CardGridProps) {
     useEffect(() => {
         const handleScroll = () => {
             const scrollTop = window.scrollY;
@@ -29,7 +31,10 @@ export default function CardGrid({cards, isLoading, onLoadMore, hasMore}: CardGr
         <div
             className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-fr">
             {cards.map((card) => (
-                <CardItem card={card}/>
+                <CardItem
+                    card={card}
+                    onDrop={onCardDrop}
+                />
             ))}
             {isLoading && (
                 <>

@@ -110,6 +110,23 @@ export const createCard = createAsyncThunk(
     }
 );
 
+export const updateCardCollections = createAsyncThunk(
+    'cards/updateCollections',
+    async ({cardId, collectionIds}: { cardId: string; collectionIds: string[] }, {rejectWithValue}) => {
+        console.log("log--updateCardCollections",
+        );
+        try {
+            const response = await CardsApi.updateCardCollections(cardId, collectionIds);
+            if (!response?.success) {
+                return rejectWithValue('Failed to update card collections');
+            }
+            return response.data.card;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
 const myCardSlice = createSlice({
     name: 'myCards',
     initialState,
@@ -241,6 +258,25 @@ const myCardSlice = createSlice({
             })
             .addCase(fetchCardsByCollection.rejected, (state: MyCardState, action) => {
                 state.isLoading = false;
+                state.error = action.payload as string;
+            });
+
+        builder
+            .addCase(updateCardCollections.pending, (state: MyCardState) => {
+                state.isUpdating = true;
+                state.error = null;
+            })
+            .addCase(updateCardCollections.fulfilled, (state: MyCardState, action) => {
+                state.isUpdating = false;
+                // Обновляем карточку в списке
+                const index = state.myCards.findIndex(c => c.id === action.payload.id);
+                if (index !== -1) {
+                    state.myCards[index] = action.payload;
+                }
+                state.success = 'Коллекции карточки обновлены';
+            })
+            .addCase(updateCardCollections.rejected, (state: MyCardState, action) => {
+                state.isUpdating = false;
                 state.error = action.payload as string;
             });
     },

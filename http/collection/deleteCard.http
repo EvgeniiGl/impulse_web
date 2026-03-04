@@ -1,4 +1,4 @@
 ### Удаление карточки из коллекции
-DELETE {{url}}/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556/cards/a818c165-995e-4b4e-90a7-1b8194cbf2c8
+DELETE {{url}}/api/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556/cards/a818c165-995e-4b4e-90a7-1b8194cbf2c8
 Authorization: Bearer {{token}}
 Accept-Language: ru

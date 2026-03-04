@@ -91,21 +91,22 @@ return function (): Router {
     ]);
 
 // Добавляем маршруты
-    $collectionGroup->addGet('/collections', ['action' => 'index']);
-    $collectionGroup->addGet('/collections/my', ['action' => 'my']);
-    $collectionGroup->addPost('/collections', ['action' => 'create']);
-    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'show']);
-    $collectionGroup->addPut('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'update']);
-    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'delete']);
+    $collectionGroup->addGet('/api/collections', ['action' => 'index']);
+    $collectionGroup->addGet('/api/collections/my', ['action' => 'my']);
+    $collectionGroup->addPost('/api/collections', ['action' => 'create']);
+    $collectionGroup->addGet('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'show']);
+    $collectionGroup->addPut('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'update']);
+    $collectionGroup->addDelete('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'delete']);
 
 // Карточки в коллекции
-    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards', ['action' => 'addCard']);
-    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards/{card_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'removeCard']);
+    $collectionGroup->addPost('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards', ['action' => 'addCard']);
+    $collectionGroup->addPatch('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards', ['action' => 'moveCard']);
+    $collectionGroup->addDelete('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/cards/{card_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'removeCard']);
 
 // Расшаривание
-    $collectionGroup->addPost('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share', ['action' => 'share']);
-    $collectionGroup->addDelete('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share/{user_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'unshare']);
-    $collectionGroup->addGet('/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/shared-users', ['action' => 'sharedUsers']);
+    $collectionGroup->addPost('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share', ['action' => 'share']);
+    $collectionGroup->addDelete('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/share/{user_id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', ['action' => 'unshare']);
+    $collectionGroup->addGet('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/shared-users', ['action' => 'sharedUsers']);
 
 // Монтируем группу к роутеру
     $router->mount($collectionGroup);

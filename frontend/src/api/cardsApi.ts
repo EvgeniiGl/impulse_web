@@ -93,7 +93,7 @@ export class Api extends ApiClient {
     async getCardsByCollection(collectionId: string, page: number = 1, perPage: number = 12): Promise<GetCardsResponse | undefined> {
         try {
             const response = await this.get<GetCardsResponse>(
-                `${this.client.defaults.baseURL}/collections/${collectionId}?page=${page}&per_page=${perPage}`
+                `${this.client.defaults.baseURL}/api/collections/${collectionId}?page=${page}&per_page=${perPage}`
             );
             return response;
         } catch (exception) {
@@ -117,6 +117,19 @@ export class Api extends ApiClient {
         try {
             const response = await this.get<GetCardResponse>(
                 `${this.client.defaults.baseURL}/api/card/${id}`
+            );
+
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    async updateCardCollections(cardId: string, collectionIds: string[]): Promise<GetCardResponse | null> {
+        try {
+            const response = await this.patch<{ collection_ids: string[] }, GetCardResponse>(
+                `${this.client.defaults.baseURL}/api/collections/${cardId}/cards`,
+                {collection_ids: collectionIds}
             );
 
             return response;

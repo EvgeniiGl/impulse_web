@@ -114,7 +114,6 @@ export class NotificationManager {
      */
     async fetchVapidKey(): Promise<string> {
         try {
-            // Используем NotificationsApi вместо fetch
             const result = await NotificationsApi.getVapidKey();
 
             if (result?.publicKey) {
@@ -190,7 +189,6 @@ export class NotificationManager {
      */
     async sendSubscriptionToServer(subscription: NotificationSubscription): Promise<boolean> {
         try {
-            // Используем NotificationsApi вместо fetch
             const success = await NotificationsApi.subscribe(subscription);
             return success;
         } catch (error) {
@@ -312,17 +310,9 @@ export class NotificationManager {
      */
     async validateSubscription(): Promise<boolean> {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/notifications/validate-subscription', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await NotificationsApi.validateSubscription();
 
-            const data = await response.json();
-            return data.success && data.data?.isValid === true;
+            return response.success && response.data.isValid;
         } catch (error) {
             console.error('Error validating subscription:', error);
             return false;

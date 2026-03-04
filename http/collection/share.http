@@ -1,4 +1,4 @@
 ### Удаление коллекции
-DELETE {{url}}/collections/f7e80896-382e-47a3-adfb-c2a1a58da753
+DELETE {{url}}/api/collections/f7e80896-382e-47a3-adfb-c2a1a58da753
 Authorization: Bearer {{token}}
 Accept-Language: ru

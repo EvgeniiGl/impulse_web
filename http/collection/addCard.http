@@ -1,5 +1,5 @@
 ### Добавление карточки в коллекцию
-POST {{url}}/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556/cards
+POST {{url}}/api/collections/d2edbc1a-fe79-4335-b983-3453cb0ed556/cards
 Authorization: Bearer {{token}}
 Accept-Language: ru
 Content-Type: application/json

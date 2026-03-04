@@ -1,20 +1,30 @@
+// components/Collections/CollectionTabs.tsx
 import {useRef, useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import css from './CollectionTabs.module.css'
 import {Collection} from "@store/store.ts";
+import CollectionDropZone from './CollectionDropZone';
 
 interface CollectionTabsProps {
     collections: Collection[];
     selectedId: string | null;
     onSelect: (id: string | null) => void;
     isLoading: boolean;
+    onCardDrop?: (cardId: string, targetCollectionId: string | null) => void;
 }
 
-export default function CollectionTabs({collections, selectedId, onSelect, isLoading}: CollectionTabsProps) {
+export default function CollectionTabs({
+                                           collections,
+                                           selectedId,
+                                           onSelect,
+                                           isLoading,
+                                           onCardDrop
+                                       }: CollectionTabsProps) {
     const {t} = useTranslation();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
+
     const checkScroll = () => {
         if (scrollContainerRef.current) {
             const {scrollLeft, scrollWidth, clientWidth} = scrollContainerRef.current;
@@ -72,28 +82,32 @@ export default function CollectionTabs({collections, selectedId, onSelect, isLoa
                     onScroll={checkScroll}
                     className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide"
                 >
-                    {/* Общая коллекция */}
-                    <button
-                        onClick={() => onSelect(null)}
-                        className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                            selectedId === null
-                                ? `${css.tabBtnActive}`
-                                : `${css.tabBtn}`
-                        }`}
+                    {/* Общая коллекция с поддержкой drop */}
+                    <CollectionDropZone
+                        collectionId={null}
+                        onCardDrop={onCardDrop}
+                        isActive={true}
                     >
-                        {t('collections.general') || 'Общая'}
-                    </button>
+                        <button
+                            onClick={() => onSelect(null)}
+                            className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
+                                selectedId === null
+                                    ? `${css.tabBtnActive}`
+                                    : `${css.tabBtn}`
+                            }`}
+                        >
+                            {t('collections.general') || 'Общая'}
+                        </button>
+                    </CollectionDropZone>
 
                     {/* Остальные коллекции */}
-                    {collections.map((collection) => {
-
-                        console.log("log--",
-                            "\nselectedId--", selectedId,
-                            "\nselectedId--", collection.id,
-                        );
-                        return (
+                    {collections.map((collection) => (
+                        <CollectionDropZone
+                            collectionId={collection.id}
+                            onCardDrop={onCardDrop}
+                            isActive={true}
+                        >
                             <button
-                                key={collection.id}
                                 onClick={() => onSelect(collection.id)}
                                 className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
                                     selectedId === collection.id
@@ -103,11 +117,11 @@ export default function CollectionTabs({collections, selectedId, onSelect, isLoa
                             >
                                 {collection.name}
                                 <span className="ml-2 text-xs opacity-75">
-                                ({collection.card_count})
-                            </span>
+                                    ({collection.card_count})
+                                </span>
                             </button>
-                        )
-                    })}
+                        </CollectionDropZone>
+                    ))}
                 </div>
 
                 {/* Правая кнопка прокрутки */}

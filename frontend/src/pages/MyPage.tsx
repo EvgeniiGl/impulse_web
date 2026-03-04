@@ -1,3 +1,4 @@
+// MyPage.tsx
 import {useTranslation} from 'react-i18next';
 import Header from "@modules/Header.tsx";
 import Footer from "@modules/Footer.tsx";
@@ -10,12 +11,14 @@ import {useNavigate} from 'react-router-dom';
 import {
     myCollections,
     fetchMyCards,
-    resetMyCardsPagination,
     fetchCardsByCollection,
     setSelectedCollectionId,
-    resetPagination
+    resetPagination,
+    updateCardCollections
 } from "@store/card/myCardSlice.ts";
-
+import {DndProvider} from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
+import {defaultSerializeQueryArgs} from "@reduxjs/toolkit/query";
 
 export default function MyPage() {
     const {t} = useTranslation();
@@ -62,9 +65,6 @@ export default function MyPage() {
                 perPage: 12
             }));
         }
-        return () => {
-            dispatch(resetMyCardsPagination()); // Очистка при уходе
-        };
     }, [selectedCollectionId, isAuthenticated, dispatch]);
 
     const handleLoadMore = () => {
@@ -86,8 +86,62 @@ export default function MyPage() {
         dispatch(resetPagination());
     };
 
+    const handleCardDrop = async (cardId: string, targetCollectionId: string | null) => {
+        try {
+            // Находим карточку
+            const card = myCards.find(c => c.id === cardId);
+            if (!card) return;
+
+            // Получаем текущие ID коллекций карточки
+            const currentCollectionIds = card.collections?.map(c => c.id) || [];
+
+            let newCollectionIds: string[];
+
+            if (targetCollectionId === null) {
+                // Перемещение в "Общую" - удаляем все коллекции
+                newCollectionIds = [];
+            } else {
+                // Проверяем, есть ли уже такая коллекция
+                if (currentCollectionIds.includes(targetCollectionId)) {
+                    console.log('Карточка уже в этой коллекции');
+                    return;
+                }
+                // Добавляем новую коллекцию к существующим
+                newCollectionIds = [...currentCollectionIds, targetCollectionId];
+            }
+            
+            // Отправляем запрос на обновление
+            await dispatch(updateCardCollections({
+                cardId,
+                collectionIds: newCollectionIds
+            })).unwrap();
+
+            // После успешного обновления, если мы находимся в режиме фильтрации по коллекции,
+            // и карточка больше не принадлежит этой коллекции, удаляем её из отображаемого списка
+            if (selectedCollectionId !== null && !newCollectionIds.includes(selectedCollectionId)) {
+                // Карточка была удалена из текущей коллекции, обновляем список
+                if (selectedCollectionId === null) {
+                    dispatch(fetchMyCards({page: 1, perPage: 12}));
+                } else {
+                    dispatch(fetchCardsByCollection({
+                        collectionId: selectedCollectionId,
+                        page: 1,
+                        perPage: 12
+                    }));
+                }
+            }
+
+            // Здесь можно добавить toast уведомление об успехе
+            console.log('Карточка успешно перемещена');
+
+        } catch (error) {
+            console.error('Ошибка при перемещении карточки:', error);
+            // Здесь можно добавить toast уведомление об ошибке
+        }
+    };
+
     return (
-        <>
+        <DndProvider backend={HTML5Backend}>
             <Header/>
             <Main>
                 <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -124,21 +178,8 @@ export default function MyPage() {
                             selectedId={selectedCollectionId}
                             onSelect={handleSelectCollection}
                             isLoading={collectionsLoading}
+                            onCardDrop={handleCardDrop}
                         />
-
-                        {/* Ошибка */}
-                        {/*{error && (*/}
-                        {/*    <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">*/}
-                        {/*        {error}*/}
-                        {/*    </div>*/}
-                        {/*)}*/}
-
-                        {/* Информация о количестве карточек */}
-                        {/*{!isLoading && myCards.length > 0 && (*/}
-                        {/*    <div className="mb-4 text-sm text-gray-600">*/}
-                        {/*        {t('my.showing') || 'Показано'}: {myCards.length} {t('my.of') || 'из'} {pagination.total}*/}
-                        {/*    </div>*/}
-                        {/*)}*/}
 
                         {/* Сетка карточек */}
                         {myCards.length > 0 ? (
@@ -147,6 +188,7 @@ export default function MyPage() {
                                 isLoading={isLoading}
                                 onLoadMore={handleLoadMore}
                                 hasMore={pagination.hasMore}
+                                onCardDrop={handleCardDrop}
                             />
                         ) : (
                             <div className="text-center py-12">
@@ -169,7 +211,7 @@ export default function MyPage() {
                                             {t('my.createFirst') || 'Создайте свою первую карточку'}
                                         </p>
                                         <button
-                                            onClick={() => navigate('/create-card')}
+                                            onClick={() => navigate('/card/create')}
                                             className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor"
@@ -187,6 +229,6 @@ export default function MyPage() {
                 </div>
             </Main>
             <Footer/>
-        </>
+        </DndProvider>
     );
 }
