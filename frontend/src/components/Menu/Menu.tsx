@@ -29,9 +29,7 @@ const Menu = () => {
 
     const isCreateActive = useMatch("/card/create") ||
         useMatch("/collection/create");
-    console.log("log--",
-        "\nisCreateActive--", isCreateActive,
-    );
+
     const menuItems = [
         {
             path: "/",

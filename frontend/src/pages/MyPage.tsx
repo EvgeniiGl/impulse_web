@@ -14,11 +14,12 @@ import {
     fetchCardsByCollection,
     setSelectedCollectionId,
     resetPagination,
-    updateCardCollections
+    updateCardCollections, MyCardState
 } from "@store/card/myCardSlice.ts";
 import {DndProvider} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
-import {defaultSerializeQueryArgs} from "@reduxjs/toolkit/query";
+import {useDropMenu} from '@/hooks/useDropMenu';
+import {DropMenu} from '@components/Card/DropMenu';
 
 export default function MyPage() {
     const {t} = useTranslation();
@@ -32,10 +33,14 @@ export default function MyPage() {
         isLoading,
         selectedCollectionId,
         pagination
-    } = useAppSelector((state) => state.myCards);
+    }: MyCardState = useAppSelector((state) => state.myCards);
 
     const {isAuthenticated} = useAppSelector((state) => state.auth);
 
+    const {menuState, openMenu, closeMenu} = useDropMenu();
+    console.log("log--",
+        "\ndata--openMenu", openMenu,
+    );
     // Проверка авторизации
     useEffect(() => {
         if (!isAuthenticated) {
@@ -86,14 +91,22 @@ export default function MyPage() {
         dispatch(resetPagination());
     };
 
-    const handleCardDrop = async (cardId: string, targetCollectionId: string | null) => {
+    const handleCardDrop = async (
+        cardId: string,
+        targetCollectionId: string | null,
+        sourceCollectionId: string | null  // Теперь получаем sourceCollectionId
+    ) => {
+        console.log("log--",
+            "\ntargetCollectionId--", targetCollectionId,
+            "\nsourceCollectionId--", sourceCollectionId,
+        );
         try {
             // Находим карточку
             const card = myCards.find(c => c.id === cardId);
             if (!card) return;
 
             // Получаем текущие ID коллекций карточки
-            const currentCollectionIds = card.collections?.map(c => c.id) || [];
+            const currentCollectionIds = card.collectionIds || [];
 
             let newCollectionIds: string[];
 
@@ -106,39 +119,138 @@ export default function MyPage() {
                     console.log('Карточка уже в этой коллекции');
                     return;
                 }
-                // Добавляем новую коллекцию к существующим
-                newCollectionIds = [...currentCollectionIds, targetCollectionId];
+
+                // Если sourceCollectionId передан, значит это перемещение
+                if (sourceCollectionId !== null) {
+                    // Перемещение - удаляем из исходной коллекции и добавляем в целевую
+                    newCollectionIds = currentCollectionIds
+                        .filter(id => id !== sourceCollectionId)
+                        .concat(targetCollectionId);
+                } else {
+                    // Копирование - просто добавляем новую коллекцию
+                    newCollectionIds = [...currentCollectionIds, targetCollectionId];
+                }
             }
-            
+
             // Отправляем запрос на обновление
             await dispatch(updateCardCollections({
                 cardId,
                 collectionIds: newCollectionIds
             })).unwrap();
 
-            // После успешного обновления, если мы находимся в режиме фильтрации по коллекции,
-            // и карточка больше не принадлежит этой коллекции, удаляем её из отображаемого списка
-            if (selectedCollectionId !== null && !newCollectionIds.includes(selectedCollectionId)) {
-                // Карточка была удалена из текущей коллекции, обновляем список
-                if (selectedCollectionId === null) {
-                    dispatch(fetchMyCards({page: 1, perPage: 12}));
-                } else {
-                    dispatch(fetchCardsByCollection({
-                        collectionId: selectedCollectionId,
-                        page: 1,
-                        perPage: 12
-                    }));
+            console.log('Карточка успешно обработана');
+
+            // Обновляем список карточек
+            refreshCards();
+
+        } catch (error) {
+            console.error('Ошибка при обработке карточки:', error);
+        }
+    };
+
+    const refreshCards = () => {
+        if (selectedCollectionId === null) {
+            dispatch(fetchMyCards({page: 1, perPage: 12}));
+        } else {
+            dispatch(fetchCardsByCollection({
+                collectionId: selectedCollectionId,
+                page: 1,
+                perPage: 12
+            }));
+        }
+    };
+
+    const handleCopyCard = async () => {
+        if (!menuState.cardId || menuState.targetCollectionId === undefined) return;
+
+        try {
+            const card = myCards.find(c => c.id === menuState.cardId);
+            if (!card) return;
+
+            const currentCollectionIds = card.collectionIds || [];
+
+            let newCollectionIds: string[];
+
+            if (menuState.targetCollectionId === null) {
+                // Копирование в "Общую" - добавляем все коллекции?
+                // Или оставляем как есть? Решайте сами
+                newCollectionIds = currentCollectionIds;
+            } else {
+                // Копирование - добавляем новую коллекцию к существующим
+                if (currentCollectionIds.includes(menuState.targetCollectionId)) {
+                    console.log('Карточка уже в этой коллекции');
+                    closeMenu();
+                    return;
                 }
+                newCollectionIds = [...currentCollectionIds, menuState.targetCollectionId];
             }
 
-            // Здесь можно добавить toast уведомление об успехе
+            await dispatch(updateCardCollections({
+                cardId: menuState.cardId,
+                collectionIds: newCollectionIds
+            })).unwrap();
+
+            console.log('Карточка успешно скопирована');
+            closeMenu();
+
+            // Обновляем список карточек
+            refreshCards();
+
+        } catch (error) {
+            console.error('Ошибка при копировании карточки:', error);
+            closeMenu();
+        }
+    };
+
+    const handleMoveCard = async () => {
+        if (!menuState.cardId || menuState.targetCollectionId === undefined) return;
+
+        try {
+            const card = myCards.find(c => c.id === menuState.cardId);
+            if (!card) return;
+
+            const currentCollectionIds = card.collectionIds || [];
+
+            // Определяем, из какой коллекции перемещаем
+            // Берем первую коллекцию из sourceCollectionIds как исходную
+            const sourceCollectionId = menuState.sourceCollectionIds[0];
+
+            let newCollectionIds: string[];
+
+            if (menuState.targetCollectionId === null) {
+                newCollectionIds = [];
+            } else {
+                newCollectionIds = currentCollectionIds.filter((id: string) => id !== sourceCollectionId).concat(menuState.targetCollectionId);
+            }
+
+            await dispatch(updateCardCollections({
+                cardId: menuState.cardId,
+                collectionIds: newCollectionIds
+            })).unwrap();
+
             console.log('Карточка успешно перемещена');
+            closeMenu();
+
+            // Обновляем список карточек
+            refreshCards();
 
         } catch (error) {
             console.error('Ошибка при перемещении карточки:', error);
-            // Здесь можно добавить toast уведомление об ошибке
+            closeMenu();
         }
     };
+
+    // Добавим обработчик клавиши ESC для закрытия меню
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && menuState.isOpen) {
+                closeMenu();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [menuState.isOpen, closeMenu]);
 
     return (
         <DndProvider backend={HTML5Backend}>
@@ -227,6 +339,17 @@ export default function MyPage() {
                         )}
                     </div>
                 </div>
+                {/* Меню выбора действия при перетаскивании */}
+                {menuState.isOpen && (
+                    <DropMenu
+                        position={menuState.position}
+                        onCopy={handleCopyCard}
+                        onMove={handleMoveCard}
+                        onClose={closeMenu}
+                        sourceCollectionId={menuState.sourceCollectionIds[0]}
+                        targetCollectionId={menuState.targetCollectionId}
+                    />
+                )}
             </Main>
             <Footer/>
         </DndProvider>

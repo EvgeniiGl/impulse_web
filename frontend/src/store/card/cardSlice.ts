@@ -24,6 +24,7 @@ const initialState: CardState = {
         total: 0,
         hasMore: true,
     },
+    draggedCard: null, // Добавляем
 };
 
 export const fetchCards = createAsyncThunk(

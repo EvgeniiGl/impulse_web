@@ -208,6 +208,7 @@ class Collection extends Model
                 'id' => $collectionId,
             ]
         ]);
+
         if (!$collection || !$collection->hasAccess($user->id)) {
             return null;
         }
@@ -217,7 +218,15 @@ class Collection extends Model
         $data['cards']        = [];
 
         foreach ($collection->cards as $card) {
-            $data['cards'][] = $card->toArray();
+            $cardData = $card->toArray();
+
+            // Добавляем только ID коллекций для каждой карточки
+            $cardData['collectionIds'] = [];
+            foreach ($card->collections as $relatedCollection) {
+                $cardData['collectionIds'][] = $relatedCollection->id;
+            }
+
+            $data['cards'][] = $cardData;
         }
 
         return $data;

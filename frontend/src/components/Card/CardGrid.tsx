@@ -8,7 +8,7 @@ interface CardGridProps {
     isLoading: boolean;
     onLoadMore: () => void;
     hasMore: boolean;
-    onCardDrop?: (cardId: string, targetCollectionId: string | null) => void;
+    onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
 }
 
 export default function CardGrid({cards, isLoading, onLoadMore, hasMore, onCardDrop}: CardGridProps) {

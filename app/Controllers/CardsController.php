@@ -389,15 +389,12 @@ class CardsController extends BaseController
                 /** @var Card $card */
                 $card = $cardData['card'];
 
-                // Получаем коллекции карточки
-                $collections = [];
+                // Получаем только ID коллекций карточки
+                $collectionIds = [];
                 if (method_exists($card, 'getCollections')) {
                     $cardCollections = $card->getCollections();
                     foreach ($cardCollections as $collection) {
-                        $collections[] = [
-                            'id'   => $collection->id,
-                            'name' => $collection->name,
-                        ];
+                        $collectionIds[] = $collection->id;
                     }
                 }
 
@@ -411,8 +408,8 @@ class CardsController extends BaseController
                     'access_level'        => $cardData['permission'],
                     'is_owner'            => $cardData['access_type'] === 'owner',
                     'creator_id'          => $card->creator_id,
-                    'collections'         => $collections,
-                    'collections_count'   => count($collections),
+                    'collectionIds'       => $collectionIds, // Изменено с 'collections' на 'collection_ids'
+                    'collections_count'   => count($collectionIds),
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
                     'show_title_on_image' => $card->show_title_on_image,

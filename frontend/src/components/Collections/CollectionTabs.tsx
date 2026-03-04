@@ -10,7 +10,7 @@ interface CollectionTabsProps {
     selectedId: string | null;
     onSelect: (id: string | null) => void;
     isLoading: boolean;
-    onCardDrop?: (cardId: string, targetCollectionId: string | null) => void;
+    onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
 }
 
 export default function CollectionTabs({

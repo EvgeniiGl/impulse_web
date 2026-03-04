@@ -1,9 +1,9 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {CardsApi, CreateCardRequest, CreateCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
+import {CardsApi, CreateCardRequest, CreateCardResponse, GetCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
 import {CollectionsApi, MyCollectionsResponse} from "@api/collectionsApi.ts";
 import {Card, Collection, PaginationState} from "@store/store.ts";
 
-interface MyCardState {
+export interface MyCardState {
     myCards: Card[];
     error: string | null;
     pagination: PaginationState;
@@ -120,7 +120,7 @@ export const updateCardCollections = createAsyncThunk(
             if (!response?.success) {
                 return rejectWithValue('Failed to update card collections');
             }
-            return response.data.card;
+            return response;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -266,12 +266,12 @@ const myCardSlice = createSlice({
                 state.isUpdating = true;
                 state.error = null;
             })
-            .addCase(updateCardCollections.fulfilled, (state: MyCardState, action) => {
+            .addCase(updateCardCollections.fulfilled, (state: MyCardState, action: PayloadAction<GetCardResponse>) => {
                 state.isUpdating = false;
                 // Обновляем карточку в списке
-                const index = state.myCards.findIndex(c => c.id === action.payload.id);
+                const index = state.myCards.findIndex(c => c.id === action.payload.data.card.id);
                 if (index !== -1) {
-                    state.myCards[index] = action.payload;
+                    state.myCards[index] = action.payload.data.card;
                 }
                 state.success = 'Коллекции карточки обновлены';
             })

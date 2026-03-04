@@ -21,7 +21,7 @@ export interface Card {
     object_path: string;
     file_name: string;
     original_name: string;
-    collections: Collection[]
+    collectionIds: string[]
 }
 
 export interface Collection {
@@ -42,6 +42,10 @@ export interface PaginationState {
     hasMore: boolean;
 }
 
+export interface DraggedCard {
+    id: string;
+    sourceCollectionId: string | null;
+}
 
 export interface CardState {
     cards: Card[];
@@ -57,6 +61,7 @@ export interface CardState {
     selectedCollections: Collection[];
     selectedCollectionId: string | null;
     pagination: PaginationState;
+    draggedCard: DraggedCard | null; // Добавляем
 }
 
 export const store = configureStore({

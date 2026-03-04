@@ -12,7 +12,7 @@ import {ItemTypes} from '@/types/dnd';
 
 interface CardItemProps {
     card: Card;
-    onDrop?: (cardId: string, targetCollectionId: string | null) => void;
+    onDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
 }
 
 export default function CardItem({card, onDrop}: CardItemProps) {
@@ -33,22 +33,30 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const isScheduleOpen = openScheduleCardId === card.id;
 
     // Настройка drag
-    const [{isDragging}, drag] = useDrag(() => ({
-        type: ItemTypes.CARD,
-        item: {
-            id: card.id,
-            collectionIds: card.collections?.map(c => c.id) || []
-        },
-        end: (item, monitor) => {
-            const dropResult = monitor.getDropResult() as { collectionId: string | null } | null;
-            if (item && dropResult && onDrop) {
-                // onDrop(item.id, dropResult.collectionId);
-            }
-        },
-        collect: (monitor) => ({
-            isDragging: monitor.isDragging(),
-        }),
-    }));
+    const [{isDragging}, drag] = useDrag(() => {
+        console.log("log-useDrag-",
+            "\ncard--", card,
+        );
+        return {
+            type: ItemTypes.CARD,
+            item: {
+                id: card.id,
+                collectionIds: card.collectionIds || [],
+                sourceCollectionId: card.collections?.map(c => c.id) || [],
+            },
+            end: (item, monitor) => {
+
+                const dropResult = monitor.getDropResult() as { collectionId: string | null } | null;
+                if (item && dropResult && onDrop) {
+                    // onDrop(item.id, dropResult.collectionId);
+                }
+            },
+            collect: (monitor) => ({
+                isDragging: monitor.isDragging(),
+            }),
+        }
+    }, [card.id, card.collections]);
+
     // Объединяем refs
     const setRefs = (element: HTMLDivElement | null) => {
         drag(element);
