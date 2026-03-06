@@ -9,6 +9,9 @@ use App\Models\CollectionCard;
 use App\Models\User;
 use App\Models\UserCollection;
 use App\Models\Card;
+use Exception;
+use InvalidArgumentException;
+use PDOException;
 use Phalcon\Mvc\Model\Transaction\Manager as TransactionManager;
 
 class CollectionService
@@ -312,7 +315,7 @@ class CollectionService
     /**
      * Получить список пользователей с доступом
      */
-    public function getSharedUsers(int $collectionId, int $userId): array|false
+    public function getSharedUsers(int $collectionId, string $userId): array|false
     {
         $collection = Collection::findFirst([
             'conditions' => 'id = :id:',
@@ -339,5 +342,25 @@ class CollectionService
 
         $query = Collection::getModelsManager()->createQuery($phql);
         return $query->execute(['collectionId' => $collectionId])->toArray();
+    }
+
+    /**
+     * Проверить существование коллекции с указанным названием у пользователя
+     *
+     * @param string $name Название коллекции
+     * @param string $userId ID пользователя
+     * @return bool Возвращает true, если коллекция с таким названием уже существует у пользователя
+     */
+    public function exists(string $name, string $userId): bool
+    {
+        $collection = Collection::findFirst([
+            'conditions' => 'name = :name: AND creator_id = :userId:',
+            'bind'       => [
+                'name'   => $name,
+                'userId' => $userId,
+            ]
+        ]);
+        
+        return !empty($collection);
     }
 }

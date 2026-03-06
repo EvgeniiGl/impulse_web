@@ -43,6 +43,19 @@ export class Api extends ApiClient {
             throw exception
         }
     }
+
+    async remove(id: string): Promise<{ success: boolean } | undefined> {
+        try {
+            const response = await this.delete<{
+                success: boolean
+            }>(`${this.client.defaults.baseURL}/api/collections/${id}`);
+            if (response) {
+                return response;
+            }
+        } catch (exception) {
+            throw exception
+        }
+    }
 }
 
 export const CollectionsApi = new Api(config);

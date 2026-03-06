@@ -99,7 +99,18 @@ class CollectionsController extends BaseController
             ], 401);
         }
 
-        $data       = $this->request->getJsonRawBody(true);
+        $data = $this->request->getJsonRawBody(true);
+
+        $exists = $this->collectionService->exists($data['name'], $user->id);
+        if ($exists) {
+            return $this->response
+                ->setStatusCode(409)
+                ->setJsonContent([
+                    'success' => false,
+                    'message' => 'Коллекция уже существует'
+                ]);
+        }
+
         $collection = $this->collectionService->create($data, $user);
 
         if (!$collection) {

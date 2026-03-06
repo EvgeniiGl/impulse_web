@@ -127,6 +127,23 @@ export const updateCardCollections = createAsyncThunk(
     }
 );
 
+export const deleteCollection = createAsyncThunk(
+    'collections/delete',
+    async (id: string, {rejectWithValue, dispatch}) => {
+        try {
+            const response = await CollectionsApi.remove(id);
+            if (!response?.success) {
+                return rejectWithValue('Failed to delete collection');
+            }
+            // После успешного удаления обновляем список коллекций
+            await dispatch(myCollections());
+            return {id, success: true};
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
 const myCardSlice = createSlice({
     name: 'myCards',
     initialState,
@@ -277,6 +294,20 @@ const myCardSlice = createSlice({
             })
             .addCase(updateCardCollections.rejected, (state: MyCardState, action) => {
                 state.isUpdating = false;
+                state.error = action.payload as string;
+            });
+
+        builder
+            .addCase(deleteCollection.pending, (state: MyCardState) => {
+                state.isDeleting = true;
+                state.error = null;
+            })
+            .addCase(deleteCollection.fulfilled, (state: MyCardState) => {
+                state.isDeleting = false;
+                state.success = 'Коллекция успешно удалена';
+            })
+            .addCase(deleteCollection.rejected, (state: MyCardState, action) => {
+                state.isDeleting = false;
                 state.error = action.payload as string;
             });
     },

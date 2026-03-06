@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {notificationManager} from '@utils/notificationManager.ts';
 import {IoMdClose, IoMdRefresh} from 'react-icons/io';
+import {useAuth} from "@hooks/useAuth.ts";
 
 interface SubscriptionWarningProps {
     onResubscribe?: () => void;
@@ -9,10 +10,11 @@ interface SubscriptionWarningProps {
 export const SubscriptionWarning: React.FC<SubscriptionWarningProps> = ({onResubscribe}) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isResubscribing, setIsResubscribing] = useState(false);
-
+    const {isAuthenticated} = useAuth();
     useEffect(() => {
-        checkSubscription();
-
+        if (isAuthenticated) {
+            checkSubscription();
+        }
         // Проверяем каждый час
         const interval = setInterval(checkSubscription, 60 * 60 * 1000);
 

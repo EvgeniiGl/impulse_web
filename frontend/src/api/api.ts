@@ -91,7 +91,9 @@ export default class ApiClient implements IApiClient {
             (response) => response,
             async (error: AxiosError) => {
                 const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
+                console.log("log--",
+                    "\nerror.response--", error.response,
+                );
                 // Проверяем, что это 401 ошибка и запрос еще не повторялся
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     if (this.isRefreshing) {

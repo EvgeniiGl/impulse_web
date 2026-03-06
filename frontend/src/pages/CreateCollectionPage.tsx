@@ -9,7 +9,8 @@ import {
     createCollection,
     clearError,
 } from "@store/card/cardSlice.ts";
-import {clearSuccess} from "@store/card/myCardSlice.ts";
+import {MyCardState, myCollections} from "@store/card/myCardSlice.ts";
+import CollectionList from "@components/Collections/CollectionList.tsx";
 
 export default function CreateCollectionPage() {
     const {t} = useTranslation();
@@ -21,38 +22,21 @@ export default function CreateCollectionPage() {
         access_type: 'private' as AccessType,
     });
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false); // Добавляем состояние для блокировки повторных отправок
+    const {isAuthenticated} = useAppSelector((state) => state.auth);
 
     const {
-        isCreating,
-        error,
-        success,
-    } = useAppSelector((state) => state.card);
-    const {isAuthenticated, user} = useAppSelector((state) => state.auth);
+        collections,
+        collectionsLoading,
+    }: MyCardState = useAppSelector((state) => state.myCards);
 
-    // Проверка авторизации
     useEffect(() => {
-        if (!isAuthenticated) {
+        if (isAuthenticated) {
+            dispatch(myCollections());
+        } else {
             navigate('/login');
         }
-    }, [isAuthenticated, navigate]);
-
-    // Обработка успешного создания
-    useEffect(() => {
-        if (success) {
-            setTimeout(() => {
-                dispatch(clearSuccess());
-                navigate('/my');
-            }, 1000);
-        }
-    }, [success, navigate, dispatch]);
-
-    // Очистка ошибок при размонтировании
-    useEffect(() => {
-        return () => {
-            dispatch(clearError());
-            dispatch(clearSuccess());
-        };
-    }, [dispatch]);
+    }, [isAuthenticated]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -91,15 +75,19 @@ export default function CreateCollectionPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (isSubmitting) {
+            return;
+        }
+
         dispatch(clearError());
 
         if (!validateForm()) {
             return;
         }
 
-        if (!user) {
-            return;
-        }
+        // Устанавливаем флаг отправки
+        setIsSubmitting(true);
 
         try {
             await dispatch(createCollection({
@@ -108,6 +96,9 @@ export default function CreateCollectionPage() {
             })).unwrap();
         } catch (error) {
             console.error('Collection creation failed:', error);
+        } finally {
+            dispatch(myCollections());
+            setIsSubmitting(false);
         }
     };
 
@@ -142,11 +133,12 @@ export default function CreateCollectionPage() {
                                         value={formData.name}
                                         onChange={handleInputChange}
                                         maxLength={100}
+                                        disabled={isSubmitting} // Блокируем ввод во время отправки
                                         className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
                                             validationErrors.name
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
-                                        }`}
+                                        } ${isSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                         placeholder={t('createCollection.namePlaceholder') || 'Введите название коллекции'}
                                         required
                                     />
@@ -169,7 +161,8 @@ export default function CreateCollectionPage() {
                                         name="access_type"
                                         value={formData.access_type}
                                         onChange={handleAccessTypeChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                        disabled={isSubmitting} // Блокируем select во время отправки
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
                                         <option value="private">
                                             {t('createCollection.private') || 'Приватная'} - {t('createCollection.privateDesc') || 'Только вы'}
@@ -186,31 +179,14 @@ export default function CreateCollectionPage() {
                                     </p>
                                 </div>
 
-                                {/* Сообщения об ошибках */}
-                                {error && (
-                                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                                        <p className="font-medium">{t('common.error') || 'Ошибка'}</p>
-                                        <p className="text-sm">{error}</p>
-                                    </div>
-                                )}
-
-                                {/* Сообщение об успехе */}
-                                {success && (
-                                    <div
-                                        className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                                        <p className="font-medium">{t('common.success') || 'Успешно'}</p>
-                                        <p className="text-sm">{success}</p>
-                                    </div>
-                                )}
-
                                 {/* Кнопки */}
                                 <div className="flex gap-4 pt-4">
                                     <button
                                         type="submit"
-                                        disabled={isCreating}
+                                        disabled={isSubmitting}
                                         className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
                                     >
-                                        {isCreating ? (
+                                        {isSubmitting ? (
                                             <span className="flex items-center justify-center">
                                                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none"
                                                      viewBox="0 0 24 24">
@@ -225,17 +201,16 @@ export default function CreateCollectionPage() {
                                             t('createCollection.create') || 'Создать коллекцию'
                                         )}
                                     </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/my')}
-                                        className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium"
-                                    >
-                                        {t('common.cancel') || 'Отмена'}
-                                    </button>
                                 </div>
                             </form>
                         </div>
+                    </div>
+                    {/* Вкладки коллекций */}
+                    <div className="max-w-5xl mx-auto m-8">
+                        <CollectionList
+                            collections={collections}
+                            isLoading={collectionsLoading}
+                        />
                     </div>
                 </div>
             </Main>
