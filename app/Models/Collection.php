@@ -164,37 +164,78 @@ class Collection extends Model
         return $this->creator_id === $userId;
     }
 
-    /**
-     * Получить коллекции пользователя
-     */
     public function getUserCollections(User $user): array
     {
+        // Основной запрос для реальных коллекций
         $phql = "
-        SELECT 
-            c.id,
-            c.name,
-            c.creator_id,
-            c.access_type,
-            c.is_active,
-            c.created_at,
-            c.updated_at,
-            u.name as creator_name,
-            COUNT(DISTINCT cc.card_id) as card_count
-        FROM App\Models\Collection c
-        LEFT JOIN App\Models\User u ON c.creator_id = u.id
-        LEFT JOIN App\Models\CollectionCard cc ON c.id = cc.collection_id
-        WHERE c.creator_id = :userId: 
-           OR c.id IN (
-               SELECT uc.collection_id 
-               FROM App\Models\UserCollection uc 
-               WHERE uc.user_id = :userId:
-           )
-        GROUP BY c.id, c.name, c.creator_id, c.access_type, c.is_active, c.created_at, c.updated_at, u.name
-        ORDER BY c.created_at DESC
-    ";
+            SELECT 
+                c.id,
+                c.name,
+                c.creator_id,
+                c.access_type,
+                c.is_active,
+                c.created_at,
+                c.updated_at,
+                u.name as creator_name,
+                COUNT(DISTINCT cc.card_id) as card_count
+            FROM App\Models\Collection c
+            LEFT JOIN App\Models\User u ON c.creator_id = u.id
+            LEFT JOIN App\Models\CollectionCard cc ON c.id = cc.collection_id
+            WHERE c.creator_id = :userId: 
+               OR c.id IN (
+                   SELECT uc.collection_id 
+                   FROM App\Models\UserCollection uc 
+                   WHERE uc.user_id = :userId:
+               )
+            GROUP BY c.id, c.name, c.creator_id, c.access_type, c.is_active, c.created_at, c.updated_at, u.name
+            ORDER BY c.created_at DESC
+        ";
 
-        $query = $this->getModelsManager()->createQuery($phql);
-        return $query->execute(['userId' => $user->id])->toArray();
+        $query       = $this->getModelsManager()->createQuery($phql);
+        $collections = $query->execute(['userId' => $user->id])->toArray();
+
+        // Получаем количество карточек без коллекций
+        $cardsWithoutCollectionCount = $this->getCardsWithoutCollectionCount($user->id);
+
+        // Добавляем виртуальную коллекцию "Общая"
+        $generalCollection = [
+            'id'           => null,
+            'name'         => 'Общая',
+            'creator_id'   => $user->id,
+            'access_type'  => 'private', // или другой подходящий тип
+            'is_active'    => true,
+            'created_at'   => null,
+            'updated_at'   => null,
+            'creator_name' => $user->name,
+            'card_count'   => $cardsWithoutCollectionCount,
+            'is_general'   => true // Флаг для идентификации общей коллекции
+        ];
+
+        // Добавляем общую коллекцию в начало или конец массива
+        array_unshift($collections, $generalCollection); // В начало
+        // или
+        // $collections[] = $generalCollection; // В конец
+
+        return $collections;
+    }
+
+    protected function getCardsWithoutCollectionCount(string $userId): int
+    {
+        $phql = "
+            SELECT COUNT(DISTINCT c.id) as count
+            FROM App\Models\Card c
+            WHERE c.creator_id = ?0
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM App\Models\CollectionCard cc 
+                WHERE cc.card_id = c.id
+            )
+        ";
+
+        $query  = $this->getModelsManager()->createQuery($phql);
+        $result = $query->execute([$userId]);
+
+        return $result->getFirst()['count'] ?? 0;
     }
 
     /**

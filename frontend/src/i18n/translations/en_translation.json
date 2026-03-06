@@ -183,7 +183,7 @@
     "viewCollection": "View Collection",
     "collectionDeleted": "Collection deleted successfully",
     "collectionUpdated": "Collection updated successfully",
-    "confirmDelete": "Are you sure you want to delete this collection?",
+    "confirmDelete": "Are you sure you want to delete this set? The cards will be moved to the default collection.",
     "cardsCount": "Cards",
     "createdBy": "Created by",
     "createdAt": "Created at",

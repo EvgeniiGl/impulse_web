@@ -34,15 +34,12 @@ export default function CardItem({card, onDrop}: CardItemProps) {
 
     // Настройка drag
     const [{isDragging}, drag] = useDrag(() => {
-        console.log("log-useDrag-",
-            "\ncard--", card,
-        );
         return {
             type: ItemTypes.CARD,
             item: {
                 id: card.id,
                 collectionIds: card.collectionIds || [],
-                sourceCollectionId: card.collections?.map(c => c.id) || [],
+                sourceCollectionId: card.collectionIds || [],
             },
             end: (item, monitor) => {
 
@@ -55,7 +52,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                 isDragging: monitor.isDragging(),
             }),
         }
-    }, [card.id, card.collections]);
+    }, [card.id, card.collectionIds]);
 
     // Объединяем refs
     const setRefs = (element: HTMLDivElement | null) => {

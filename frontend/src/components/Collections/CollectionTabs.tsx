@@ -82,27 +82,9 @@ export default function CollectionTabs({
                     onScroll={checkScroll}
                     className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide"
                 >
-                    {/* Общая коллекция с поддержкой drop */}
-                    <CollectionDropZone
-                        collectionId={null}
-                        onCardDrop={onCardDrop}
-                        isActive={true}
-                    >
-                        <button
-                            onClick={() => onSelect(null)}
-                            className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                                selectedId === null
-                                    ? `${css.tabBtnActive}`
-                                    : `${css.tabBtn}`
-                            }`}
-                        >
-                            {t('collections.general') || 'Общая'}
-                        </button>
-                    </CollectionDropZone>
-
                     {/* Остальные коллекции */}
-                    {collections.map((collection) => (
-                        <CollectionDropZone
+                    {collections.map((collection) => {
+                        return <CollectionDropZone
                             collectionId={collection.id}
                             onCardDrop={onCardDrop}
                             isActive={true}
@@ -110,7 +92,7 @@ export default function CollectionTabs({
                             <button
                                 onClick={() => onSelect(collection.id)}
                                 className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                                    selectedId === collection.id
+                                    (selectedId === collection.id)
                                         ? `${css.tabBtnActive}`
                                         : `${css.tabBtn}`
                                 }`}
@@ -121,7 +103,7 @@ export default function CollectionTabs({
                                 </span>
                             </button>
                         </CollectionDropZone>
-                    ))}
+                    })}
                 </div>
 
                 {/* Правая кнопка прокрутки */}

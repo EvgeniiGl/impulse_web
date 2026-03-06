@@ -58,25 +58,6 @@ export const createCollection = createAsyncThunk(
     }
 );
 
-export const fetchCardsByCollection = createAsyncThunk(
-    'cards/fetchByCollection',
-    async ({collectionId, page, perPage}: {
-        collectionId: string;
-        page: number;
-        perPage: number
-    }, {rejectWithValue}) => {
-        try {
-            const response = await CardsApi.getCardsByCollection(collectionId, page, perPage);
-            if (!response) {
-                return rejectWithValue('Failed to fetch cards');
-            }
-            return response;
-        } catch (error) {
-            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
-        }
-    }
-);
-
 export const fetchCard = createAsyncThunk(
     'card/fetchCard',
     async (id: string, {rejectWithValue}) => {
@@ -133,30 +114,6 @@ const cardSlice = createSlice({
                 state.pagination.hasMore = newCards.length === state.pagination.perPage;
             })
             .addCase(fetchCards.rejected, (state: CardState, action) => {
-                state.isLoading = false;
-                state.error = action.payload as string;
-            });
-        // Fetch Cards By Collection
-        builder
-            .addCase(fetchCardsByCollection.pending, (state: CardState) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(fetchCardsByCollection.fulfilled, (state: CardState, action: PayloadAction<GetCardsResponse>) => {
-                state.isLoading = false;
-                const newCards = action.payload.data.cards;
-
-                if (state.pagination.page === 1) {
-                    state.cards = newCards;
-                } else {
-                    state.cards = [...state.cards, ...newCards];
-                }
-
-                state.pagination.total = action.payload.data.total;
-                state.pagination.page = action.payload.data.page;
-                state.pagination.hasMore = newCards.length === state.pagination.perPage;
-            })
-            .addCase(fetchCardsByCollection.rejected, (state: CardState, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             });

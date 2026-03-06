@@ -39,7 +39,7 @@ export default function CollectionList({
 
     return (
         <div className="mb-6">
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
                 <div
                     className={`px-4 py-2 rounded-lg font-medium transition ${css.tabBtn}`}
                 >
@@ -49,11 +49,13 @@ export default function CollectionList({
                 {collections.map((collection) => (
                     <div
                         key={collection.id}
-                        className={`px-4 py-2 rounded-lg font-medium transition ${css.tabBtn}`}
+                        className={`relative group px-4 py-2 rounded-lg font-medium transition ${css.tabBtn}`}
                     >
-                        {collection.name}
-                        <span className="ml-2 text-xs opacity-75">
-                            ({collection.card_count})
+                        <span className={deletingId === collection.id ? 'opacity-50' : ''}>
+                            {collection.name}
+                            <span className="ml-2 text-xs opacity-75">
+                                ({collection.card_count})
+                            </span>
                         </span>
                         <button
                             onClick={(e) => handleDelete(e, collection.id)}
