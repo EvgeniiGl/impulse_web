@@ -9,9 +9,6 @@ use App\Models\CollectionCard;
 use App\Models\User;
 use App\Models\UserCollection;
 use App\Models\Card;
-use Exception;
-use InvalidArgumentException;
-use PDOException;
 use Phalcon\Mvc\Model\Transaction\Manager as TransactionManager;
 
 class CollectionService
@@ -360,7 +357,90 @@ class CollectionService
                 'userId' => $userId,
             ]
         ]);
-        
+
         return !empty($collection);
+    }
+
+    /**
+     * Переместить карточку в новые коллекции
+     * Удаляет все старые связи карточки с коллекциями и создаёт новые
+     */
+    public function moveCard(string $cardId, array $collectionIds, User $user): array
+    {
+        // Проверяем существование карточки и права владельца
+        $card = Card::findFirst([
+            'conditions' => 'id = :id: AND creator_id = :creator_id:',
+            'bind'       => [
+                'id'         => $cardId,
+                'creator_id' => $user->id,
+            ]
+        ]);
+
+        if (!$card) {
+            return [
+                'success' => false,
+                'message' => 'Card not found or access denied'
+            ];
+        }
+
+        // Проверяем права на каждую переданную коллекцию
+        foreach ($collectionIds as $collectionId) {
+            $collection = Collection::findFirst([
+                'conditions' => 'id = :id:',
+                'bind'       => ['id' => $collectionId]
+            ]);
+
+            if (!$collection || !$collection->isOwner($user->id)) {
+                return [
+                    'success' => false,
+                    'message' => "Collection {$collectionId} not found or access denied"
+                ];
+            }
+        }
+
+        try {
+            $transaction = $this->transactionManager->get();
+
+            // Удаляем все старые связи карточки с коллекциями
+            $existingLinks = CollectionCard::find([
+                'conditions' => 'card_id = :card_id:',
+                'bind'       => ['card_id' => $cardId]
+            ]);
+
+            foreach ($existingLinks as $link) {
+                $link->setTransaction($transaction);
+                if (!$link->delete()) {
+                    $transaction->rollback('Failed to delete old collection links');
+                }
+            }
+
+            // Сохраняем новые связи
+            foreach ($collectionIds as $collectionId) {
+                $collectionCard = new CollectionCard();
+                $collectionCard->setTransaction($transaction);
+                $collectionCard->card_id       = $cardId;
+                $collectionCard->collection_id = $collectionId;
+
+                if (!$collectionCard->save()) {
+                    $messages = array_map(
+                        fn($m) => $m->getMessage(),
+                        iterator_to_array($collectionCard->getMessages())
+                    );
+                    $transaction->rollback('Failed to save collection link: ' . implode(', ', $messages));
+                }
+            }
+
+            $transaction->commit();
+
+            return [
+                'success' => true,
+                'message' => 'Card collections updated successfully'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error updating card collections: ' . $e->getMessage()
+            ];
+        }
     }
 }

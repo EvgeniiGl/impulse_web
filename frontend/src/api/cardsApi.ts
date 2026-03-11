@@ -42,6 +42,12 @@ export interface GetCardResponse {
     };
 }
 
+export interface DeleteCardResponse {
+    success: boolean;
+    message: string;
+    id: string;
+}
+
 export class Api extends ApiClient {
     async create(data: { card: CreateCardRequest, file: File }): Promise<CreateCardResponse | undefined> {
         try {
@@ -130,6 +136,18 @@ export class Api extends ApiClient {
             const response = await this.patch<{ collection_ids: string[] }, GetCardResponse>(
                 `${this.client.defaults.baseURL}/api/collections/${cardId}/cards`,
                 {collection_ids: collectionIds}
+            );
+
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    async deleteCard(cardId: string): Promise<DeleteCardResponse | null> {
+        try {
+            const response = await this.delete<DeleteCardResponse>(
+                `${this.client.defaults.baseURL}/api/cards/${cardId}`
             );
 
             return response;

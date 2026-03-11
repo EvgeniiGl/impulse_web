@@ -3,10 +3,10 @@ import {Card} from "@store/store.ts";
 import {useState, useRef, useEffect} from 'react';
 import {LiaSignatureSolid} from "react-icons/lia";
 import {MdOutlineSchedule} from "react-icons/md";
-import {IoCloseCircleOutline} from "react-icons/io5";
+import {IoCloseCircleOutline, IoTrashOutline} from "react-icons/io5";
 import {ScheduleForm} from '@/components/Notifications/ScheduleForm';
 import {useAppDispatch, useAppSelector} from '@store/store.ts';
-import {closeScheduleForm, toggleScheduleForm} from '@store/card/myCardSlice.ts';
+import {closeScheduleForm, toggleScheduleForm, deleteCard} from '@store/card/myCardSlice.ts';
 import {useDrag} from 'react-dnd';
 import {ItemTypes} from '@/types/dnd';
 
@@ -20,9 +20,11 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const dispatch = useAppDispatch();
 
     const openScheduleCardId = useAppSelector(state => state.myCards.openScheduleCardId);
+    const currentCollectionId = useAppSelector(state => state.myCards.selectedCollectionId);
 
     const [imageError, setImageError] = useState(false);
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
     const descriptionRef = useRef<HTMLDivElement | null>(null);
     const scheduleRef = useRef<HTMLDivElement | null>(null);
@@ -146,6 +148,31 @@ export default function CardItem({card, onDrop}: CardItemProps) {
         dispatch(closeScheduleForm());
     };
 
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsDescriptionOpen(false);
+        if (isScheduleOpen) {
+            dispatch(closeScheduleForm());
+        }
+        setShowDeleteConfirm(true);
+    };
+
+    // Подтверждение удаления
+    const handleConfirmDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        dispatch(deleteCard({
+            card: card,
+            collectionId: currentCollectionId
+        }));
+        setShowDeleteConfirm(false);
+    };
+
+    // Отмена удаления
+    const handleCancelDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowDeleteConfirm(false);
+    };
+
     const handleCardClick = (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         if (target.tagName === 'IMG') {
@@ -230,10 +257,26 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         </span>
                     </div>
 
+                    {/* Кнопка уведомлений рядом с кнопкой описания - z-index 30 */}
+                    <button
+                        onClick={handleScheduleToggle}
+                        className="absolute bottom-3 right-21 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                        style={{
+                            padding: '3px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            color: 'white',
+                            border: '1px solid var(--color-white)',
+                        }}
+                        title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
+                    >
+                        <MdOutlineSchedule className="w-3.5 h-3.5"/>
+                    </button>
+
                     {/* Кнопка описания снизу справа - z-index 30 */}
                     <button
                         onClick={handleDescriptionToggle}
-                        className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1"
+                        className="absolute bottom-3 right-12 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1"
                         style={{
                             padding: '3px',
                             borderRadius: '50%',
@@ -246,10 +289,9 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         <LiaSignatureSolid className="w-3.5 h-3.5"/>
                     </button>
 
-                    {/* Кнопка уведомлений рядом с кнопкой описания - z-index 30 */}
                     <button
-                        onClick={handleScheduleToggle}
-                        className="absolute bottom-3 right-12 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                        onClick={handleDeleteClick}
+                        className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-red-600/80 transition-colors shadow-lg"
                         style={{
                             padding: '3px',
                             borderRadius: '50%',
@@ -257,9 +299,9 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             color: 'white',
                             border: '1px solid var(--color-white)',
                         }}
-                        title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
+                        title="Удалить карточку"
                     >
-                        <MdOutlineSchedule className="w-3.5 h-3.5"/>
+                        <IoTrashOutline className="w-3.5 h-3.5"/>
                     </button>
 
                     {/* Описание, которое появляется при клике - z-index 40 (выше кнопок) */}
@@ -354,6 +396,43 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                         onCancel={handleCloseSchedule}
                                     />
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Подтверждение удаления - z-index 40 */}
+                    <div
+                        className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
+                            showDeleteConfirm ? 'opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                        style={{zIndex: 40}}
+                    >
+                        <div
+                            className="bg-[var(--color-primary)] text-white h-full flex flex-col items-center justify-center p-4"
+                            style={{minHeight: '150px'}}>
+                            <p className="text-center mb-4 font-medium">
+                                {currentCollectionId
+                                    ? 'Удалить карточку из этой коллекции?'
+                                    : 'Удалить карточку полностью?'}
+                            </p>
+                            <p className="text-center text-sm mb-4 text-red-100">
+                                {currentCollectionId
+                                    ? 'Карточка останется в других коллекциях'
+                                    : 'Карточка будет удалена безвозвратно'}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleConfirmDelete}
+                                    className="px-4 py-2 bg-white text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
+                                >
+                                    Удалить
+                                </button>
+                                <button
+                                    onClick={handleCancelDelete}
+                                    className="px-4 py-2 bg-transparent border border-white text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
+                                >
+                                    Отмена
+                                </button>
                             </div>
                         </div>
                     </div>

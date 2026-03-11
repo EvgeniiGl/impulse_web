@@ -1,5 +1,12 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {CardsApi, CreateCardRequest, CreateCardResponse, GetCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
+import {
+    CardsApi,
+    CreateCardRequest,
+    CreateCardResponse,
+    DeleteCardResponse,
+    GetCardResponse,
+    GetCardsResponse
+} from "@api/cardsApi.ts";
 import {CollectionsApi, MyCollectionsResponse} from "@api/collectionsApi.ts";
 import {Card, Collection, PaginationState} from "@store/store.ts";
 
@@ -138,6 +145,31 @@ export const deleteCollection = createAsyncThunk(
             // После успешного удаления обновляем список коллекций
             await dispatch(myCollections());
             return {id, success: true};
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
+// Новый экшен для удаления карточки
+export const deleteCard = createAsyncThunk(
+    'cards/delete',
+    async ({card, collectionId}: { card: Card; collectionId: string | null }, {rejectWithValue}) => {
+        try {
+            if (collectionId && card.collectionIds && card.collectionIds.length > 1) {
+                const updatedCollectionIds = card.collectionIds.filter(id => id !== collectionId);
+                const response = await CardsApi.updateCardCollections(card.id, updatedCollectionIds);
+                if (!response?.success) {
+                    return rejectWithValue('Failed to remove card from collection');
+                }
+                return card.id;
+            } else {
+                const response = await CardsApi.deleteCard(card.id);
+                if (!response?.success) {
+                    return rejectWithValue('Failed to delete card');
+                }
+                return card.id;
+            }
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -300,6 +332,21 @@ const myCardSlice = createSlice({
                 state.success = 'Коллекция успешно удалена';
             })
             .addCase(deleteCollection.rejected, (state: MyCardState, action) => {
+                state.isDeleting = false;
+                state.error = action.payload as string;
+            });
+
+        builder
+            .addCase(deleteCard.pending, (state: MyCardState) => {
+                state.isDeleting = true;
+                state.error = null;
+            })
+            .addCase(deleteCard.fulfilled, (state: MyCardState, action: PayloadAction<string>) => {
+                state.isDeleting = false;
+                state.success = 'Карточка успешно удалена';
+                state.myCards = state.myCards.filter(card => card.id !== action.payload);
+            })
+            .addCase(deleteCard.rejected, (state: MyCardState, action) => {
                 state.isDeleting = false;
                 state.error = action.payload as string;
             });

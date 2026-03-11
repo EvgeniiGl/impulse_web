@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Exceptions\UnauthorizedException;
 use App\Helpers\TranslationHelper;
 use App\Models\Collection;
+use App\Requests\Collection\MoveCardRequest;
 use App\Services\CollectionService;
 use App\Requests\Collection\CreateCollectionRequest;
 use App\Requests\Collection\UpdateCollectionRequest;
@@ -321,5 +322,27 @@ class CollectionsController extends BaseController
             'success' => true,
             'data'    => $users
         ]);
+    }
+
+    public function moveCardAction(string $id): \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
+    {
+        $user = $this->getAuthenticatedUser();
+
+        if (!$user) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => TranslationHelper::translate('Authentication required')
+            ], 401);
+        }
+
+        $req           = new MoveCardRequest();
+        $collectionIds = $req->getCollectionIds();
+
+        $result     = $this->collectionService->moveCard($id, $collectionIds, $user);
+        $statusCode = $result['success'] ? 200 : 400;
+
+        return $this->response
+            ->setStatusCode($statusCode)
+            ->setJsonContent($result);
     }
 }
