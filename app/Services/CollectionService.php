@@ -434,7 +434,8 @@ class CollectionService
 
             return [
                 'success' => true,
-                'message' => 'Card collections updated successfully'
+                'message' => 'Card collections updated successfully',
+                'data'    => $card,
             ];
         } catch (\Exception $e) {
             return [

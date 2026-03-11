@@ -119,14 +119,14 @@ export const createCard = createAsyncThunk(
 
 export const updateCardCollections = createAsyncThunk(
     'cards/updateCollections',
-    async ({cardId, collectionIds}: { cardId: string; collectionIds: string[] }, {rejectWithValue}) => {
-        console.log("log--updateCardCollections",
-        );
+    async ({cardId, collectionIds}: { cardId: string; collectionIds: string[] }, {rejectWithValue, dispatch}) => {
         try {
             const response = await CardsApi.updateCardCollections(cardId, collectionIds);
             if (!response?.success) {
                 return rejectWithValue('Failed to update card collections');
             }
+            await dispatch(myCollections());
+
             return response;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
@@ -144,6 +144,7 @@ export const deleteCollection = createAsyncThunk(
             }
             // После успешного удаления обновляем список коллекций
             await dispatch(myCollections());
+
             return {id, success: true};
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
@@ -154,7 +155,7 @@ export const deleteCollection = createAsyncThunk(
 // Новый экшен для удаления карточки
 export const deleteCard = createAsyncThunk(
     'cards/delete',
-    async ({card, collectionId}: { card: Card; collectionId: string | null }, {rejectWithValue}) => {
+    async ({card, collectionId}: { card: Card; collectionId: string | null }, {rejectWithValue, dispatch}) => {
         try {
             if (collectionId && card.collectionIds && card.collectionIds.length > 1) {
                 const updatedCollectionIds = card.collectionIds.filter(id => id !== collectionId);
@@ -162,14 +163,15 @@ export const deleteCard = createAsyncThunk(
                 if (!response?.success) {
                     return rejectWithValue('Failed to remove card from collection');
                 }
-                return card.id;
             } else {
                 const response = await CardsApi.deleteCard(card.id);
                 if (!response?.success) {
                     return rejectWithValue('Failed to delete card');
                 }
-                return card.id;
             }
+            await dispatch(myCollections());
+
+            return card.id;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
@@ -310,11 +312,7 @@ const myCardSlice = createSlice({
             })
             .addCase(updateCardCollections.fulfilled, (state: MyCardState, action: PayloadAction<GetCardResponse>) => {
                 state.isUpdating = false;
-                // Обновляем карточку в списке
-                const index = state.myCards.findIndex(c => c.id === action.payload.data.card.id);
-                if (index !== -1) {
-                    state.myCards[index] = action.payload.data.card;
-                }
+                state.myCards = state.myCards.filter(card => card.id !== action.payload.data.id);
                 state.success = 'Коллекции карточки обновлены';
             })
             .addCase(updateCardCollections.rejected, (state: MyCardState, action) => {

@@ -93,10 +93,6 @@ export default function MyPage() {
         targetCollectionId: string | null,
         sourceCollectionId: string | null  // Теперь получаем sourceCollectionId
     ) => {
-        console.log("log--",
-            "\ntargetCollectionId--", targetCollectionId,
-            "\nsourceCollectionId--", sourceCollectionId,
-        );
         try {
             // Находим карточку
             const card = myCards.find(c => c.id === cardId);
