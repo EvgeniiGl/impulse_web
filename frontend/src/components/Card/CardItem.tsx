@@ -411,12 +411,12 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             className="bg-[var(--color-primary)] text-white h-full flex flex-col items-center justify-center p-4"
                             style={{minHeight: '150px'}}>
                             <p className="text-center mb-4 font-medium">
-                                {currentCollectionId
+                                {card.collectionIds.length > 1
                                     ? 'Удалить карточку из этой коллекции?'
                                     : 'Удалить карточку полностью?'}
                             </p>
-                            <p className="text-center text-sm mb-4 text-red-100">
-                                {currentCollectionId
+                            <p className="text-center text-sm mb-4 text-gray-100">
+                                {card.collectionIds.length > 1
                                     ? 'Карточка останется в других коллекциях'
                                     : 'Карточка будет удалена безвозвратно'}
                             </p>
