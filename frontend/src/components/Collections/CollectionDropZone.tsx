@@ -62,18 +62,39 @@ export default function CollectionDropZone({
     return (
         <div
             ref={(node) => {
-                if (node) {
-                    drop(node);
-                }
+                if (node) drop(node);
             }}
             className={`
-                ${className}
-                transition-all duration-200
-                ${isOver && canDrop ? 'ring-2 ring-blue-400 bg-blue-50/50 scale-[1.02]' : ''}
-                ${isOver && !canDrop ? 'ring-2 ring-red-400 bg-red-50/50 cursor-not-allowed opacity-50' : ''}
-                ${canDrop ? 'cursor-copy' : ''}
-            `}
+            relative transition-all duration-200
+            ${className}
+            ${isOver && canDrop
+                ? 'ring-2 ring-blue-500 scale-[1.05] bg-blue-50/70'
+                : ''}
+            ${isOver && !canDrop
+                ? 'ring-2 ring-red-400 opacity-50 cursor-not-allowed'
+                : ''}
+            ${canDrop && !isOver
+                ? 'ring-1 ring-blue-200 ring-dashed'
+                : ''}
+        `}
         >
+            {/* Иконка-подсказка при наведении */}
+            {isOver && canDrop && (
+                <span
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center z-10"
+                >
+                <span className="
+                    flex items-center gap-1 px-2 py-1 rounded-full
+                    bg-blue-500 text-white text-xs font-semibold
+                    shadow-lg animate-bounce
+                ">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Добавить
+                </span>
+            </span>
+            )}
             {children}
         </div>
     );

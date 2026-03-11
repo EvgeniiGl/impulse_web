@@ -194,7 +194,9 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                 <div className="relative w-full bg-gray-200 overflow-hidden"
                      style={{aspectRatio: '9/16'}}>
                     <div
-                        className={`absolute inset-0 flex items-center justify-center cursor-${isDragging ? 'grabbing' : 'grab'} ${isDragging ? 'opacity-50 scale-105 rotate-1 shadow-2xl' : ''}`}
+                        className={`absolute inset-0 flex items-center justify-center transition-all duration-150 ${isDragging
+                            ? 'opacity-40 scale-95 rotate-1 cursor-grabbing'
+                            : 'cursor-grab hover:cursor-grab'}`}
                         ref={setRefs}>
                         {card.url && !imageError ? (
                             <img
@@ -242,6 +244,15 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                 </div>
                             </div>}
                     </div>
+                    {isDragging && (
+                        <div
+                            className="absolute inset-0 z-20 flex items-center justify-center bg-blue-500/10 border-2 border-blue-400 border-dashed rounded-xl pointer-events-none">
+                            <span
+                                className="text-blue-600 text-xs font-semibold bg-white/80 px-2 py-1 rounded-full shadow">
+                                Перетащите в коллекцию
+                            </span>
+                        </div>
+                    )}
                     {/* Статус доступа поверх изображения снизу слева - z-index 20 */}
                     <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${

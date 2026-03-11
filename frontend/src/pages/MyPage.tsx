@@ -31,6 +31,7 @@ export default function MyPage() {
         collections,
         collectionsLoading,
         isLoading,
+        isUpdating,
         selectedCollectionId,
         pagination
     }: MyCardState = useAppSelector((state) => state.myCards);
@@ -250,6 +251,20 @@ export default function MyPage() {
             <Header/>
             <Main>
                 <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+                    {/* Оверлей при перетаскивании */}
+                    {isUpdating && (
+                        <div className="fixed inset-0 z-50 pointer-events-none flex items-end justify-center pb-8">
+                            <div
+                                className="flex items-center gap-3 px-5 py-3 bg-gray-900/90 text-white rounded-2xl shadow-2xl animate-[fadeInUp_0.2s_ease-out]">
+                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            strokeWidth="4"/>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                                </svg>
+                                <span className="text-sm font-medium">Перемещение карточки...</span>
+                            </div>
+                        </div>
+                    )}
                     <div className="max-w-7xl mx-auto">
                         {/* Заголовок */}
                         <div className="flex items-center justify-between mb-8">
