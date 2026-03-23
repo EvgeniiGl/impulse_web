@@ -36,6 +36,21 @@ class UpdateCardRequest
         return $this->data['access_type'] ?? null;
     }
 
+//    public function getCollectionIds(): array
+//    {
+//        return $this->data['collectionIds'] ?? [];
+//    }
+
+    public function getIsActive(): bool
+    {
+        return $this->data['isActive'] ?? false;
+    }
+
+    public function getShowTitleOnImage(): bool
+    {
+        return $this->data['show_title_on_image'] ?? false;
+    }
+
     public function getFile(): ?File
     {
         return $this->file;

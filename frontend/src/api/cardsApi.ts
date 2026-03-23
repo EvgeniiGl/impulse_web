@@ -22,7 +22,8 @@ export interface UpdateCardRequest {
     description?: string | null;
     access_type?: AccessType;
     is_active?: boolean;
-    collection_ids: string[];
+    collection_ids?: string[];
+    show_title_on_image?: boolean;
 }
 
 export interface GetCardsResponse {
@@ -37,7 +38,9 @@ export interface GetCardsResponse {
 
 export interface GetCardResponse {
     success: boolean;
-    data: Card;
+    data: {
+        card: Card;
+    };
 }
 
 export interface DeleteCardResponse {
@@ -51,16 +54,12 @@ export class Api extends ApiClient {
         try {
             const formData = new FormData();
 
-            // Добавляем файл
             formData.append("file", data.file, data.file.name);
-
-            // Добавляем все поля из CreateCardRequest
             formData.append("title", data.card.title);
             formData.append("description", data.card.description ?? "");
             formData.append("access_type", data.card.access_type);
             formData.append("is_active", data.card.is_active.toString());
             formData.append("show_title_on_image", data.card.show_title_on_image.toString());
-            // Добавляем collection_ids (массив строк)
             data.card.collection_ids.forEach((id, index) => {
                 formData.append(`collection_ids[${index}]`, id);
             });
@@ -110,7 +109,6 @@ export class Api extends ApiClient {
             const response = await this.get<GetCardsResponse>(
                 `${this.client.defaults.baseURL}/api/cards/my?page=${page}&perPage=${perPage}`
             );
-
             return response;
         } catch (exception) {
             throw exception;
@@ -122,7 +120,18 @@ export class Api extends ApiClient {
             const response = await this.get<GetCardResponse>(
                 `${this.client.defaults.baseURL}/api/card/${id}`
             );
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
 
+    async updateCard(id: string, data: UpdateCardRequest): Promise<GetCardResponse | null> {
+        try {
+            const response = await this.put<UpdateCardRequest, GetCardResponse>(
+                `${this.client.defaults.baseURL}/cards/${id}`,
+                data
+            );
             return response;
         } catch (exception) {
             throw exception;
@@ -135,7 +144,6 @@ export class Api extends ApiClient {
                 `${this.client.defaults.baseURL}/api/collections/${cardId}/cards`,
                 {collection_ids: collectionIds}
             );
-
             return response;
         } catch (exception) {
             throw exception;
@@ -147,7 +155,6 @@ export class Api extends ApiClient {
             const response = await this.delete<DeleteCardResponse>(
                 `${this.client.defaults.baseURL}/api/cards/${cardId}`
             );
-
             return response;
         } catch (exception) {
             throw exception;
@@ -156,4 +163,3 @@ export class Api extends ApiClient {
 }
 
 export const CardsApi = new Api(config);
-

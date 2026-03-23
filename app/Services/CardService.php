@@ -115,6 +115,7 @@ class CardService extends Injectable
 
     /**
      * Обновляет карточку
+     * @throws Exception
      */
     public function updateCard(Card $card, UpdateCardRequest $request, User $user): Card
     {
@@ -123,13 +124,13 @@ class CardService extends Injectable
             throw new Exception('You do not have permission to update this card');
         }
 
-        // Получаем ID коллекций из запроса (если есть)
-        $collectionIds = $request->getCollectionIds();
-
-        // Проверяем существование коллекций и права доступа
-        if (!empty($collectionIds)) {
-            $this->validateCollectionsAccess($collectionIds, $user);
-        }
+//        // Получаем ID коллекций из запроса (если есть)
+//        $collectionIds = $request->getCollectionIds();
+//
+//        // Проверяем существование коллекций и права доступа
+//        if (!empty($collectionIds)) {
+//            $this->validateCollectionsAccess($collectionIds, $user);
+//        }
 
         $this->db->begin();
         $oldFilePath = null;
@@ -176,6 +177,10 @@ class CardService extends Injectable
                 $card->is_active = $request->getIsActive();
             }
 
+            if ($request->getShowTitleOnImage() !== null) {
+                $card->show_title_on_image = $request->getShowTitleOnImage();
+            }
+
             if (!$card->update()) {
                 $messages = [];
                 foreach ($card->getMessages() as $message) {
@@ -185,17 +190,17 @@ class CardService extends Injectable
             }
 
             // Обновляем связи с коллекциями
-            if ($collectionIds !== null) {
-                // Удаляем старые связи
-                $this->deleteCardCollections($card->id);
-
-                // Сохраняем новые связи
-                if (!empty($collectionIds)) {
-                    if (!$this->saveCardCollections($card->id, $collectionIds)) {
-                        throw new Exception('Failed to update card collections');
-                    }
-                }
-            }
+//            if ($collectionIds !== null) {
+//                // Удаляем старые связи
+//                $this->deleteCardCollections($card->id);
+//
+//                // Сохраняем новые связи
+//                if (!empty($collectionIds)) {
+//                    if (!$this->saveCardCollections($card->id, $collectionIds)) {
+//                        throw new Exception('Failed to update card collections');
+//                    }
+//                }
+//            }
 
             // Удаляем старый файл после успешного обновления
             if ($oldFilePath && !empty($oldFilePath)) {
@@ -209,7 +214,7 @@ class CardService extends Injectable
             $this->db->rollback();
 
             // Если был загружен новый файл, удаляем его
-            if (isset($uploadResult) && isset($uploadResult['object_path'])) {
+            if (isset($uploadResult['object_path'])) {
                 $this->storageService->deleteFile($uploadResult['object_path']);
             }
 

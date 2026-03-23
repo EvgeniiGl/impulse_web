@@ -305,19 +305,35 @@ class CardsController extends BaseController
                 }
             }
 
+            $creator = $card->getCreator();
+
+            $locale    = TranslationHelper::getLocale();
+            $createdAt = Date::fromString($card->created_at);
+            $updatedAt = Date::fromString($card->updated_at);
+
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
-                    'card' => [
-                        'id'                => $updatedCard->id,
-                        'title'             => $updatedCard->title,
-                        'description'       => $updatedCard->description,
-                        'url'               => $updatedCard->url,
-                        'access_type'       => $updatedCard->access_type,
-                        'collections'       => $collections,
-                        'collections_count' => count($collections),
-                        'updated_at'        => $updatedCard->updated_at,
-                    ]
+                    'id'                  => $card->id,
+                    'title'               => $card->title,
+                    'description'         => $card->description,
+                    'url'                 => $card->url,
+                    'object_path'         => $card->object_path,
+                    'file_name'           => $card->file_name,
+                    'original_name'       => $card->original_name,
+                    'access_type'         => $card->access_type,
+                    'access_type_label'   => $card->getAccessTypeLabel(),
+                    'is_active'           => $card->is_active,
+                    'show_title_on_image' => $card->show_title_on_image,
+                    'creator'             => $creator ? [
+                        'id'    => $creator->id,
+                        'name'  => $creator->name,
+                        'email' => $creator->email
+                    ] : null,
+                    'collections'         => $collections,
+                    'collections_count'   => count($collections),
+                    'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),
+                    'updated_at'          => $updatedAt->toLocale('%day% %month% %year%', $locale),
                 ]
             ]);
 

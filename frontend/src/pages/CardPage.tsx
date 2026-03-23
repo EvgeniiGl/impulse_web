@@ -1,11 +1,11 @@
 // CardPage.tsx
 import {useParams, useNavigate} from 'react-router-dom';
-import {useEffect} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import Header from "@modules/Header.tsx";
 import Footer from "@modules/Footer.tsx";
 import Main from "@modules/Main.tsx";
-import {fetchCard, resetCurrentCard} from '@store/card/cardSlice.ts';
+import {fetchCard, resetCurrentCard, updateCard} from '@store/card/cardSlice.ts';
 import {LiaSignatureSolid} from "react-icons/lia";
 import {CardState, useAppDispatch, useAppSelector} from "@store/store.ts";
 
@@ -14,26 +14,38 @@ export default function CardPage() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const {t} = useTranslation();
-    const {currentCard, isLoading, error}: CardState = useAppSelector((state: any) => state.card);
-    console.log("log--",
-        "\ncurrentCard--", currentCard,
-    );
-    // Handle missing ID
+    const {currentCard, isLoading, isUpdating, error}: CardState = useAppSelector((state: any) => state.card);
+
+    const authUser = useAppSelector((state: any) => state.auth.user);
+    const isOwner = !!(currentCard && authUser && currentCard.creator_id === authUser.id);
+
+    const [showTitle, setShowTitle] = useState(false);
+
+    // Sync local state when card loads
+    useEffect(() => {
+        if (currentCard) {
+            setShowTitle(currentCard.show_title_on_image);
+        }
+    }, [currentCard?.id]);
+
     useEffect(() => {
         if (!id) {
             navigate('/404');
             return;
         }
-
         dispatch(fetchCard(id));
-
-        // Cleanup on unmount
         return () => {
             dispatch(resetCurrentCard());
         };
     }, [id, dispatch, navigate]);
 
-    // Show loading state
+    const handleShowTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentCard || !id) return;
+        const newValue = e.target.checked;
+        setShowTitle(newValue);
+        dispatch(updateCard({id, data: {show_title_on_image: newValue}}));
+    };
+
     if (isLoading) {
         return (
             <>
@@ -42,7 +54,7 @@ export default function CardPage() {
                     <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <div
-                                className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                                className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"/>
                             <h2 className="mt-4 text-xl font-medium text-gray-700">{t('common.loading')}</h2>
                         </div>
                     </div>
@@ -52,7 +64,6 @@ export default function CardPage() {
         );
     }
 
-    // Show error state
     if (error || !currentCard) {
         return (
             <>
@@ -70,10 +81,8 @@ export default function CardPage() {
                                 {error ? error : t('card.error.notFound')}
                             </p>
                             <div className="mt-6">
-                                <button
-                                    onClick={() => navigate(-1)}
-                                    className="text-indigo-600 hover:text-indigo-900 font-medium"
-                                >
+                                <button onClick={() => navigate(-1)}
+                                        className="text-indigo-600 hover:text-indigo-900 font-medium">
                                     {t('card.error.back')}
                                 </button>
                             </div>
@@ -101,7 +110,7 @@ export default function CardPage() {
                                             <img
                                                 src={currentCard.url}
                                                 alt={currentCard.title}
-                                                className="w-full h-full object-contain" // object-cover заменен на object-contain
+                                                className="w-full h-full object-contain"
                                                 loading="lazy"
                                             />
                                         ) : (
@@ -133,32 +142,86 @@ export default function CardPage() {
 
                                         {/* Access type badge */}
                                         <div className="absolute bottom-3 left-3 z-20">
-                            <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
-                                currentCard.access_type === 'private'
-                                    ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
-                                    : 'bg-[var(--color-primary)] text-white'
-                            }`}>
-                                {currentCard.access_type === 'public'
-                                    ? t('createCard.public')
-                                    : currentCard.access_type === 'shared'
-                                        ? t('createCard.shared')
-                                        : t('createCard.private')}
-                            </span>
+                                            <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
+                                                currentCard.access_type === 'private'
+                                                    ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
+                                                    : 'bg-[var(--color-primary)] text-white'
+                                            }`}>
+                                                {currentCard.access_type === 'public'
+                                                    ? t('createCard.public')
+                                                    : currentCard.access_type === 'shared'
+                                                        ? t('createCard.shared')
+                                                        : t('createCard.private')}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Card Details - занимает оставшееся пространство с прокруткой */}
+                                {/* Card Details */}
                                 <div className="p-6 overflow-y-auto flex-1">
                                     <div className="flex justify-between items-start">
                                         <h2 className="text-2xl font-bold text-gray-900">{currentCard.title}</h2>
-                                        {/*                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium*/}
-                                        {/*            ${currentCard.is_active*/}
-                                        {/*                    ? 'bg-green-100 text-green-800'*/}
-                                        {/*                    : 'bg-red-100 text-red-800'}`}>*/}
-                                        {/*    {currentCard.is_active ? t('card.status.active') : t('card.status.inactive')}*/}
-                                        {/*</span>*/}
                                     </div>
+                                    {/* show_title_on_image — only visible to the card owner */}
+                                    {isOwner ? (
+                                        <div className="mt-5 flex items-center gap-3">
+                                            <label
+                                                htmlFor="show_title_on_image"
+                                                className="flex items-center gap-3 cursor-pointer select-none"
+                                            >
+                                                {/* Toggle switch */}
+                                                <div className="relative">
+                                                    <input
+                                                        id="show_title_on_image"
+                                                        type="checkbox"
+                                                        checked={showTitle}
+                                                        onChange={handleShowTitleChange}
+                                                        disabled={isUpdating}
+                                                        className="sr-only peer"
+                                                    />
+                                                    <div className="w-10 h-6 bg-gray-200 rounded-full
+                                                        peer-checked:bg-[var(--color-primary)]
+                                                        peer-disabled:opacity-50
+                                                        transition-colors duration-200"/>
+                                                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white
+                                                        rounded-full shadow
+                                                        peer-checked:translate-x-4
+                                                        peer-disabled:opacity-50
+                                                        transition-transform duration-200"/>
+                                                </div>
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    {t('createCard.showTitleOnImage')}
+                                                </span>
+                                            </label>
+                                            {isUpdating && (
+                                                <svg className="w-4 h-4 animate-spin text-gray-400" fill="none"
+                                                     viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10"
+                                                            stroke="currentColor" strokeWidth="4"/>
+                                                    <path className="opacity-75" fill="currentColor"
+                                                          d="M4 12a8 8 0 018-8v8H4z"/>
+                                                </svg>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="mt-5 flex items-center gap-3">
+                                            {/* Show the current state as a non-editable indicator */}
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-6 rounded-full ${
+                                                    showTitle ? 'bg-[var(--color-primary)]' : 'bg-gray-200'
+                                                }`}>
+                                                    {/* Optional: Add a visual indicator dot */}
+                                                    <div
+                                                        className={`w-5 h-5 bg-white rounded-full shadow transform translate-y-0.5 transition-transform ${
+                                                            showTitle ? 'translate-x-4' : 'translate-x-1'
+                                                        }`}/>
+                                                </div>
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    {t('createCard.showTitleOnImage')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {currentCard.description && (
                                         <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -173,46 +236,15 @@ export default function CardPage() {
                                     <div className="mt-6 grid grid-cols-2 gap-4">
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500">{t('cards.createdAt')}</h3>
-                                            <p className="mt-1 text-gray-900">
-                                                {currentCard.created_at}
-                                            </p>
+                                            <p className="mt-1 text-gray-900">{currentCard.created_at}</p>
                                         </div>
-
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500">{t('cards.updatedAt')}</h3>
-                                            <p className="mt-1 text-gray-900">
-                                                {currentCard.updated_at}
-                                            </p>
+                                            <p className="mt-1 text-gray-900">{currentCard.updated_at}</p>
                                         </div>
                                     </div>
-
-                                    {/*<div className="mt-8 flex justify-end space-x-4">*/}
-                                    {/*    <button*/}
-                                    {/*        onClick={() => navigate('/')}*/}
-                                    {/*        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"*/}
-                                    {/*    >*/}
-                                    {/*        {t('card.backToHome')}*/}
-                                    {/*    </button>*/}
-                                    {/*    <button*/}
-                                    {/*        onClick={() => window.print()}*/}
-                                    {/*        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"*/}
-                                    {/*    >*/}
-                                    {/*        {t('card.print')}*/}
-                                    {/*    </button>*/}
-                                    {/*</div>*/}
                                 </div>
                             </div>
-
-                            {/* Additional info section */}
-                            {/*<div className="mt-12 bg-indigo-50 rounded-xl p-6 flex-shrink-0">*/}
-                            {/*    <h3 className="text-lg font-medium text-indigo-900 mb-3">{t('card.info.title')}</h3>*/}
-                            {/*    <p className="text-indigo-700">*/}
-                            {/*{t('card.info.description', {{*/}
-                            {/*    fileName: currentCard.original_name || currentCard.file_name,*/}
-                            {/*    path: currentCard.object_path*/}
-                            {/*})}*/}
-                            {/*    </p>*/}
-                            {/*</div>*/}
                         </div>
                     </div>
                 </div>
