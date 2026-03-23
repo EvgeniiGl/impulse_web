@@ -15,7 +15,9 @@ export default function CardPage() {
     const navigate = useNavigate();
     const {t} = useTranslation();
     const {currentCard, isLoading, error}: CardState = useAppSelector((state: any) => state.card);
-
+    console.log("log--",
+        "\ncurrentCard--", currentCard,
+    );
     // Handle missing ID
     useEffect(() => {
         if (!id) {
@@ -41,7 +43,7 @@ export default function CardPage() {
                         <div className="text-center">
                             <div
                                 className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                            <h2 className="mt-4 text-xl font-medium text-gray-700">{t('card.loading')}</h2>
+                            <h2 className="mt-4 text-xl font-medium text-gray-700">{t('common.loading')}</h2>
                         </div>
                     </div>
                 </Main>
@@ -133,14 +135,14 @@ export default function CardPage() {
                                         <div className="absolute bottom-3 left-3 z-20">
                             <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
                                 currentCard.access_type === 'private'
-                                    ? 'bg-white text-gray-900 border border-gray-300'
-                                    : 'bg-indigo-600 text-white'
+                                    ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
+                                    : 'bg-[var(--color-primary)] text-white'
                             }`}>
                                 {currentCard.access_type === 'public'
-                                    ? t('card.access.public')
+                                    ? t('createCard.public')
                                     : currentCard.access_type === 'shared'
-                                        ? t('card.access.shared')
-                                        : t('card.access.private')}
+                                        ? t('createCard.shared')
+                                        : t('createCard.private')}
                             </span>
                                         </div>
                                     </div>
@@ -150,19 +152,19 @@ export default function CardPage() {
                                 <div className="p-6 overflow-y-auto flex-1">
                                     <div className="flex justify-between items-start">
                                         <h2 className="text-2xl font-bold text-gray-900">{currentCard.title}</h2>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    ${currentCard.is_active
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-800'}`}>
-                            {currentCard.is_active ? t('card.status.active') : t('card.status.inactive')}
-                        </span>
+                                        {/*                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium*/}
+                                        {/*            ${currentCard.is_active*/}
+                                        {/*                    ? 'bg-green-100 text-green-800'*/}
+                                        {/*                    : 'bg-red-100 text-red-800'}`}>*/}
+                                        {/*    {currentCard.is_active ? t('card.status.active') : t('card.status.inactive')}*/}
+                                        {/*</span>*/}
                                     </div>
 
                                     {currentCard.description && (
                                         <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
                                             <div className="flex items-center mb-2">
                                                 <LiaSignatureSolid className="w-4 h-4 text-gray-500 mr-2"/>
-                                                <h3 className="font-medium text-gray-900">{t('card.description')}</h3>
+                                                <h3 className="font-medium text-gray-900">{t('createCard.descriptionLabel')}</h3>
                                             </div>
                                             <p className="text-gray-700 leading-relaxed">{currentCard.description}</p>
                                         </div>
@@ -170,26 +172,16 @@ export default function CardPage() {
 
                                     <div className="mt-6 grid grid-cols-2 gap-4">
                                         <div>
-                                            <h3 className="text-sm font-medium text-gray-500">{t('card.created')}</h3>
+                                            <h3 className="text-sm font-medium text-gray-500">{t('cards.createdAt')}</h3>
                                             <p className="mt-1 text-gray-900">
-                                                {new Date(currentCard.created_at).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric'
-                                                })}
+                                                {currentCard.created_at}
                                             </p>
                                         </div>
 
                                         <div>
-                                            <h3 className="text-sm font-medium text-gray-500">{t('card.lastUpdated')}</h3>
+                                            <h3 className="text-sm font-medium text-gray-500">{t('cards.updatedAt')}</h3>
                                             <p className="mt-1 text-gray-900">
-                                                {new Date(currentCard.updated_at).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
+                                                {currentCard.updated_at}
                                             </p>
                                         </div>
                                     </div>

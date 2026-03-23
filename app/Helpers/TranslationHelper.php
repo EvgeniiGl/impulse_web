@@ -37,6 +37,9 @@ class TranslationHelper
     {
         global $di;
         $request = $di->get('request');
+        if ($request->getBestLanguage() === 'ru-RU') {
+            return 'ru';
+        }
         return $request->getBestLanguage() ?? 'en';
     }
 

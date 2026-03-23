@@ -124,7 +124,7 @@ const cardSlice = createSlice({
             })
             .addCase(fetchCard.fulfilled, (state: CardState, action: PayloadAction<GetCardResponse>) => {
                 state.isLoading = false;
-                state.currentCard = action.payload.data.card;
+                state.currentCard = action.payload.data;
             })
             .addCase(fetchCard.rejected, (state: CardState, action) => {
                 state.isLoading = false;

@@ -131,14 +131,6 @@ export default function CardItem({card, onDrop}: CardItemProps) {
         dispatch(toggleScheduleForm(card.id));
     };
 
-    // const handleCloseDescription = (e: React.MouseEvent) => {
-    //     e.stopPropagation();
-    //     setIsDescriptionOpen(false);
-    //     if (descriptionRef.current) {
-    //         descriptionRef.current.scrollTop = 0;
-    //     }
-    // };
-
     const handleCloseSchedule = () => {
         dispatch(closeScheduleForm());
         setIsDescriptionOpen(false);
@@ -173,19 +165,15 @@ export default function CardItem({card, onDrop}: CardItemProps) {
         setShowDeleteConfirm(false);
     };
 
-    const handleCardClick = (e: React.MouseEvent) => {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'IMG') {
-            if (target.closest('button') === null) {
-                navigate(`/card/${card.id}`);
-            }
-        }
+    // Клик по изображению — переход на страницу карточки
+    const handleImageClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigate(`/card/${card.id}`);
     };
 
     return (
         <div key={card.id}>
             <div
-                onClick={handleCardClick}
                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full relative"
                 ref={cardRef}
                 style={{touchAction: 'none'}}
@@ -202,13 +190,18 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             <img
                                 src={card.url}
                                 alt={card.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-auto select-none"
                                 loading="lazy"
                                 onError={() => setImageError(true)}
+                                onClick={handleImageClick}
+                                title="Нажмите для открытия карточки"
                             />
                         ) : (
                             <div
-                                className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                                className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300"
+                                onClick={handleImageClick}
+                                title="Нажмите для открытия карточки"
+                            >
                                 <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor"
                                      viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
