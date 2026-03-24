@@ -8,9 +8,9 @@ import Main from "@modules/Main.tsx";
 import {fetchCard, resetCurrentCard, updateCard} from '@store/card/cardSlice.ts';
 import {LiaSignatureSolid} from "react-icons/lia";
 import {CardState, useAppDispatch, useAppSelector} from "@store/store.ts";
-import {MdOutlineSchedule} from "react-icons/md";
-import {IoCloseCircleOutline, IoTrashOutline} from "react-icons/io5";
-import {ScheduleForm} from "@components/Notifications/ScheduleForm.tsx";
+import {RiEdit2Line} from "react-icons/ri";
+import {FaCheck} from "react-icons/fa6";
+import {RxCross1} from "react-icons/rx";
 
 export default function CardPage() {
     const {id} = useParams<{ id: string }>();
@@ -23,13 +23,23 @@ export default function CardPage() {
     const isOwner = !!(currentCard && authUser && currentCard.creator_id === authUser.id);
 
     const [showTitle, setShowTitle] = useState(false);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [titleValue, setTitleValue] = useState('');
+    const titleInputRef = useRef<HTMLTextAreaElement>(null);
 
-    // Sync local state when card loads
     useEffect(() => {
         if (currentCard) {
             setShowTitle(currentCard.show_title_on_image);
+            setTitleValue(currentCard.title);
         }
     }, [currentCard?.id]);
+
+    useEffect(() => {
+        if (isEditingTitle && titleInputRef.current) {
+            titleInputRef.current.focus();
+            titleInputRef.current.select();
+        }
+    }, [isEditingTitle]);
 
     useEffect(() => {
         if (!id) {
@@ -49,6 +59,33 @@ export default function CardPage() {
         dispatch(updateCard({id, data: {show_title_on_image: newValue}}));
     };
 
+    const handleStartEditTitle = () => {
+        if (!isOwner) return;
+        setTitleValue(currentCard?.title ?? '');
+        setIsEditingTitle(true);
+    };
+
+    const handleSaveTitle = () => {
+        if (!id || !currentCard) return;
+        const trimmed = titleValue.trim();
+        if (!trimmed || trimmed === currentCard.title) {
+            setIsEditingTitle(false);
+            setTitleValue(currentCard.title);
+            return;
+        }
+        dispatch(updateCard({id, data: {title: trimmed}})).then(() => {
+            setIsEditingTitle(false);
+        });
+    };
+
+    const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter') handleSaveTitle();
+        if (e.key === 'Escape') {
+            setIsEditingTitle(false);
+            setTitleValue(currentCard?.title ?? '');
+        }
+    };
+
     if (isLoading) {
         return (
             <>
@@ -56,8 +93,7 @@ export default function CardPage() {
                 <Main>
                     <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
-                            <div
-                                className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"/>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"/>
                             <h2 className="mt-4 text-xl font-medium text-gray-700">{t('common.loading')}</h2>
                         </div>
                     </div>
@@ -102,6 +138,7 @@ export default function CardPage() {
             <Header/>
             <Main>
                 <div className="flex h-screen">
+                    {/* Image panel */}
                     <div style={{display: 'flex', flexDirection: 'column', height: '100vh', maxWidth: '50%'}}>
                         <div style={{flex: 1, minHeight: 0}}>
                             <div style={{
@@ -112,7 +149,7 @@ export default function CardPage() {
                                 minWidth: '500px',
                                 padding: '30px',
                             }}>
-                                <div style={{aspectRatio: '9/16', height: '100%', position: "relative"}}>
+                                <div style={{aspectRatio: '9/16', height: '100%', position: 'relative'}}>
                                     {currentCard.url ? (
                                         <img
                                             src={currentCard.url}
@@ -129,7 +166,6 @@ export default function CardPage() {
                                         <div style={{
                                             width: '100%',
                                             height: '100%',
-                                            objectFit: 'cover',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center'
@@ -141,22 +177,11 @@ export default function CardPage() {
                                             </svg>
                                         </div>
                                     )}
-                                    {/* Title overlay */}
                                     {currentCard.show_title_on_image && (
                                         <div
-                                            className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
+                                            className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
                                             <div className="text-center">
-                                                <h3 className="font-['Pacifico'] text-white text-3xl md:text-4xl
-                                                drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]
-                                                mb-3">
+                                                <h3 className="font-['Pacifico'] text-white text-3xl md:text-4xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] mb-3">
                                                     {currentCard.title}
                                                 </h3>
                                                 <div
@@ -168,19 +193,103 @@ export default function CardPage() {
                             </div>
                         </div>
                     </div>
-                    {/* Card Details */}
+
+                    {/* Details panel */}
                     <div className="p-6 overflow-y-auto flex-1">
-                        <div className="flex justify-between items-start">
-                            <h3 className="text-2xl font-bold text-gray-900">{currentCard.title}</h3>
+
+                        {/* Editable title */}
+                        <div className="flex items-start gap-2">
+                            {isEditingTitle ? (
+                                <>
+                                    <textarea
+                                        ref={titleInputRef}
+                                        value={titleValue}
+                                        onChange={e => {
+                                            setTitleValue(e.target.value);
+                                            // Автоматическая регулировка высоты
+                                            e.target.style.height = 'auto';
+                                            e.target.style.height = e.target.scrollHeight + 'px';
+                                        }}
+                                        onKeyDown={handleTitleKeyDown}
+                                        disabled={isUpdating}
+                                        className="text-2xl font-bold text-gray-900 border-b-2 border-[var(--color-primary)] outline-none bg-transparent flex-1 disabled:opacity-50 resize-none overflow-hidden"
+                                        rows={1}
+                                    />
+                                    {/* Save button */}
+                                    <button
+                                        onClick={handleSaveTitle}
+                                        disabled={isUpdating}
+                                        className="bottom-3 right-21 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                                        style={{
+                                            padding: '5px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'none',
+                                            color: 'var(--color-primary)',
+                                            border: '1px solid var(--color-primary)',
+                                        }}
+                                        title={t('common.save')}
+                                    >
+                                        {isUpdating ? (
+                                            /* Spinner */
+                                            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" strokeWidth="4"/>
+                                                <path className="opacity-75" fill="currentColor"
+                                                      d="M4 12a8 8 0 018-8v8H4z"/>
+                                            </svg>
+                                        ) : (
+                                            /* Send / submit icon */
+                                            <FaCheck/>
+                                        )}
+                                    </button>
+                                    {/* Cancel button */}
+                                    <button
+                                        onClick={() => {
+                                            setIsEditingTitle(false);
+                                            setTitleValue(currentCard.title);
+                                        }}
+                                        disabled={isUpdating}
+                                        className="bottom-3 right-21 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                                        style={{
+                                            padding: '5px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'none',
+                                            color: 'var(--color-primary)',
+                                            border: '1px solid var(--color-primary)',
+                                        }}
+                                        title={t('common.cancel')}
+                                    >
+                                        <RxCross1/>
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="text-2xl font-bold text-gray-900">{currentCard.title}</h3>
+                                    {isOwner && (
+                                        <button
+                                            onClick={handleStartEditTitle}
+                                            className="bottom-3 right-21 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                                            style={{
+                                                padding: '5px',
+                                                borderRadius: '50%',
+                                                backgroundColor: 'none',
+                                                color: 'var(--color-primary)',
+                                                border: '1px solid var(--color-primary)',
+                                            }}
+                                            title={t('common.edit')}
+                                        >
+                                            <RiEdit2Line/>
+                                        </button>
+                                    )}
+                                </>
+                            )}
                         </div>
-                        {/* show_title_on_image — only visible to the card owner */}
+
+                        {/* show_title_on_image toggle */}
                         {isOwner ? (
                             <div className="mt-5 flex items-center gap-3">
-                                <label
-                                    htmlFor="show_title_on_image"
-                                    className="flex items-center gap-3 cursor-pointer select-none"
-                                >
-                                    {/* Toggle switch */}
+                                <label htmlFor="show_title_on_image"
+                                       className="flex items-center gap-3 cursor-pointer select-none">
                                     <div className="relative">
                                         <input
                                             id="show_title_on_image"
@@ -194,42 +303,34 @@ export default function CardPage() {
                                                         peer-checked:bg-[var(--color-primary)]
                                                         peer-disabled:opacity-50
                                                         transition-colors duration-200"/>
-                                        <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white
-                                                        rounded-full shadow
+                                        <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow
                                                         peer-checked:translate-x-4
                                                         peer-disabled:opacity-50
                                                         transition-transform duration-200"/>
                                     </div>
                                     <span className="text-sm font-medium text-gray-700">
-                                                    {t('createCard.showTitleOnImage')}
-                                                </span>
+                                        {t('createCard.showTitleOnImage')}
+                                    </span>
                                 </label>
-                                {isUpdating && (
-                                    <svg className="w-4 h-4 animate-spin text-gray-400" fill="none"
-                                         viewBox="0 0 24 24">
+                                {isUpdating && !isEditingTitle && (
+                                    <svg className="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10"
                                                 stroke="currentColor" strokeWidth="4"/>
-                                        <path className="opacity-75" fill="currentColor"
-                                              d="M4 12a8 8 0 018-8v8H4z"/>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                                     </svg>
                                 )}
                             </div>
                         ) : (
                             <div className="mt-5 flex items-center gap-3">
-                                {/* Show the current state as a non-editable indicator */}
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-6 rounded-full ${
-                                        showTitle ? 'bg-[var(--color-primary)]' : 'bg-gray-200'
-                                    }`}>
-                                        {/* Optional: Add a visual indicator dot */}
+                                    <div
+                                        className={`w-10 h-6 rounded-full ${showTitle ? 'bg-[var(--color-primary)]' : 'bg-gray-200'}`}>
                                         <div
-                                            className={`w-5 h-5 bg-white rounded-full shadow transform translate-y-0.5 transition-transform ${
-                                                showTitle ? 'translate-x-4' : 'translate-x-1'
-                                            }`}/>
+                                            className={`w-5 h-5 bg-white rounded-full shadow transform translate-y-0.5 transition-transform ${showTitle ? 'translate-x-4' : 'translate-x-1'}`}/>
                                     </div>
                                     <span className="text-sm font-medium text-gray-700">
-                                                    {t('createCard.showTitleOnImage')}
-                                                </span>
+                                        {t('createCard.showTitleOnImage')}
+                                    </span>
                                 </div>
                             </div>
                         )}
