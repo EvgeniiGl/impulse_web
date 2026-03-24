@@ -38,9 +38,7 @@ export interface GetCardsResponse {
 
 export interface GetCardResponse {
     success: boolean;
-    data: {
-        card: Card;
-    };
+    data: Card;
 }
 
 export interface DeleteCardResponse {

@@ -38,7 +38,7 @@ export default function MyPage() {
 
     const {isAuthenticated} = useAppSelector((state) => state.auth);
 
-    const {menuState, openMenu, closeMenu} = useDropMenu();
+    const {menuState, closeMenu} = useDropMenu();
     // Проверка авторизации
     useEffect(() => {
         if (!isAuthenticated) {

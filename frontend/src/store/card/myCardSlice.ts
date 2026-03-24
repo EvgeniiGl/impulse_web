@@ -3,7 +3,6 @@ import {
     CardsApi,
     CreateCardRequest,
     CreateCardResponse,
-    DeleteCardResponse,
     GetCardResponse,
     GetCardsResponse
 } from "@api/cardsApi.ts";
