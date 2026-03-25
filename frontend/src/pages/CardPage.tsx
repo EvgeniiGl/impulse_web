@@ -27,10 +27,16 @@ export default function CardPage() {
     const [titleValue, setTitleValue] = useState('');
     const titleInputRef = useRef<HTMLTextAreaElement>(null);
 
+    // Description editing states
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [descriptionValue, setDescriptionValue] = useState('');
+    const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+
     useEffect(() => {
         if (currentCard) {
             setShowTitle(currentCard.show_title_on_image);
             setTitleValue(currentCard.title);
+            setDescriptionValue(currentCard.description || '');
         }
     }, [currentCard?.id]);
 
@@ -40,6 +46,13 @@ export default function CardPage() {
             titleInputRef.current.select();
         }
     }, [isEditingTitle]);
+
+    useEffect(() => {
+        if (isEditingDescription && descriptionInputRef.current) {
+            descriptionInputRef.current.focus();
+            descriptionInputRef.current.select();
+        }
+    }, [isEditingDescription]);
 
     useEffect(() => {
         if (!id) {
@@ -83,6 +96,38 @@ export default function CardPage() {
         if (e.key === 'Escape') {
             setIsEditingTitle(false);
             setTitleValue(currentCard?.title ?? '');
+        }
+    };
+
+    // Description handlers
+    const handleStartEditDescription = () => {
+        if (!isOwner) return;
+        setDescriptionValue(currentCard?.description ?? '');
+        setIsEditingDescription(true);
+    };
+
+    const handleSaveDescription = () => {
+        if (!id || !currentCard) return;
+        const trimmed = descriptionValue.trim();
+        if (trimmed === (currentCard.description ?? '')) {
+            setIsEditingDescription(false);
+            setDescriptionValue(currentCard.description ?? '');
+            return;
+        }
+        dispatch(updateCard({id, data: {description: trimmed || null}})).then(() => {
+            setIsEditingDescription(false);
+        });
+    };
+
+    const handleDescriptionKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // Ctrl+Enter or Cmd+Enter to save
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            handleSaveDescription();
+        }
+        if (e.key === 'Escape') {
+            setIsEditingDescription(false);
+            setDescriptionValue(currentCard?.description ?? '');
         }
     };
 
@@ -193,11 +238,7 @@ export default function CardPage() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Details panel */}
-                    <div className="p-6 overflow-y-auto flex-1">
-
-                        {/* Editable title */}
+                    <div className="p-8 overflow-y-auto flex-1">
                         <div className="flex items-start gap-2">
                             {isEditingTitle ? (
                                 <>
@@ -215,7 +256,6 @@ export default function CardPage() {
                                         className="text-2xl font-bold text-gray-900 border-b-2 border-[var(--color-primary)] outline-none bg-transparent flex-1 disabled:opacity-50 resize-none overflow-hidden"
                                         rows={1}
                                     />
-                                    {/* Save button */}
                                     <button
                                         onClick={handleSaveTitle}
                                         disabled={isUpdating}
@@ -230,7 +270,6 @@ export default function CardPage() {
                                         title={t('common.save')}
                                     >
                                         {isUpdating ? (
-                                            /* Spinner */
                                             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                                                 <circle className="opacity-25" cx="12" cy="12" r="10"
                                                         stroke="currentColor" strokeWidth="4"/>
@@ -238,7 +277,6 @@ export default function CardPage() {
                                                       d="M4 12a8 8 0 018-8v8H4z"/>
                                             </svg>
                                         ) : (
-                                            /* Send / submit icon */
                                             <FaCheck/>
                                         )}
                                     </button>
@@ -284,8 +322,6 @@ export default function CardPage() {
                                 </>
                             )}
                         </div>
-
-                        {/* show_title_on_image toggle */}
                         {isOwner ? (
                             <div className="mt-5 flex items-center gap-3">
                                 <label htmlFor="show_title_on_image"
@@ -312,7 +348,7 @@ export default function CardPage() {
                                         {t('createCard.showTitleOnImage')}
                                     </span>
                                 </label>
-                                {isUpdating && !isEditingTitle && (
+                                {isUpdating && !isEditingTitle && !isEditingDescription && (
                                     <svg className="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10"
                                                 stroke="currentColor" strokeWidth="4"/>
@@ -335,15 +371,99 @@ export default function CardPage() {
                             </div>
                         )}
 
-                        {currentCard.description && (
-                            <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                <div className="flex items-center mb-2">
+                        {/* Description section with editing */}
+                        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center">
                                     <LiaSignatureSolid className="w-4 h-4 text-gray-500 mr-2"/>
                                     <h3 className="font-medium text-gray-900">{t('createCard.descriptionLabel')}</h3>
                                 </div>
-                                <p className="text-gray-700 leading-relaxed">{currentCard.description}</p>
+                                {isOwner && !isEditingDescription && (
+                                    <button
+                                        onClick={handleStartEditDescription}
+                                        className="rounded-full hover:bg-gray-200 transition-colors p-1"
+                                        style={{
+                                            padding: '5px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'none',
+                                            color: 'var(--color-primary)',
+                                            border: '1px solid var(--color-primary)',
+                                        }}
+                                        title={t('common.edit')}
+                                    >
+                                        <RiEdit2Line size={14}/>
+                                    </button>
+                                )}
                             </div>
-                        )}
+
+                            {isEditingDescription ? (
+                                <div className="space-y-2">
+                                    <textarea
+                                        ref={descriptionInputRef}
+                                        value={descriptionValue}
+                                        onChange={e => {
+                                            setDescriptionValue(e.target.value);
+                                            e.target.style.height = 'auto';
+                                            e.target.style.height = e.target.scrollHeight + 'px';
+                                        }}
+                                        onKeyDown={handleDescriptionKeyDown}
+                                        disabled={isUpdating}
+                                        placeholder={t('createCard.descriptionPlaceholder')}
+                                        className="w-full text-gray-700 leading-relaxed border border-gray-300 rounded-lg p-3 outline-none focus:border-[var(--color-primary)] disabled:opacity-50 resize-none"
+                                        rows={3}
+                                        style={{minHeight: '80px'}}
+                                    />
+                                    <div className="flex items-center gap-2 justify-end">
+                                        <button
+                                            onClick={handleSaveDescription}
+                                            disabled={isUpdating}
+                                            className="rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1 px-3 py-1"
+                                            style={{
+                                                backgroundColor: 'none',
+                                                color: 'var(--color-primary)',
+                                                border: '1px solid var(--color-primary)',
+                                            }}
+                                            title={t('common.save')}
+                                        >
+                                            {isUpdating ? (
+                                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10"
+                                                            stroke="currentColor" strokeWidth="4"/>
+                                                    <path className="opacity-75" fill="currentColor"
+                                                          d="M4 12a8 8 0 018-8v8H4z"/>
+                                                </svg>
+                                            ) : (
+                                                <FaCheck size={12}/>
+                                            )}
+                                            <span className="text-sm">{t('common.save')}</span>
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsEditingDescription(false);
+                                                setDescriptionValue(currentCard.description ?? '');
+                                            }}
+                                            disabled={isUpdating}
+                                            className="rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1 px-3 py-1"
+                                            style={{
+                                                backgroundColor: 'none',
+                                                color: 'var(--color-primary)',
+                                                border: '1px solid var(--color-primary)',
+                                            }}
+                                            title={t('common.cancel')}
+                                        >
+                                            <RxCross1 size={12}/>
+                                            <span className="text-sm">{t('common.cancel')}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-gray-700 leading-relaxed">
+                                    {currentCard.description || (
+                                        <span className="text-gray-400 italic">{t('createCard.noDescription')}</span>
+                                    )}
+                                </p>
+                            )}
+                        </div>
 
                         <div className="mt-6 grid grid-cols-2 gap-4">
                             <div>

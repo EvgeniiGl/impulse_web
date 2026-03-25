@@ -46,9 +46,9 @@ class UpdateCardRequest
         return $this->data['isActive'] ?? false;
     }
 
-    public function getShowTitleOnImage(): bool
+    public function getShowTitleOnImage(): ?bool
     {
-        return $this->data['show_title_on_image'] ?? false;
+        return $this->data['show_title_on_image'] ?? null;
     }
 
     public function getFile(): ?File

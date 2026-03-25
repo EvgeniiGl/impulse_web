@@ -85,6 +85,9 @@ export default function MyPage() {
     };
 
     const handleSelectCollection = (id: string | null) => {
+        if (selectedCollectionId === id) {
+            return;
+        }
         dispatch(setSelectedCollectionId(id));
         dispatch(resetPagination());
     };
