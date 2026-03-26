@@ -32,6 +32,9 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const [hasDescriptionScroll, setHasDescriptionScroll] = useState(false);
     const [cardHeight, setCardHeight] = useState(0);
 
+    const currentUser = useAppSelector(state => state.auth.user);
+    const isOwner = !!(currentUser && card.creator_id === currentUser.id);
+
     const isScheduleOpen = openScheduleCardId === card.id;
 
     // Настройка drag
@@ -293,20 +296,22 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         <LiaSignatureSolid className="w-3.5 h-3.5"/>
                     </button>
 
-                    <button
-                        onClick={handleDeleteClick}
-                        className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-red-600/80 transition-colors shadow-lg"
-                        style={{
-                            padding: '3px',
-                            borderRadius: '50%',
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                            color: 'white',
-                            border: '1px solid var(--color-white)',
-                        }}
-                        title="Удалить карточку"
-                    >
-                        <IoTrashOutline className="w-3.5 h-3.5"/>
-                    </button>
+                    {isOwner && (
+                        <button
+                            onClick={handleDeleteClick}
+                            className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-red-600/80 transition-colors shadow-lg"
+                            style={{
+                                padding: '3px',
+                                borderRadius: '50%',
+                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                color: 'white',
+                                border: '1px solid var(--color-white)',
+                            }}
+                            title="Удалить карточку"
+                        >
+                            <IoTrashOutline className="w-3.5 h-3.5"/>
+                        </button>
+                    )}
 
                     {/* Описание, которое появляется при клике - z-index 40 (выше кнопок) */}
                     <div
