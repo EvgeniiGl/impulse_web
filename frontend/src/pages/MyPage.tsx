@@ -275,9 +275,6 @@ export default function MyPage() {
                                 <h1 className="text-3xl font-bold text-gray-900">
                                     {t('my.title') || 'Мои карточки'}
                                 </h1>
-                                <p className="mt-2 text-gray-600">
-                                    {t('my.content') || 'Управляйте своими карточками и коллекциями'}
-                                </p>
                             </div>
                             <button
                                 onClick={() => navigate('/card/create', {

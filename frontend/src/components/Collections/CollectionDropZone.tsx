@@ -3,6 +3,7 @@ import {useDrop} from 'react-dnd';
 import {ItemTypes, DragItem, DropResult} from '@/types/dnd';
 import {useAppSelector} from '@store/store';
 import {MyCardState} from "@store/card/myCardSlice.ts";
+import css from './CollectionDropZone.module.css'
 
 interface CollectionDropZoneProps {
     collectionId: string | null;
@@ -68,13 +69,13 @@ export default function CollectionDropZone({
             relative transition-all duration-200
             ${className}
             ${isOver && canDrop
-                ? 'ring-2 ring-blue-500 scale-[1.05] bg-blue-50/70'
+                ? css.zone
                 : ''}
             ${isOver && !canDrop
                 ? 'ring-2 ring-red-400 opacity-50 cursor-not-allowed'
                 : ''}
             ${canDrop && !isOver
-                ? 'ring-1 ring-blue-200 ring-dashed'
+                ? css.zone
                 : ''}
         `}
         >
@@ -83,11 +84,11 @@ export default function CollectionDropZone({
                 <span
                     className="pointer-events-none absolute inset-0 flex items-center justify-center z-10"
                 >
-                <span className="
+                <span className={`
                     flex items-center gap-1 px-2 py-1 rounded-full
-                    bg-blue-500 text-white text-xs font-semibold
-                    shadow-lg animate-bounce
-                ">
+                    text-white text-xs font-semibold
+                    shadow-lg animate-bounce ${css.addAnimate}
+                `}>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/>
                     </svg>

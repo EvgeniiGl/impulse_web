@@ -252,16 +252,19 @@ class User extends Model
         // 2. Карточки с правом записи/администрирования через правила доступа (исключая свои и карточки в коллекциях)
         $sharedCardsQuery = AccessRule::query()
             ->where('user_id = :user_id:')
-            ->andWhere('permission IN ({permissions:array})')
-            ->andWhere('card_id NOT IN ({own_ids:array})')
-            ->andWhere('card_id NOT IN (' . $inCollectionSubquery . ')') // Исключаем карточки в коллекциях
-            ->bind([
-                'user_id'     => $this->id,
-                'permissions' => ['write', 'admin'],
-                'own_ids'     => $ownCards->count() > 0
-                    ? array_column($ownCards->toArray(), 'id')
-                    : ['0']
-            ]);
+            ->andWhere('permission IN ({permissions:array})');
+        $bind             = [
+            'user_id'     => $this->id,
+            'permissions' => ['write', 'admin'],
+        ];
+        if ($ownCards->count() > 0) {
+            $sharedCardsQuery->andWhere('card_id NOT IN ({own_ids:array})');
+            $bind['own_ids'] = $ownCards->count() > 0
+                ? array_column($ownCards->toArray(), 'id')
+                : ['0'];
+        }
+        $sharedCardsQuery->andWhere('card_id NOT IN (' . $inCollectionSubquery . ')');
+        $sharedCardsQuery->bind($bind);
 
         foreach ($sharedCardsQuery->execute() as $rule) {
             $card = Card::findFirst($rule->card_id);

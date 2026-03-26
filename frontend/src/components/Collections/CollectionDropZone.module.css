@@ -1,0 +1,10 @@
+.zone {
+    padding: 4px;
+    border: 1px solid #897df5;
+    border-radius: 10px;
+    margin: 4px;
+}
+
+.addAnimate {
+    background: var(--color-primary);
+}
