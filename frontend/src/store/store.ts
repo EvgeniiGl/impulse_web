@@ -4,6 +4,7 @@ import authReducer from './auth/authSlice.ts';
 import cardReducer from './card/cardSlice.ts';
 import myCardReducer from './card/myCardSlice.ts';
 import notificationReducer from './notification/notificationSlice';
+import homeReducer from './home/homeSlice.ts';
 
 export type AccessType = 'private' | 'public' | 'shared';
 
@@ -21,7 +22,7 @@ export interface Card {
     object_path: string;
     file_name: string;
     original_name: string;
-    collectionIds: string[];
+    collectionIds: string[]
 }
 
 export interface Collection {
@@ -70,6 +71,7 @@ export const store = configureStore({
         card: cardReducer,
         myCards: myCardReducer,
         notifications: notificationReducer,
+        home: homeReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware(),

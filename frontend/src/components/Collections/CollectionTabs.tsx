@@ -1,6 +1,4 @@
-// components/Collections/CollectionTabs.tsx
 import {useRef, useState, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
 import css from './CollectionTabs.module.css'
 import {Collection} from "@store/store.ts";
 import CollectionDropZone from './CollectionDropZone';
@@ -20,7 +18,6 @@ export default function CollectionTabs({
                                            isLoading,
                                            onCardDrop
                                        }: CollectionTabsProps) {
-    const {t} = useTranslation();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);

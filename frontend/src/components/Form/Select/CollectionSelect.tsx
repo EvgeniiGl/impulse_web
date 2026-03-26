@@ -31,7 +31,7 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
     const [options, setOptions] = useState<SelectOption[]>([]);
     // Преобразуем коллекции в опции для react-select
     useEffect(() => {
-        const collectionOptions = collections.map(collection => ({
+        const collectionOptions = collections.filter(i => i.id).map(collection => ({
             value: collection.id,
             label: `${collection.name}${collection.access_type === 'public' ? ' 🌎' : ''}`
         }));
@@ -50,7 +50,7 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
     ) => {
         const selectedCollectionIds = newValue.map(option => option.value);
         const selected = collections.filter(collection =>
-            selectedCollectionIds.includes(collection.id)
+            selectedCollectionIds.includes(collection.id) && !!collection.id
         );
         onCollectionsChange(selected);
     };

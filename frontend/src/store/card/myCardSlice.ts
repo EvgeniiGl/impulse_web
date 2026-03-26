@@ -241,7 +241,7 @@ const myCardSlice = createSlice({
                     state.success = null
                     return
                 }
-                state.myCards.push(action.payload.data);
+                // state.myCards.push(action.payload.data);
                 state.success = 'Карточка успешно создана';
                 state.selectedCollections = [];
             })

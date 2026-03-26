@@ -84,6 +84,16 @@ return function (): Router {
         'DELETE'
     ]);
 
+// home маршруты (публичные — без авторизации)
+    $router->addGet('/api/home/cards', [
+        'controller' => 'home',
+        'action'     => 'cards'
+    ]);
+    $router->addGet('/api/home/search', [
+        'controller' => 'home',
+        'action'     => 'search'
+    ]);
+
 // collections маршруты
 // Создаем группу отдельно
     $collectionGroup = new RouterGroup([

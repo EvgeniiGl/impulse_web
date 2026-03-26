@@ -1,8 +1,5 @@
-// components/Collections/CollectionDropZone.tsx
 import {useDrop} from 'react-dnd';
 import {ItemTypes, DragItem, DropResult} from '@/types/dnd';
-import {useAppSelector} from '@store/store';
-import {MyCardState} from "@store/card/myCardSlice.ts";
 import css from './CollectionDropZone.module.css'
 
 interface CollectionDropZoneProps {

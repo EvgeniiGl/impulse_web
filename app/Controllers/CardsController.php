@@ -60,11 +60,13 @@ class CardsController extends BaseController
             $card = $this->cardService->createCard($request, $user);
 
             // Получаем информацию о коллекциях карточки
-            $collections = [];
+            $collections   = [];
+            $collectionIds = [];
             if (method_exists($card, 'getCollections')) {
                 $cardCollections = $card->getCollections();
                 foreach ($cardCollections as $collection) {
-                    $collections[] = [
+                    $collectionIds[] = $collection->id;
+                    $collections[]   = [
                         'id'          => $collection->id,
                         'name'        => $collection->name,
                         'description' => $collection->description,
@@ -94,6 +96,7 @@ class CardsController extends BaseController
                         'name'  => $user->name,
                         'email' => $user->email
                     ],
+                    'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
                     'collections_count'   => count($collections),
                     'created_at'          => $card->created_at,
@@ -140,11 +143,13 @@ class CardsController extends BaseController
             $creator = $card->getCreator();
 
             // Получаем коллекции карточки
-            $collections = [];
+            $collections   = [];
+            $collectionIds = [];
             if (method_exists($card, 'getCollections')) {
                 $cardCollections = $card->getCollections();
                 foreach ($cardCollections as $collection) {
-                    $collections[] = [
+                    $collectionIds[] = $collection->id;
+                    $collections[]   = [
                         'id'          => $collection->id,
                         'name'        => $collection->name,
                         'description' => $collection->description,
@@ -175,6 +180,7 @@ class CardsController extends BaseController
                         'name'  => $creator->name,
                         'email' => $creator->email
                     ] : null,
+                    'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
                     'collections_count'   => count($collections),
                     'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),
@@ -212,17 +218,20 @@ class CardsController extends BaseController
                 $card = $cardData['card'];
 
                 // Получаем коллекции карточки (только первые 3 для превью, чтобы не перегружать ответ)
-                $collections = [];
+                $collections   = [];
+                $collectionIds = [];
                 if (method_exists($card, 'getCollections')) {
                     $cardCollections = $card->getCollections();
                     $collectionCount = 0;
                     foreach ($cardCollections as $collection) {
-                        if ($collectionCount >= 3) break;
-                        $collections[] = [
-                            'id'   => $collection->id,
-                            'name' => $collection->name,
-                        ];
-                        $collectionCount++;
+                        $collectionIds[] = $collection->id;
+                        if ($collectionCount < 3) {
+                            $collections[] = [
+                                'id'   => $collection->id,
+                                'name' => $collection->name,
+                            ];
+                            $collectionCount++;
+                        }
                     }
                 }
 
@@ -236,8 +245,9 @@ class CardsController extends BaseController
                     'access_level'      => $cardData['permission'],
                     'is_owner'          => $cardData['access_type'] === 'owner',
                     'creator_id'        => $card->creator_id,
+                    'collectionIds'     => $collectionIds,
                     'collections'       => $collections,
-                    'collections_count' => method_exists($card, 'getCollections') ? $card->getCollections()->count() : 0,
+                    'collections_count' => count($collectionIds),
                     'created_at'        => $card->created_at,
                     'updated_at'        => $card->updated_at,
                 ];
@@ -294,11 +304,13 @@ class CardsController extends BaseController
             $updatedCard = $this->cardService->updateCard($card, $request, $user);
 
             // Получаем обновленные коллекции
-            $collections = [];
+            $collections   = [];
+            $collectionIds = [];
             if (method_exists($updatedCard, 'getCollections')) {
                 $cardCollections = $updatedCard->getCollections();
                 foreach ($cardCollections as $collection) {
-                    $collections[] = [
+                    $collectionIds[] = $collection->id;
+                    $collections[]   = [
                         'id'   => $collection->id,
                         'name' => $collection->name,
                     ];
@@ -330,6 +342,7 @@ class CardsController extends BaseController
                         'name'  => $creator->name,
                         'email' => $creator->email
                     ] : null,
+                    'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
                     'collections_count'   => count($collections),
                     'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),

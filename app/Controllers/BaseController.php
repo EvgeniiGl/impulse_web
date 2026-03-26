@@ -32,6 +32,8 @@ class BaseController extends PhalconController
         '/register',
         '/card/*',
         '/notification',
+        '/api/home/cards',
+        '/api/home/search',
     ];
 
     public function onConstruct(): void
@@ -128,8 +130,6 @@ class BaseController extends PhalconController
      */
     protected function getAuthenticatedUser(): ?User
     {
-        // Здесь реализуйте получение пользователя из JWT токена
-        // Примерная реализация:
         $authHeader = $this->request->getHeader('Authorization');
 
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
@@ -138,17 +138,17 @@ class BaseController extends PhalconController
 
         $token = substr($authHeader, 7);
 
-        // Декодируем JWT и получаем ID пользователя
         try {
-            $payload = \Firebase\JWT\JWT::decode(
+            $this->config = $this->di->get('config');
+            $payload      = JWT::decode(
                 $token,
-                new \Firebase\JWT\Key($this->config->jwt->secret, 'HS256')
+                new Key($this->config->jwt->secret, 'HS256')
             );
 
             return User::findFirst([
                 'conditions' => 'id = :id: AND is_active = true',
                 'bind'       => ['id' => $payload->sub]
-            ]);
+            ]) ?: null;
         } catch (\Exception $e) {
             return null;
         }
