@@ -210,5 +210,37 @@ return function (): Router {
         'action'     => 'notFound'
     ]);
 
+// Лайки карточек
+    $router->addPost('/api/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/like', [
+        'controller' => 'likes',
+        'action'     => 'toggleCardLike'
+    ]);
+
+    $router->addGet('/api/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/like', [
+        'controller' => 'likes',
+        'action'     => 'getCardLikeStatus'
+    ]);
+
+    $router->addGet('/api/cards/liked', [
+        'controller' => 'likes',
+        'action'     => 'getLikedCards'
+    ]);
+
+// Лайки коллекций
+    $router->addPost('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/like', [
+        'controller' => 'likes',
+        'action'     => 'toggleCollectionLike'
+    ]);
+
+    $router->addGet('/api/collections/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/like', [
+        'controller' => 'likes',
+        'action'     => 'getCollectionLikeStatus'
+    ]);
+
+    $router->addGet('/api/collections/liked', [
+        'controller' => 'likes',
+        'action'     => 'getLikedCollections'
+    ]);
+
     return $router;
 };

@@ -5,6 +5,7 @@ import cardReducer from './card/cardSlice.ts';
 import myCardReducer from './card/myCardSlice.ts';
 import notificationReducer from './notification/notificationSlice';
 import homeReducer from './home/homeSlice.ts';
+import likeReducer from './like/likeSlice.ts';
 
 export type AccessType = 'private' | 'public' | 'shared';
 
@@ -27,7 +28,9 @@ export interface Card {
     object_path: string;
     file_name: string;
     original_name: string;
-    collectionIds: string[]
+    collectionIds: string[];
+    likes_count?: number;
+    is_liked?: boolean;
 }
 
 export interface Collection {
@@ -38,6 +41,8 @@ export interface Collection {
     is_active: boolean;
     card_count: number;
     creator_name: string;
+    likes_count?: number;
+    is_liked?: boolean;
 }
 
 
@@ -77,6 +82,7 @@ export const store = configureStore({
         myCards: myCardReducer,
         notifications: notificationReducer,
         home: homeReducer,
+        likes: likeReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware(),

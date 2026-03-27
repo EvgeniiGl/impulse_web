@@ -9,6 +9,8 @@ import {useAppDispatch, useAppSelector} from '@store/store.ts';
 import {closeScheduleForm, toggleScheduleForm, deleteCard} from '@store/card/myCardSlice.ts';
 import {useDrag} from 'react-dnd';
 import {ItemTypes} from '@/types/dnd';
+import {useTranslation} from 'react-i18next';
+import LikeButton from "@components/Card/LikeButton.tsx";
 
 interface CardItemProps {
     card: Card;
@@ -18,6 +20,7 @@ interface CardItemProps {
 export default function CardItem({card, onDrop}: CardItemProps) {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const {t} = useTranslation();
 
     const openScheduleCardId = useAppSelector(state => state.myCards.openScheduleCardId);
     const currentCollectionId = useAppSelector(state => state.myCards.selectedCollectionId);
@@ -249,19 +252,28 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             </span>
                         </div>
                     )}
-                    {/* Статус доступа поверх изображения снизу слева - z-index 20 */}
-                    <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
+                    {/* Статус доступа поверх изображения сверху слева - z-index 20 */}
+                    <div className="absolute top-3 left-3 z-20 pointer-events-none">
                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
                             card.access_type === 'private'
                                 ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
                                 : 'bg-[var(--color-primary)] text-white'
                         }`}>
                             {card.access_type === 'public'
-                                ? 'Публичная'
+                                ? t('cards.public')
                                 : card.access_type === 'shared'
-                                    ? 'Общая'
-                                    : 'Приватная'}
+                                    ? t('cards.shared')
+                                    : t('cards.private')}
                         </span>
+                    </div>
+
+
+                    <div className="absolute bottom-3 left-3 z-30">
+                        <LikeButton
+                            cardId={card.id}
+                            size="md"
+                            showCount={false}
+                        />
                     </div>
 
                     {/* Кнопки действий снизу справа — автоматически сдвигаются по flex */}
