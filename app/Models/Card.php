@@ -290,15 +290,15 @@ class Card extends Model
     /**
      * Проверяет, имеет ли пользователь доступ к карточке
      */
-    public function hasAccess(User $user, string $requiredPermission = 'read'): bool
+    public function hasAccess(?User $user, string $requiredPermission = 'read'): bool
     {
-        // Если пользователь - создатель, у него полный доступ
-        if ($this->creator_id === $user->id) {
+        // Для публичных карточек - доступ на чтение всем
+        if ($this->access_type === self::ACCESS_PUBLIC && $requiredPermission === 'read') {
             return true;
         }
 
-        // Для публичных карточек - доступ на чтение всем
-        if ($this->access_type === self::ACCESS_PUBLIC && $requiredPermission === 'read') {
+        // Если пользователь - создатель, у него полный доступ
+        if ($this->creator_id === $user->id) {
             return true;
         }
 

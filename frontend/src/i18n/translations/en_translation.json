@@ -32,8 +32,8 @@
     "search": {
       "placeholder": "Search cards by title, description or author...",
       "title": "Search results",
-      "results": "Found {{count}} results for \"{{query}}\"",
-      "noResults": "Nothing found for \"{{query}}\"",
+      "results": "Found {{count}}",
+      "noResults": "Nothing found",
       "empty": "No cards found",
       "emptyHint": "Try a different search query"
     },
@@ -143,7 +143,8 @@
     "views": "Views",
     "likes": "Likes",
     "like": "Like",
-    "unlike": "Unlike"
+    "unlike": "Unlike",
+    "author": "Author"
   },
   "collections": {
     "title": "Collections",

@@ -85,9 +85,10 @@ class BaseController extends PhalconController
         if (in_array($uri, $this->publicRoutes)) {
             return true;
         }
-
-        // Проверка для маршрутов карточек с UUID
-        if (preg_match('/^\/card\/[a-f0-9\-]{36}$/', $uri)) {
+        if ($this->request->isGet() && preg_match('/^\/card\/[a-f0-9\-]{36}$/', $uri)) {
+            return true;
+        }
+        if ($this->request->isGet() && preg_match('/^\/api\/card\/[a-f0-9\-]{36}$/', $uri)) {
             return true;
         }
 

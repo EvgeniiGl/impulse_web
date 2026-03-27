@@ -7,7 +7,7 @@ import Footer from "@modules/Footer.tsx";
 import Main from "@modules/Main.tsx";
 import {fetchCard, resetCurrentCard, updateCard} from '@store/card/cardSlice.ts';
 import {LiaSignatureSolid} from "react-icons/lia";
-import {CardState, useAppDispatch, useAppSelector} from "@store/store.ts";
+import {CardState, RootState, useAppDispatch, useAppSelector} from "@store/store.ts";
 import {RiEdit2Line} from "react-icons/ri";
 import {FaCheck} from "react-icons/fa6";
 import {RxCross1} from "react-icons/rx";
@@ -17,11 +17,14 @@ export default function CardPage() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const {t} = useTranslation();
-    const {currentCard, isLoading, isUpdating, error}: CardState = useAppSelector((state: any) => state.card);
+    const {currentCard, isLoading, isUpdating, error}: CardState = useAppSelector((state: RootState) => state.card);
 
-    const authUser = useAppSelector((state: any) => state.auth.user);
-    const isOwner = !!(currentCard && authUser && currentCard.creator_id === authUser.id);
-
+    const authUser = useAppSelector((state: RootState) => state.auth.user);
+    const isOwner = !!(currentCard && authUser && currentCard.creator?.id === authUser.id);
+    console.log("log--",
+        "\ncurrentCard--", currentCard,
+        "\nauthUser--", authUser,
+    );
     const [showTitle, setShowTitle] = useState(false);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [titleValue, setTitleValue] = useState('');
@@ -160,14 +163,14 @@ export default function CardPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                       d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <h3 className="mt-4 text-lg font-medium text-gray-900">{t('card.error.title')}</h3>
+                            <h3 className="mt-4 text-lg font-medium text-gray-900">{t('common.error')}</h3>
                             <p className="mt-2 text-gray-500">
-                                {error ? error : t('card.error.notFound')}
+                                {error ? error : t('common.notFound')}
                             </p>
                             <div className="mt-6">
                                 <button onClick={() => navigate(-1)}
                                         className="text-indigo-600 hover:text-indigo-900 font-medium">
-                                    {t('card.error.back')}
+                                    {t('common.back')}
                                 </button>
                             </div>
                         </div>
@@ -475,6 +478,31 @@ export default function CardPage() {
                                 <p className="mt-1 text-gray-900">{currentCard.updated_at}</p>
                             </div>
                         </div>
+                        {currentCard.creator && (
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                                <h3 className="text-sm font-medium text-gray-500 mb-3">
+                                    {t('cards.author')}
+                                </h3>
+                                <div className="flex items-center gap-3">
+                                    {/* Аватар с инициалом */}
+                                    <div
+                                        className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-white font-semibold text-sm">
+                                            {currentCard.creator.name?.charAt(0).toUpperCase() ?? '?'}
+                                        </span>
+                                    </div>
+                                    {/* Имя и email */}
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-sm font-medium text-gray-900 truncate">
+                                            {currentCard.creator.name}
+                                        </span>
+                                        <span className="text-xs text-gray-500 truncate">
+                                            {currentCard.creator.email}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Main>

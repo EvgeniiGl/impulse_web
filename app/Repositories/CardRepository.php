@@ -66,7 +66,7 @@ class CardRepository
             $userCondition = " OR creator_id IN (" . implode(',', $userIdList) . ")";
         }
 
-        $conditions = "access_type = 'public' AND is_active = 1 AND (title LIKE :search: OR description LIKE :search2:" . $userCondition . ")";
+        $conditions = "access_type = 'public' AND is_active = true AND (title LIKE :search: OR description LIKE :search2:" . $userCondition . ")";
 
         $cards = Card::find([
             'conditions' => $conditions,

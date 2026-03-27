@@ -14,6 +14,11 @@ export interface Card {
     description?: string;
     url: string;
     creator_id: string;
+    creator?: {
+        id: string;
+        name: string;
+        email: string;
+    };
     access_type: AccessType;
     is_active: boolean;
     show_title_on_image: boolean;

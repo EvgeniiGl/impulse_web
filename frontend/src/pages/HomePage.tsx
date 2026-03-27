@@ -124,16 +124,13 @@ export default function HomePage() {
                         </div>
 
                         {/* Section title */}
-                        <div className="mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900">
-                                {searchQuery ? t('home.search.title') : t('home.cards.latest')}
-                            </h2>
-                            {!searchQuery && pagination.total > 0 && (
-                                <p className="text-sm text-gray-500 mt-0.5">
-                                    {t('home.cards.totalCount', {count: pagination.total})}
-                                </p>
-                            )}
-                        </div>
+                        {/*<div className="mb-6">*/}
+                        {/*    {!searchQuery && pagination.total > 0 && (*/}
+                        {/*        <p className="text-sm text-gray-500 mt-0.5">*/}
+                        {/*            {t('home.cards.totalCount', {count: pagination.total})}*/}
+                        {/*        </p>*/}
+                        {/*    )}*/}
+                        {/*</div>*/}
 
                         {/* Error */}
                         {error && (

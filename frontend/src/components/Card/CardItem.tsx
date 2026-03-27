@@ -264,42 +264,13 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         </span>
                     </div>
 
-                    {/* Кнопка уведомлений рядом с кнопкой описания - z-index 30 */}
-                    <button
-                        onClick={handleScheduleToggle}
-                        className="absolute bottom-3 right-21 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg"
-                        style={{
-                            padding: '3px',
-                            borderRadius: '50%',
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                            color: 'white',
-                            border: '1px solid var(--color-white)',
-                        }}
-                        title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
-                    >
-                        <MdOutlineSchedule className="w-3.5 h-3.5"/>
-                    </button>
+                    {/* Кнопки действий снизу справа — автоматически сдвигаются по flex */}
+                    <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5">
 
-                    {/* Кнопка описания снизу справа - z-index 30 */}
-                    <button
-                        onClick={handleDescriptionToggle}
-                        className="absolute bottom-3 right-12 z-30 rounded-full hover:bg-black/80 transition-colors shadow-lg flex items-center gap-1"
-                        style={{
-                            padding: '3px',
-                            borderRadius: '50%',
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                            color: 'white',
-                            border: '1px solid var(--color-white)',
-                        }}
-                        title={isDescriptionOpen ? "Скрыть описание" : "Показать описание"}
-                    >
-                        <LiaSignatureSolid className="w-3.5 h-3.5"/>
-                    </button>
-
-                    {isOwner && (
+                        {/* Кнопка уведомлений */}
                         <button
-                            onClick={handleDeleteClick}
-                            className="absolute bottom-3 right-3 z-30 rounded-full hover:bg-red-600/80 transition-colors shadow-lg"
+                            onClick={handleScheduleToggle}
+                            className="rounded-full hover:bg-black/80 transition-colors shadow-lg"
                             style={{
                                 padding: '3px',
                                 borderRadius: '50%',
@@ -307,11 +278,46 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                 color: 'white',
                                 border: '1px solid var(--color-white)',
                             }}
-                            title="Удалить карточку"
+                            title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
                         >
-                            <IoTrashOutline className="w-3.5 h-3.5"/>
+                            <MdOutlineSchedule className="w-3.5 h-3.5"/>
                         </button>
-                    )}
+
+                        {/* Кнопка описания */}
+                        <button
+                            onClick={handleDescriptionToggle}
+                            className="rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                            style={{
+                                padding: '3px',
+                                borderRadius: '50%',
+                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                color: 'white',
+                                border: '1px solid var(--color-white)',
+                            }}
+                            title={isDescriptionOpen ? "Скрыть описание" : "Показать описание"}
+                        >
+                            <LiaSignatureSolid className="w-3.5 h-3.5"/>
+                        </button>
+
+                        {/* Кнопка удаления — только для владельца */}
+                        {isOwner && (
+                            <button
+                                onClick={handleDeleteClick}
+                                className="rounded-full hover:bg-red-600/80 transition-colors shadow-lg"
+                                style={{
+                                    padding: '3px',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'rgba(0,0,0,0.5)',
+                                    color: 'white',
+                                    border: '1px solid var(--color-white)',
+                                }}
+                                title="Удалить карточку"
+                            >
+                                <IoTrashOutline className="w-3.5 h-3.5"/>
+                            </button>
+                        )}
+
+                    </div>
 
                     {/* Описание, которое появляется при клике - z-index 40 (выше кнопок) */}
                     <div
