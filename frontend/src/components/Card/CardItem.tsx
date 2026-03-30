@@ -1,4 +1,4 @@
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useLocation} from 'react-router-dom';
 import {Card} from "@store/store.ts";
 import {useState, useRef, useEffect} from 'react';
 import {LiaSignatureSolid} from "react-icons/lia";
@@ -19,6 +19,7 @@ interface CardItemProps {
 
 export default function CardItem({card, onDrop}: CardItemProps) {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useAppDispatch();
     const {t} = useTranslation();
 
@@ -28,6 +29,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const [imageError, setImageError] = useState(false);
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [canDelete, setCanDelete] = useState(true)
 
     const descriptionRef = useRef<HTMLDivElement | null>(null);
     const scheduleRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +123,9 @@ export default function CardItem({card, onDrop}: CardItemProps) {
             const rect = cardRef.current.getBoundingClientRect();
             setCardHeight(rect.height)
         }
+        if (location.pathname === '/') {
+            setCanDelete(false)
+        }
     }, []);
 
     const handleDescriptionToggle = (e: React.MouseEvent) => {
@@ -185,7 +190,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                 style={{touchAction: 'none'}}
             >
                 {/* Контейнер с фиксированным соотношением 9:16 (вертикальное) */}
-                <div className="relative w-full bg-gray-200 overflow-hidden"
+                <div className="relative w-full overflow-clip"
                      style={{aspectRatio: '9/16'}}>
                     <div
                         className={`absolute inset-0 flex items-center justify-center transition-all duration-150 ${isDragging
@@ -268,19 +273,18 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                     </div>
 
 
-                    <div className="absolute bottom-3 left-3 z-30">
+                    {currentUser && <div className="absolute bottom-3 left-3 z-30">
                         <LikeButton
                             cardId={card.id}
                             size="md"
-                            showCount={false}
                         />
-                    </div>
+                    </div>}
 
                     {/* Кнопки действий снизу справа — автоматически сдвигаются по flex */}
                     <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5">
 
                         {/* Кнопка уведомлений */}
-                        <button
+                        {currentUser && <button
                             onClick={handleScheduleToggle}
                             className="rounded-full hover:bg-black/80 transition-colors shadow-lg"
                             style={{
@@ -293,7 +297,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             title={isScheduleOpen ? "Скрыть уведомления" : "Настроить уведомления"}
                         >
                             <MdOutlineSchedule className="w-3.5 h-3.5"/>
-                        </button>
+                        </button>}
 
                         {/* Кнопка описания */}
                         <button
@@ -312,7 +316,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         </button>
 
                         {/* Кнопка удаления — только для владельца */}
-                        {isOwner && (
+                        {isOwner && canDelete && (
                             <button
                                 onClick={handleDeleteClick}
                                 className="rounded-full hover:bg-red-600/80 transition-colors shadow-lg"

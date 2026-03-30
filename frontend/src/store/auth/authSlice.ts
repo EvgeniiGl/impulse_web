@@ -240,7 +240,7 @@ const authSlice = createSlice({
                 return;
             }
             state.user = {
-                id: decodedToken.id,
+                id: decodedToken.id || decodedToken.sub,
                 name: decodedToken.name,
                 email: decodedToken.email,
             }

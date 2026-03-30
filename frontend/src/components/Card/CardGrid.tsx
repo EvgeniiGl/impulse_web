@@ -39,7 +39,7 @@ export default function CardGrid({cards, isLoading, onLoadMore, hasMore, onCardD
             {isLoading && (
                 <>
                     {[...Array(4)].map((_, i) => (
-                        <div key={`skeleton-${i}`} className="bg-gray-200 rounded-lg animate-pulse flex flex-col">
+                        <div key={`skeleton-${i}`} className="rounded-lg animate-pulse flex flex-col">
                             <div className="w-full" style={{aspectRatio: '9/20'}}>
                                 <div className="w-full h-full bg-gray-300"/>
                             </div>

@@ -1,11 +1,17 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {LikesApi, LikeResponse} from '@/api/likesApi';
+import {Card} from '@store/store';
+
+interface LikeData {
+    liked: boolean;
+    likesCount: number;
+}
 
 interface LikeState {
     // Карта лайков карточек: cardId -> { liked, likesCount }
-    cardLikes: Record<string, { liked: boolean; likesCount: number }>;
+    cardLikes: Record<string, LikeData>;
     // Карта лайков коллекций: collectionId -> { liked, likesCount }
-    collectionLikes: Record<string, { liked: boolean; likesCount: number }>;
+    collectionLikes: Record<string, LikeData>;
     // Статусы загрузки
     loadingCards: Record<string, boolean>;
     loadingCollections: Record<string, boolean>;
@@ -25,8 +31,12 @@ interface CardLikePayload extends LikeResponse {
     cardId: string;
 }
 
+interface CollectionLikePayload extends LikeResponse {
+    collectionId: string;
+}
+
 // Async thunks
-export const toggleCardLike = createAsyncThunk(
+export const toggleCardLike = createAsyncThunk<CardLikePayload, string>(
     'likes/toggleCardLike',
     async (cardId: string, {rejectWithValue}) => {
         try {
@@ -41,7 +51,7 @@ export const toggleCardLike = createAsyncThunk(
     }
 );
 
-export const fetchCardLikeStatus = createAsyncThunk(
+export const fetchCardLikeStatus = createAsyncThunk<CardLikePayload, string>(
     'likes/fetchCardLikeStatus',
     async (cardId: string, {rejectWithValue}) => {
         try {
@@ -56,7 +66,7 @@ export const fetchCardLikeStatus = createAsyncThunk(
     }
 );
 
-export const toggleCollectionLike = createAsyncThunk(
+export const toggleCollectionLike = createAsyncThunk<CollectionLikePayload, string>(
     'likes/toggleCollectionLike',
     async (collectionId: string, {rejectWithValue}) => {
         try {
@@ -71,7 +81,7 @@ export const toggleCollectionLike = createAsyncThunk(
     }
 );
 
-export const fetchCollectionLikeStatus = createAsyncThunk(
+export const fetchCollectionLikeStatus = createAsyncThunk<CollectionLikePayload, string>(
     'likes/fetchCollectionLikeStatus',
     async (collectionId: string, {rejectWithValue}) => {
         try {
@@ -93,6 +103,27 @@ const likeSlice = createSlice({
         clearLikeError: (state) => {
             state.error = null;
         },
+
+        // Инициализация лайков из массива карточек (при загрузке карточек с бэкенда)
+        initCardLikesFromCards: (state, action: PayloadAction<Card[]>) => {
+            action.payload.forEach(card => {
+                if (card.likes_count !== undefined || card.is_liked !== undefined) {
+                    state.cardLikes[card.id] = {
+                        liked: card.is_liked ?? false,
+                        likesCount: card.likes_count ?? 0
+                    };
+                }
+            });
+        },
+
+        // Инициализация лайка одной карточки
+        initCardLike: (state, action: PayloadAction<{ cardId: string; liked: boolean; likesCount: number }>) => {
+            state.cardLikes[action.payload.cardId] = {
+                liked: action.payload.liked,
+                likesCount: action.payload.likesCount
+            };
+        },
+
         setCardLike: (state, action: PayloadAction<{ cardId: string; liked: boolean; likesCount: number }>) => {
             state.cardLikes[action.payload.cardId] = {
                 liked: action.payload.liked,
@@ -109,6 +140,7 @@ const likeSlice = createSlice({
                 likesCount: action.payload.likesCount
             };
         },
+
         // Оптимистичное обновление лайка карточки
         optimisticToggleCardLike: (state, action: PayloadAction<string>) => {
             const cardId = action.payload;
@@ -122,6 +154,7 @@ const likeSlice = createSlice({
                 state.cardLikes[cardId] = {liked: true, likesCount: 1};
             }
         },
+
         // Оптимистичное обновление лайка коллекции
         optimisticToggleCollectionLike: (state, action: PayloadAction<string>) => {
             const collectionId = action.payload;
@@ -134,6 +167,15 @@ const likeSlice = createSlice({
             } else {
                 state.collectionLikes[collectionId] = {liked: true, likesCount: 1};
             }
+        },
+
+        // Очистка данных лайков
+        clearCardLikes: (state) => {
+            state.cardLikes = {};
+        },
+
+        clearCollectionLikes: (state) => {
+            state.collectionLikes = {};
         }
     },
     extraReducers: (builder) => {
@@ -217,10 +259,14 @@ const likeSlice = createSlice({
 
 export const {
     clearLikeError,
+    initCardLikesFromCards,
+    initCardLike,
     setCardLike,
     setCollectionLike,
     optimisticToggleCardLike,
-    optimisticToggleCollectionLike
+    optimisticToggleCollectionLike,
+    clearCardLikes,
+    clearCollectionLikes
 } = likeSlice.actions;
 
 export default likeSlice.reducer;

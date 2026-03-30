@@ -8,6 +8,7 @@ import {
 } from "@api/cardsApi.ts";
 import {CollectionsApi, MyCollectionsResponse} from "@api/collectionsApi.ts";
 import {Card, Collection, PaginationState} from "@store/store.ts";
+import {initCardLikesFromCards, initCardLike} from "@store/like/likeSlice.ts";
 
 export interface MyCardState {
     myCards: Card[];
@@ -49,13 +50,16 @@ const initialState: MyCardState = {
 // Экшен для загрузки "моих карточек" (созданные + с правом записи)
 export const fetchMyCards = createAsyncThunk(
     'myCards/fetch',
-    async ({page, perPage}: { page: number; perPage: number }, {rejectWithValue}) => {
+    async ({page, perPage}: { page: number; perPage: number }, {rejectWithValue, dispatch}) => {
         try {
-            // Предполагается, что в CardsApi добавлен метод getMyCards
-            // Соответствует бэкенд-эндпоинту /api/cards/my
             const response = await CardsApi.getMyCards(page, perPage);
             if (!response?.success) {
                 return rejectWithValue('Failed to fetch my cards');
+            }
+
+            // Инициализируем лайки из загруженных карточек
+            if (response.data.cards && response.data.cards.length > 0) {
+                dispatch(initCardLikesFromCards(response.data.cards));
             }
 
             return response as GetCardsResponse;
@@ -67,7 +71,7 @@ export const fetchMyCards = createAsyncThunk(
 
 export const myCollections = createAsyncThunk(
     'collections/my',
-    async (_, {rejectWithValue}) => {  // Используйте _ для неиспользуемого параметра
+    async (_, {rejectWithValue}) => {
         try {
             const response = await CollectionsApi.my();
             if (!response) {
@@ -87,12 +91,18 @@ export const fetchCardsByCollection = createAsyncThunk(
         collectionId: string;
         page: number;
         perPage: number
-    }, {rejectWithValue}) => {
+    }, {rejectWithValue, dispatch}) => {
         try {
             const response = await CardsApi.getCardsByCollection(collectionId, page, perPage);
             if (!response) {
                 return rejectWithValue('Failed to fetch cards');
             }
+
+            // Инициализируем лайки из загруженных карточек
+            if (response.data.cards && response.data.cards.length > 0) {
+                dispatch(initCardLikesFromCards(response.data.cards));
+            }
+
             return response;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
@@ -102,11 +112,20 @@ export const fetchCardsByCollection = createAsyncThunk(
 
 export const createCard = createAsyncThunk(
     'cards/create',
-    async (data: { card: CreateCardRequest, file: File }, {rejectWithValue}) => {
+    async (data: { card: CreateCardRequest, file: File }, {rejectWithValue, dispatch}) => {
         try {
             const response = await CardsApi.create(data);
             if (!response) {
                 return rejectWithValue('Failed to create card');
+            }
+
+            // Инициализируем лайк для новой карточки
+            if (response.data) {
+                dispatch(initCardLike({
+                    cardId: response.data.id,
+                    liked: response.data.is_liked ?? false,
+                    likesCount: response.data.likes_count ?? 0
+                }));
             }
 
             return response;
@@ -141,7 +160,6 @@ export const deleteCollection = createAsyncThunk(
             if (!response?.success) {
                 return rejectWithValue('Failed to delete collection');
             }
-            // После успешного удаления обновляем список коллекций
             await dispatch(myCollections());
 
             return {id, success: true};
@@ -151,7 +169,6 @@ export const deleteCollection = createAsyncThunk(
     }
 );
 
-// Новый экшен для удаления карточки
 export const deleteCard = createAsyncThunk(
     'cards/delete',
     async ({card, collectionId}: { card: Card; collectionId: string | null }, {rejectWithValue, dispatch}) => {
@@ -197,7 +214,6 @@ const myCardSlice = createSlice({
             state.pagination = {...initialState.pagination};
             state.myCards = [];
         },
-        // Опционально: полный сброс состояния при уходе со страницы
         resetMyCardsState: () => initialState,
         setSelectedCollectionId: (state: MyCardState, action: PayloadAction<string | null>) => {
             state.selectedCollectionId = action.payload;
@@ -241,7 +257,6 @@ const myCardSlice = createSlice({
                     state.success = null
                     return
                 }
-                // state.myCards.push(action.payload.data);
                 state.success = 'Карточка успешно создана';
                 state.selectedCollections = [];
             })
@@ -260,11 +275,10 @@ const myCardSlice = createSlice({
                 state.isLoading = false;
                 const newCards = action.payload.data.cards || [];
 
-                // Замена при первой странице, добавление при пагинации
                 state.myCards = state.pagination.page === 1
                     ? newCards
                     : [...state.myCards, ...newCards];
-                // Обновление пагинации
+
                 state.pagination.total = action.payload.data.total || 0;
                 state.pagination.page = action.payload.data.page || 1;
                 state.pagination.hasMore = newCards.length === state.pagination.perPage;

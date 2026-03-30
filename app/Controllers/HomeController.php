@@ -34,7 +34,10 @@ class HomeController extends BaseController
             $page    = max(1, $page);
             $perPage = min(50, max(1, $perPage));
 
-            $result = $this->homeService->getPublicCards($page, $perPage);
+            // Получаем текущего пользователя (может быть null для неавторизованных)
+            $currentUser = $this->getAuthenticatedUserOrNull();
+
+            $result = $this->homeService->getPublicCards($page, $perPage, $currentUser);
 
             return $this->jsonResponse($result);
         } catch (Exception $e) {
@@ -59,7 +62,10 @@ class HomeController extends BaseController
             $page    = max(1, $page);
             $perPage = min(50, max(1, $perPage));
 
-            $result = $this->homeService->searchCards($query, $page, $perPage);
+            // Получаем текущего пользователя (может быть null для неавторизованных)
+            $currentUser = $this->getAuthenticatedUserOrNull();
+
+            $result = $this->homeService->searchCards($query, $page, $perPage, $currentUser);
 
             return $this->jsonResponse($result);
         } catch (Exception $e) {
@@ -67,6 +73,18 @@ class HomeController extends BaseController
                 'success' => false,
                 'error'   => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Получить авторизованного пользователя или null (без исключения)
+     */
+    private function getAuthenticatedUserOrNull(): ?\App\Models\User
+    {
+        try {
+            return $this->getAuthenticatedUser();
+        } catch (Exception $e) {
+            return null;
         }
     }
 }

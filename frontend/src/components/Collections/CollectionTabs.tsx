@@ -51,7 +51,7 @@ export default function CollectionTabs({
         return (
             <div className="flex gap-2 mb-6">
                 {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse"/>
+                    <div key={i} className="h-10 w-24 rounded-lg animate-pulse"/>
                 ))}
             </div>
         );

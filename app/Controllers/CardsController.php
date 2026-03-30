@@ -9,6 +9,7 @@ use App\Requests\Card\CreateCardRequest;
 use App\Requests\Card\UpdateCardRequest;
 use App\Services\CardService;
 use App\Models\Card;
+use App\Models\CardLike;
 use App\Models\User;
 use App\Models\Collection;
 use App\VO\Date;
@@ -99,6 +100,8 @@ class CardsController extends BaseController
                     'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
                     'collections_count'   => count($collections),
+                    'likes_count'         => 0,
+                    'is_liked'            => false,
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
                 ]
@@ -158,6 +161,10 @@ class CardsController extends BaseController
                 }
             }
 
+            // Получаем информацию о лайках
+            $likesCount = CardLike::getCardLikesCount($card->id);
+            $isLiked    = $user ? CardLike::isLiked($card->id, $user->id) : false;
+
             $locale    = TranslationHelper::getLocale();
             $createdAt = Date::fromString($card->created_at);
             $updatedAt = Date::fromString($card->updated_at);
@@ -183,6 +190,8 @@ class CardsController extends BaseController
                     'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
                     'collections_count'   => count($collections),
+                    'likes_count'         => $likesCount,
+                    'is_liked'            => $isLiked,
                     'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),
                     'updated_at'          => $updatedAt->toLocale('%day% %month% %year%', $locale),
                 ]
@@ -210,54 +219,61 @@ class CardsController extends BaseController
                 ], 401);
             }
 
-            // Получаем все доступные карточки
-            $accessibleCards = $user->getAllAccessibleCards();
+            $page    = (int)($this->request->getQuery('page', 'int', 1));
+            $perPage = (int)($this->request->getQuery('per_page', 'int', 12));
 
-            $cards = [];
-            foreach ($accessibleCards as $cardData) {
-                $card = $cardData['card'];
+            // Получаем карточки с пагинацией
+            $offset = ($page - 1) * $perPage;
 
-                // Получаем коллекции карточки (только первые 3 для превью, чтобы не перегружать ответ)
-                $collections   = [];
+            $cards = Card::find([
+                'conditions' => 'creator_id = :user_id:',
+                'bind'       => ['user_id' => $user->id],
+                'order'      => 'created_at DESC',
+                'limit'      => $perPage,
+                'offset'     => $offset
+            ]);
+
+            $total = Card::count([
+                'conditions' => 'creator_id = :user_id:',
+                'bind'       => ['user_id' => $user->id]
+            ]);
+
+            $result = [];
+            foreach ($cards as $card) {
                 $collectionIds = [];
                 if (method_exists($card, 'getCollections')) {
-                    $cardCollections = $card->getCollections();
-                    $collectionCount = 0;
-                    foreach ($cardCollections as $collection) {
+                    foreach ($card->getCollections() as $collection) {
                         $collectionIds[] = $collection->id;
-                        if ($collectionCount < 3) {
-                            $collections[] = [
-                                'id'   => $collection->id,
-                                'name' => $collection->name,
-                            ];
-                            $collectionCount++;
-                        }
                     }
                 }
 
-                $cards[] = [
-                    'id'                => $card->id,
-                    'title'             => $card->title,
-                    'description'       => $card->description,
-                    'url'               => $card->url,
-                    'access_type'       => $card->access_type,
-                    'access_type_label' => $card->getAccessTypeLabel(),
-                    'access_level'      => $cardData['permission'],
-                    'is_owner'          => $cardData['access_type'] === 'owner',
-                    'creator_id'        => $card->creator_id,
-                    'collectionIds'     => $collectionIds,
-                    'collections'       => $collections,
-                    'collections_count' => count($collectionIds),
-                    'created_at'        => $card->created_at,
-                    'updated_at'        => $card->updated_at,
+                // Получаем информацию о лайках
+                $likesCount = CardLike::getCardLikesCount($card->id);
+                $isLiked    = CardLike::isLiked($card->id, $user->id);
+
+                $result[] = [
+                    'id'                  => $card->id,
+                    'title'               => $card->title,
+                    'description'         => $card->description,
+                    'url'                 => $card->url,
+                    'access_type'         => $card->access_type,
+                    'creator_id'          => $card->creator_id,
+                    'collectionIds'       => $collectionIds,
+                    'show_title_on_image' => $card->show_title_on_image,
+                    'is_active'           => $card->is_active,
+                    'likes_count'         => $likesCount,
+                    'is_liked'            => $isLiked,
+                    'created_at'          => $card->created_at,
+                    'updated_at'          => $card->updated_at,
                 ];
             }
 
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
-                    'cards' => $cards,
-                    'total' => count($cards)
+                    'cards' => $result,
+                    'total' => $total,
+                    'page'  => $page
                 ]
             ]);
 
@@ -265,7 +281,7 @@ class CardsController extends BaseController
             return $this->jsonResponse([
                 'success' => false,
                 'error'   => $e->getMessage()
-            ], 400);
+            ], 500);
         }
     }
 
@@ -319,6 +335,10 @@ class CardsController extends BaseController
 
             $creator = $card->getCreator();
 
+            // Получаем информацию о лайках
+            $likesCount = CardLike::getCardLikesCount($card->id);
+            $isLiked    = CardLike::isLiked($card->id, $user->id);
+
             $locale    = TranslationHelper::getLocale();
             $createdAt = Date::fromString($card->created_at);
             $updatedAt = Date::fromString($card->updated_at);
@@ -345,6 +365,8 @@ class CardsController extends BaseController
                     'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
                     'collections_count'   => count($collections),
+                    'likes_count'         => $likesCount,
+                    'is_liked'            => $isLiked,
                     'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),
                     'updated_at'          => $updatedAt->toLocale('%day% %month% %year%', $locale),
                 ]
@@ -429,6 +451,10 @@ class CardsController extends BaseController
                     }
                 }
 
+                // Получаем информацию о лайках
+                $likesCount = CardLike::getCardLikesCount($card->id);
+                $isLiked    = CardLike::isLiked($card->id, $user->id);
+
                 $cards[] = [
                     'id'                  => $card->id,
                     'title'               => $card->title,
@@ -439,8 +465,10 @@ class CardsController extends BaseController
                     'access_level'        => $cardData['permission'],
                     'is_owner'            => $cardData['access_type'] === 'owner',
                     'creator_id'          => $card->creator_id,
-                    'collectionIds'       => $collectionIds, // Изменено с 'collections' на 'collection_ids'
+                    'collectionIds'       => $collectionIds,
                     'collections_count'   => count($collectionIds),
+                    'likes_count'         => $likesCount,
+                    'is_liked'            => $isLiked,
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
                     'show_title_on_image' => $card->show_title_on_image,

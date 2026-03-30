@@ -206,7 +206,8 @@ export default function CardPage() {
                                                 width: '100%',
                                                 height: '100%',
                                                 objectFit: 'cover',
-                                                borderRadius: 'var(--radius-xl)'
+                                                borderRadius: 'var(--radius-xl)',
+                                                border: '1px solid var(--color-gray-400)',
                                             }}
                                             loading="lazy"
                                         />

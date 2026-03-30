@@ -1,6 +1,7 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {SearchApi, SearchCardsResponse, CardWithCreator} from "@api/searchApi.ts";
 import {PaginationState} from "@store/store.ts";
+import {initCardLikesFromCards} from "@store/like/likeSlice.ts";
 
 export interface HomeState {
     cards: CardWithCreator[];
@@ -27,12 +28,18 @@ const initialState: HomeState = {
 
 export const fetchPublicCards = createAsyncThunk(
     'home/fetchPublicCards',
-    async ({page, perPage}: { page: number; perPage: number }, {rejectWithValue}) => {
+    async ({page, perPage}: { page: number; perPage: number }, {rejectWithValue, dispatch}) => {
         try {
             const response = await SearchApi.getPublicCards(page, perPage);
             if (!response?.success) {
                 return rejectWithValue('Failed to fetch public cards');
             }
+
+            // Инициализируем лайки из загруженных карточек
+            if (response.data.cards.length > 0) {
+                dispatch(initCardLikesFromCards(response.data.cards));
+            }
+
             return response as SearchCardsResponse;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
@@ -42,12 +49,18 @@ export const fetchPublicCards = createAsyncThunk(
 
 export const searchPublicCards = createAsyncThunk(
     'home/searchPublicCards',
-    async ({query, page, perPage}: { query: string; page: number; perPage: number }, {rejectWithValue}) => {
+    async ({query, page, perPage}: { query: string; page: number; perPage: number }, {rejectWithValue, dispatch}) => {
         try {
             const response = await SearchApi.searchCards(query, page, perPage);
             if (!response?.success) {
                 return rejectWithValue('Failed to search cards');
             }
+
+            // Инициализируем лайки из загруженных карточек
+            if (response.data.cards.length > 0) {
+                dispatch(initCardLikesFromCards(response.data.cards));
+            }
+
             return response as SearchCardsResponse;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');

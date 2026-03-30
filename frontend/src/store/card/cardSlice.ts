@@ -2,6 +2,7 @@ import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {CardsApi, GetCardResponse, GetCardsResponse} from "@api/cardsApi.ts";
 import {CollectionsApi} from "@api/collectionsApi.ts";
 import {CardState, AccessType} from "@store/store.ts";
+import {initCardLikesFromCards, initCardLike} from "@store/like/likeSlice.ts";
 
 const initialState: CardState = {
     cards: [],
@@ -27,12 +28,18 @@ const initialState: CardState = {
 
 export const fetchCards = createAsyncThunk(
     'cards/fetch',
-    async ({page, perPage}: { page: number; perPage: number }, {rejectWithValue}) => {
+    async ({page, perPage}: { page: number; perPage: number }, {rejectWithValue, dispatch}) => {
         try {
             const response = await CardsApi.getCards(page, perPage);
             if (!response) {
                 return rejectWithValue('Failed to fetch cards');
             }
+
+            // Инициализируем лайки из загруженных карточек
+            if (response.data.cards && response.data.cards.length > 0) {
+                dispatch(initCardLikesFromCards(response.data.cards));
+            }
+
             return response;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
@@ -57,12 +64,22 @@ export const createCollection = createAsyncThunk(
 
 export const fetchCard = createAsyncThunk(
     'card/fetchCard',
-    async (id: string, {rejectWithValue}) => {
+    async (id: string, {rejectWithValue, dispatch}) => {
         try {
             const response = await CardsApi.getCard(id);
             if (!response) {
                 return rejectWithValue('Failed to fetch card');
             }
+
+            // Инициализируем лайк для загруженной карточки
+            if (response.data) {
+                dispatch(initCardLike({
+                    cardId: response.data.id,
+                    liked: response.data.is_liked ?? false,
+                    likesCount: response.data.likes_count ?? 0
+                }));
+            }
+
             return response;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
@@ -75,12 +92,22 @@ export const updateCard = createAsyncThunk(
     async ({id, data}: {
         id: string;
         data: { show_title_on_image?: boolean; [key: string]: any }
-    }, {rejectWithValue}) => {
+    }, {rejectWithValue, dispatch}) => {
         try {
             const response = await CardsApi.updateCard(id, data);
             if (!response) {
                 return rejectWithValue('Failed to update card');
             }
+
+            // Обновляем данные лайка если они есть в ответе
+            if (response.data) {
+                dispatch(initCardLike({
+                    cardId: response.data.id,
+                    liked: response.data.is_liked ?? false,
+                    likesCount: response.data.likes_count ?? 0
+                }));
+            }
+
             return response;
         } catch (error) {
             return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');

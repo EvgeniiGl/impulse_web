@@ -1,7 +1,7 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {IoHeartOutline, IoHeart} from 'react-icons/io5';
 import {useAppDispatch, useAppSelector} from '@store/store';
-import {toggleCardLike, fetchCardLikeStatus} from '@store/like/likeSlice';
+import {toggleCardLike} from '@store/like/likeSlice';
 
 interface LikeButtonProps {
     cardId: string;
@@ -23,13 +23,6 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
 
     const liked = likeData?.liked ?? false;
     const likesCount = likeData?.likesCount ?? 0;
-
-    // Загружаем статус лайка при монтировании
-    useEffect(() => {
-        if (!likeData) {
-            dispatch(fetchCardLikeStatus(cardId));
-        }
-    }, [cardId, dispatch, likeData]);
 
     const handleClick = async (e: React.MouseEvent) => {
         e.stopPropagation();
