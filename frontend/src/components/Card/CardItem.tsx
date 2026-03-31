@@ -65,9 +65,11 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const [menuDragStartY, setMenuDragStartY] = useState<number | null>(null);
     const [menuDragCurrentY, setMenuDragCurrentY] = useState<number | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
+
     // Состояние для свайпа формы жалобы
     const [reportDragStartY, setReportDragStartY] = useState<number | null>(null);
     const [reportDragCurrentY, setReportDragCurrentY] = useState<number | null>(null);
+    const [isReportDragging, setIsReportDragging] = useState(false);
     const reportRef = useRef<HTMLDivElement | null>(null);
 
     const descriptionRef = useRef<HTMLDivElement | null>(null);
@@ -321,8 +323,8 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const handleMenuDragEnd = () => {
         if (menuDragStartY !== null && menuDragCurrentY !== null) {
             const dragDistance = menuDragStartY - menuDragCurrentY;
-            // Если потянули вверх на 30px или больше — закрываем
-            if (dragDistance > 30) {
+            // Если потянули вверх на 50px или больше — закрываем
+            if (dragDistance > 50) {
                 setIsMenuOpen(false);
             }
         }
@@ -341,39 +343,39 @@ export default function CardItem({card, onDrop}: CardItemProps) {
         return 'translateY(0)';
     };
 
-    // Обработчики свайпа для закрытия формы жалобы
+    // Обработчики свайпа для закрытия формы жалобы (на всей форме)
     const handleReportDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-        e.stopPropagation();
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         setReportDragStartY(clientY);
         setReportDragCurrentY(clientY);
+        setIsReportDragging(true);
     };
 
     const handleReportDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-        if (reportDragStartY === null) return;
+        if (!isReportDragging || reportDragStartY === null) return;
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         setReportDragCurrentY(clientY);
     };
 
     const handleReportDragEnd = () => {
-        if (reportDragStartY !== null && reportDragCurrentY !== null) {
-            const dragDistance = reportDragCurrentY - reportDragStartY;
-            // Если потянули вниз на 30px или больше — закрываем
-            if (dragDistance > 30) {
+        if (isReportDragging && reportDragStartY !== null && reportDragCurrentY !== null) {
+            const dragDistance = reportDragStartY - reportDragCurrentY; // инвертировано
+            if (dragDistance > 50) { // теперь вверх
                 setIsReportOpen(false);
                 setSelectedReason(null);
             }
         }
         setReportDragStartY(null);
         setReportDragCurrentY(null);
+        setIsReportDragging(false);
     };
 
     // Рассчитываем смещение формы жалобы при перетаскивании
     const getReportTransform = () => {
-        if (reportDragStartY !== null && reportDragCurrentY !== null) {
-            const dragDistance = reportDragCurrentY - reportDragStartY;
+        if (isReportDragging && reportDragStartY !== null && reportDragCurrentY !== null) {
+            const dragDistance = reportDragStartY - reportDragCurrentY; // инвертировано
             if (dragDistance > 0) {
-                return `translateY(${Math.min(dragDistance, 100)}px)`;
+                return `translateY(-${Math.min(dragDistance, 100)}px)`; // отрицательное смещение
             }
         }
         return 'translateY(0)';
@@ -557,13 +559,12 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                 {/* Черта-индикатор для свайпа */}
                                 <div className="flex justify-center pb-2">
                                     <div
-                                        className="rounded-full"
+                                        className="rounded-full cursor-grab"
                                         style={{
                                             width: '36px',
                                             height: '4px',
                                             backgroundColor: 'var(--color-gray-500)',
                                             opacity: 0.4,
-                                            cursor: 'n-resize',
                                         }}
                                     />
                                 </div>
@@ -783,35 +784,20 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             {/* Форма */}
                             <div
                                 ref={reportRef}
-                                className="absolute bottom-1 left-1 right-1 bg-[var(--color-primary)] text-white rounded-xl shadow-lg flex flex-col relative transition-transform duration-200"
+                                className="absolute bottom-0 left-0 right-0 bg-[var(--color-primary)] text-white rounded-t-xl shadow-lg flex flex-col relative transition-transform duration-200 select-none"
                                 style={{
                                     zIndex: 50,
                                     transform: getReportTransform(),
                                 }}
                                 onClick={(e) => e.stopPropagation()}
+                                onMouseDown={handleReportDragStart}
+                                onMouseMove={handleReportDragMove}
+                                onMouseUp={handleReportDragEnd}
+                                onMouseLeave={handleReportDragEnd}
+                                onTouchStart={handleReportDragStart}
+                                onTouchMove={handleReportDragMove}
+                                onTouchEnd={handleReportDragEnd}
                             >
-                                {/* Черта-индикатор для свайпа сверху */}
-                                <div
-                                    className="flex justify-center pt-2 cursor-grab"
-                                    onMouseDown={handleReportDragStart}
-                                    onMouseMove={handleReportDragMove}
-                                    onMouseUp={handleReportDragEnd}
-                                    onMouseLeave={handleReportDragEnd}
-                                    onTouchStart={handleReportDragStart}
-                                    onTouchMove={handleReportDragMove}
-                                    onTouchEnd={handleReportDragEnd}
-                                >
-                                    <div
-                                        className="rounded-full"
-                                        style={{
-                                            width: '36px',
-                                            height: '4px',
-                                            backgroundColor: 'white',
-                                            opacity: 0.4
-                                        }}
-                                    />
-                                </div>
-
                                 {/* Крестик для закрытия */}
                                 <div
                                     onClick={handleCloseReport}
@@ -832,10 +818,9 @@ export default function CardItem({card, onDrop}: CardItemProps) {
 
                                     <div
                                         className="flex-1 overflow-y-auto scrollbar-custom scrollbar-thin space-y-1.5"
-                                        style={{
-                                            maxHeight: cardHeight / 100 * 50,
-                                        }}
                                         onClick={(e) => e.stopPropagation()}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onTouchStart={(e) => e.stopPropagation()}
                                     >
                                         {reportReasons.map((reason) => (
                                             <label
@@ -859,6 +844,8 @@ export default function CardItem({card, onDrop}: CardItemProps) {
 
                                     <button
                                         onClick={handleSubmitReport}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onTouchStart={(e) => e.stopPropagation()}
                                         disabled={!selectedReason || reportLoading}
                                         className={`mt-3 w-full py-2 rounded-lg font-medium text-sm transition-colors border-none outline-none ${
                                             selectedReason && !reportLoading
@@ -868,6 +855,18 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                     >
                                         {reportLoading ? t('common.loading') : t('report.submit')}
                                     </button>
+                                    <div className="flex justify-center pt-3 cursor-grab">
+                                        <div
+                                            className="rounded-full"
+                                            style={{
+                                                width: '36px',
+                                                height: '4px',
+                                                backgroundColor: 'white',
+                                                opacity: 0.4
+                                            }}
+                                        />
+                                    </div>
+
                                 </div>
                             </div>
                         </>
