@@ -12,6 +12,7 @@ import {useDrag} from 'react-dnd';
 import {ItemTypes} from '@/types/dnd';
 import {useTranslation} from 'react-i18next';
 import LikeButton from "@components/Card/LikeButton.tsx";
+import css from './Carditem.module.css'
 
 // Типы причин жалоб
 export type ReportReason =
@@ -59,6 +60,15 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
+
+    // Состояние для свайпа меню
+    const [menuDragStartY, setMenuDragStartY] = useState<number | null>(null);
+    const [menuDragCurrentY, setMenuDragCurrentY] = useState<number | null>(null);
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    // Состояние для свайпа формы жалобы
+    const [reportDragStartY, setReportDragStartY] = useState<number | null>(null);
+    const [reportDragCurrentY, setReportDragCurrentY] = useState<number | null>(null);
+    const reportRef = useRef<HTMLDivElement | null>(null);
 
     const descriptionRef = useRef<HTMLDivElement | null>(null);
     const scheduleRef = useRef<HTMLDivElement | null>(null);
@@ -116,7 +126,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
-                (isDescriptionOpen || isScheduleOpen || isReportOpen || isMenuOpen) &&
+                (isDescriptionOpen || isScheduleOpen || isReportOpen) &&
                 cardRef.current &&
                 !cardRef.current.contains(event.target as Node)
             ) {
@@ -137,7 +147,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isDescriptionOpen, isScheduleOpen, isReportOpen, isMenuOpen, dispatch]);
+    }, [isDescriptionOpen, isScheduleOpen, isReportOpen, dispatch]);
 
     // Проверяем, есть ли прокрутка у описания
     useEffect(() => {
@@ -251,7 +261,8 @@ export default function CardItem({card, onDrop}: CardItemProps) {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const handleCloseMenu = () => {
+    const handleOverlayClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
         setIsMenuOpen(false);
     };
 
@@ -291,6 +302,87 @@ export default function CardItem({card, onDrop}: CardItemProps) {
             setIsReportOpen(false);
             setSelectedReason(null);
         }
+    };
+
+    // Обработчики свайпа для закрытия меню
+    const handleMenuDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+        e.stopPropagation();
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        setMenuDragStartY(clientY);
+        setMenuDragCurrentY(clientY);
+    };
+
+    const handleMenuDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+        if (menuDragStartY === null) return;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        setMenuDragCurrentY(clientY);
+    };
+
+    const handleMenuDragEnd = () => {
+        if (menuDragStartY !== null && menuDragCurrentY !== null) {
+            const dragDistance = menuDragStartY - menuDragCurrentY;
+            // Если потянули вверх на 30px или больше — закрываем
+            if (dragDistance > 30) {
+                setIsMenuOpen(false);
+            }
+        }
+        setMenuDragStartY(null);
+        setMenuDragCurrentY(null);
+    };
+
+    // Рассчитываем смещение меню при перетаскивании
+    const getMenuTransform = () => {
+        if (menuDragStartY !== null && menuDragCurrentY !== null) {
+            const dragDistance = menuDragStartY - menuDragCurrentY;
+            if (dragDistance > 0) {
+                return `translateY(-${Math.min(dragDistance, 100)}px)`;
+            }
+        }
+        return 'translateY(0)';
+    };
+
+    // Обработчики свайпа для закрытия формы жалобы
+    const handleReportDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+        e.stopPropagation();
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        setReportDragStartY(clientY);
+        setReportDragCurrentY(clientY);
+    };
+
+    const handleReportDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+        if (reportDragStartY === null) return;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        setReportDragCurrentY(clientY);
+    };
+
+    const handleReportDragEnd = () => {
+        if (reportDragStartY !== null && reportDragCurrentY !== null) {
+            const dragDistance = reportDragCurrentY - reportDragStartY;
+            // Если потянули вниз на 30px или больше — закрываем
+            if (dragDistance > 30) {
+                setIsReportOpen(false);
+                setSelectedReason(null);
+            }
+        }
+        setReportDragStartY(null);
+        setReportDragCurrentY(null);
+    };
+
+    // Рассчитываем смещение формы жалобы при перетаскивании
+    const getReportTransform = () => {
+        if (reportDragStartY !== null && reportDragCurrentY !== null) {
+            const dragDistance = reportDragCurrentY - reportDragStartY;
+            if (dragDistance > 0) {
+                return `translateY(${Math.min(dragDistance, 100)}px)`;
+            }
+        }
+        return 'translateY(0)';
+    };
+
+    const handleReportOverlayClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsReportOpen(false);
+        setSelectedReason(null);
     };
 
     return (
@@ -401,51 +493,83 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         </button>
                     </div>
 
-                    {/* Выпадающее меню сверху - z-index 40 */}
-                    <div
-                        className={`absolute top-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
-                            isMenuOpen ? 'opacity-100' : 'max-h-0 opacity-0'
-                        }`}
-                        style={{zIndex: 40}}
-                    >
-                        <div className="bg-[var(--color-primary)] text-white flex flex-col relative">
-                            {/* Крестик для закрытия */}
+                    {/* Модальное меню внутри карточки */}
+                    {isMenuOpen && (
+                        <>
+                            {/* Затемненный оверлей */}
                             <div
-                                onClick={handleCloseMenu}
-                                className="absolute top-2 right-2 z-50 rounded-full p-1 cursor-pointer"
-                                style={{color: 'white'}}
-                                title={t('common.close')}
-                            >
-                                <IoCloseCircleOutline className="w-5 h-5"/>
-                            </div>
+                                className="absolute inset-0 transition-opacity duration-300"
+                                style={{
+                                    backgroundColor: 'var(--color-gray-500)',
+                                    opacity: 0.5,
+                                    zIndex: 45
+                                }}
+                                onClick={handleOverlayClick}
+                            />
 
-                            <div className="p-4 pt-3 pb-3">
-                                <button
-                                    onClick={handleReportClick}
-                                    className="w-full px-3 py-2.5 text-left text-sm text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-3"
-                                >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         strokeWidth="2">
-                                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-                                        <line x1="4" y1="22" x2="4" y2="15"/>
-                                    </svg>
-                                    {t('cards.report')}
-                                </button>
-                                <button
-                                    onClick={handleHideClick}
-                                    className="w-full px-3 py-2.5 text-left text-sm text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-3"
-                                >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         strokeWidth="2">
-                                        <path
-                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                        <line x1="1" y1="1" x2="23" y2="23"/>
-                                    </svg>
-                                    {t('cards.hide')}
-                                </button>
+                            {/* Меню */}
+                            <div
+                                ref={menuRef}
+                                className="absolute left-1 right-1 top-1 bg-white rounded-xl shadow-lg transition-transform duration-200"
+                                style={{
+                                    zIndex: 50,
+                                    transform: getMenuTransform(),
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                onMouseDown={handleMenuDragStart}
+                                onMouseMove={handleMenuDragMove}
+                                onMouseUp={handleMenuDragEnd}
+                                onMouseLeave={handleMenuDragEnd}
+                                onTouchStart={handleMenuDragStart}
+                                onTouchMove={handleMenuDragMove}
+                                onTouchEnd={handleMenuDragEnd}
+                            >
+                                <div className="p-3 flex flex-col gap-1">
+                                    <button
+                                        onClick={handleReportClick}
+                                        className={`w-full px-3 py-2.5 text-left text-sm font-medium rounded-lg transition-colors hover:bg-gray-50 flex items-center gap-3 ${css.btn_menu}`}
+                                        style={{color: 'var(--color-gray-800)'}}
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor"
+                                             strokeWidth="2">
+                                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                                            <line x1="4" y1="22" x2="4" y2="15"/>
+                                        </svg>
+                                        {t('cards.report')}
+                                    </button>
+                                    <button
+                                        onClick={handleHideClick}
+                                        className={`w-full px-3 py-2.5 text-left text-sm font-medium rounded-lg transition-colors hover:bg-gray-50 flex items-center gap-3 ${css.btn_menu}`}
+                                        style={{color: 'var(--color-gray-800)'}}
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor"
+                                             strokeWidth="2">
+                                            <path
+                                                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                            <line x1="1" y1="1" x2="23" y2="23"/>
+                                        </svg>
+                                        {t('cards.hide')}
+                                    </button>
+                                </div>
+
+                                {/* Черта-индикатор для свайпа */}
+                                <div className="flex justify-center pb-2">
+                                    <div
+                                        className="rounded-full"
+                                        style={{
+                                            width: '36px',
+                                            height: '4px',
+                                            backgroundColor: 'var(--color-gray-500)',
+                                            opacity: 0.4,
+                                            cursor: 'n-resize',
+                                        }}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
 
                     {currentUser && <div className="absolute bottom-3 left-3 z-30">
                         <LikeButton
@@ -642,73 +766,112 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         </div>
                     </div>
 
-                    {/* Форма жалобы - z-index 40 */}
-                    <div
-                        className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out overflow-hidden ${
-                            isReportOpen ? 'opacity-100' : 'max-h-0 opacity-0'
-                        }`}
-                        style={{zIndex: 40}}
-                    >
-                        <div className="bg-[var(--color-primary)] text-white h-full flex flex-col relative">
-                            {/* Крестик для закрытия */}
+                    {/* Форма жалобы - модальное окно */}
+                    {isReportOpen && (
+                        <>
+                            {/* Затемненный оверлей */}
                             <div
-                                onClick={handleCloseReport}
-                                className="absolute top-2 right-2 z-50 rounded-full p-1 cursor-pointer"
-                                style={{color: 'white'}}
-                                title={t('common.close')}
+                                className="absolute inset-0 transition-opacity duration-300"
+                                style={{
+                                    backgroundColor: 'var(--color-gray-500)',
+                                    opacity: 0.5,
+                                    zIndex: 45
+                                }}
+                                onClick={handleReportOverlayClick}
+                            />
+
+                            {/* Форма */}
+                            <div
+                                ref={reportRef}
+                                className="absolute bottom-1 left-1 right-1 bg-[var(--color-primary)] text-white rounded-xl shadow-lg flex flex-col relative transition-transform duration-200"
+                                style={{
+                                    zIndex: 50,
+                                    transform: getReportTransform(),
+                                }}
+                                onClick={(e) => e.stopPropagation()}
                             >
-                                <IoCloseCircleOutline className="w-5 h-5"/>
-                            </div>
-
-                            <div className="p-4 h-full flex flex-col">
-                                <h3 className="text-sm font-semibold mb-1 pr-6">
-                                    {t('report.title')}
-                                </h3>
-                                <p className="text-xs text-white/70 mb-3">
-                                    {t('report.description')}
-                                </p>
-
+                                {/* Черта-индикатор для свайпа сверху */}
                                 <div
-                                    className="flex-1 overflow-y-auto scrollbar-custom scrollbar-thin space-y-1.5"
-                                    style={{
-                                        maxHeight: cardHeight / 100 * 60,
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex justify-center pt-2 cursor-grab"
+                                    onMouseDown={handleReportDragStart}
+                                    onMouseMove={handleReportDragMove}
+                                    onMouseUp={handleReportDragEnd}
+                                    onMouseLeave={handleReportDragEnd}
+                                    onTouchStart={handleReportDragStart}
+                                    onTouchMove={handleReportDragMove}
+                                    onTouchEnd={handleReportDragEnd}
                                 >
-                                    {reportReasons.map((reason) => (
-                                        <label
-                                            key={reason}
-                                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="reportReason"
-                                                value={reason}
-                                                checked={selectedReason === reason}
-                                                onChange={() => handleReasonChange(reason)}
-                                                className="w-4 h-4 accent-white"
-                                            />
-                                            <span className="text-xs">
-                                                {t(`report.reasons.${reason}`)}
-                                            </span>
-                                        </label>
-                                    ))}
+                                    <div
+                                        className="rounded-full"
+                                        style={{
+                                            width: '36px',
+                                            height: '4px',
+                                            backgroundColor: 'white',
+                                            opacity: 0.4
+                                        }}
+                                    />
                                 </div>
 
-                                <button
-                                    onClick={handleSubmitReport}
-                                    disabled={!selectedReason || reportLoading}
-                                    className={`mt-3 w-full py-2 rounded-lg font-medium text-sm transition-colors ${
-                                        selectedReason && !reportLoading
-                                            ? 'bg-white text-[var(--color-primary)] hover:bg-gray-100'
-                                            : 'bg-white/30 text-white/50 cursor-not-allowed'
-                                    }`}
+                                {/* Крестик для закрытия */}
+                                <div
+                                    onClick={handleCloseReport}
+                                    className="absolute top-2 right-2 z-50 rounded-full p-1 cursor-pointer"
+                                    style={{color: 'white'}}
+                                    title={t('common.close')}
                                 >
-                                    {reportLoading ? t('common.loading') : t('report.submit')}
-                                </button>
+                                    <IoCloseCircleOutline className="w-5 h-5"/>
+                                </div>
+
+                                <div className="p-4 pt-2 h-full flex flex-col">
+                                    <h3 className="text-sm font-semibold mb-1 pr-6">
+                                        {t('report.title')}
+                                    </h3>
+                                    <p className="text-xs text-white/70 mb-3">
+                                        {t('report.description')}
+                                    </p>
+
+                                    <div
+                                        className="flex-1 overflow-y-auto scrollbar-custom scrollbar-thin space-y-1.5"
+                                        style={{
+                                            maxHeight: cardHeight / 100 * 50,
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {reportReasons.map((reason) => (
+                                            <label
+                                                key={reason}
+                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="reportReason"
+                                                    value={reason}
+                                                    checked={selectedReason === reason}
+                                                    onChange={() => handleReasonChange(reason)}
+                                                    className="w-4 h-4 accent-white"
+                                                />
+                                                <span className="text-xs">
+                                                    {t(`report.reasons.${reason}`)}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={handleSubmitReport}
+                                        disabled={!selectedReason || reportLoading}
+                                        className={`mt-3 w-full py-2 rounded-lg font-medium text-sm transition-colors border-none outline-none ${
+                                            selectedReason && !reportLoading
+                                                ? 'bg-white text-[var(--color-primary)] hover:bg-gray-100'
+                                                : 'bg-white/30 text-white/50 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {reportLoading ? t('common.loading') : t('report.submit')}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
