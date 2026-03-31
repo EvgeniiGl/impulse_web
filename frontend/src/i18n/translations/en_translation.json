@@ -144,7 +144,29 @@
     "likes": "Likes",
     "like": "Like",
     "unlike": "Unlike",
-    "author": "Author"
+    "author": "Author",
+    "menu": "Menu",
+    "report": "Report",
+    "hide": "Don't show"
+  },
+  "report": {
+    "title": "Select a reason for reporting",
+    "description": "Don't worry if you choose the wrong reason. We'll review the content against all community guidelines.",
+    "submit": "Report",
+    "success": "Report submitted",
+    "error": "Failed to submit report",
+    "reasons": {
+      "sexual_content": "Sexual content",
+      "violent_content": "Violent or repulsive content",
+      "hateful_content": "Hateful or abusive content",
+      "harassment": "Harassment or bullying",
+      "harmful_actions": "Harmful or dangerous acts",
+      "self_harm": "Suicide, self-harm and eating disorders",
+      "misinformation": "Misinformation",
+      "child_abuse": "Child abuse",
+      "terrorism": "Promotes terrorism",
+      "spam": "Spam or misleading"
+    }
   },
   "collections": {
     "title": "Collections",

@@ -6,6 +6,7 @@ import myCardReducer from './card/myCardSlice.ts';
 import notificationReducer from './notification/notificationSlice';
 import homeReducer from './home/homeSlice.ts';
 import likeReducer from './like/likeSlice.ts';
+import reportReducer from './card/reportSlice.ts';
 
 export type AccessType = 'private' | 'public' | 'shared';
 
@@ -83,6 +84,7 @@ export const store = configureStore({
         notifications: notificationReducer,
         home: homeReducer,
         likes: likeReducer,
+        report: reportReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware(),
