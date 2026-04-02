@@ -6,8 +6,12 @@ USER root
 # Set working directory
 WORKDIR /var/www
 
+# Switch Debian repositories to HTTPS and update
+RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update
+
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     curl \
     libpng-dev \
     libonig-dev \

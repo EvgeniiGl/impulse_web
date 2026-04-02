@@ -242,5 +242,23 @@ return function (): Router {
         'action'     => 'getLikedCollections'
     ]);
 
+    // === Маршруты жалоб и скрытия карточек ===
+
+// POST /api/cards/{id}/report — жалоба на карточку
+    $router->add('/api/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/report', [
+        'controller' => 'report',
+        'action'     => 'report'
+    ], [
+        'POST'
+    ]);
+
+// POST /api/cards/{id}/hide — скрыть карточку
+    $router->add('/api/cards/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/hide', [
+        'controller' => 'report',
+        'action'     => 'hide'
+    ], [
+        'POST'
+    ]);
+
     return $router;
 };
