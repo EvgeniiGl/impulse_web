@@ -102,12 +102,9 @@ class ReportController extends BaseController
                 'error'   => $e->getMessage()
             ], 400);
         } catch (\Exception $e) {
-            error_log("ReportController::hideAction error: " . $e->getMessage());
+            $this->logger->error($e->getMessage());
 
-            return $this->jsonResponse([
-                'success' => false,
-                'error'   => 'Internal server error'
-            ], 500);
+            throw new ErrorException();
         }
     }
 

@@ -166,7 +166,9 @@
       "child_abuse": "Child abuse",
       "terrorism": "Promotes terrorism",
       "spam": "Spam or misleading"
-    }
+    },
+    "success_title": "Report submitted",
+    "success_description": "Thank you! We will review your report shortly."
   },
   "collections": {
     "title": "Collections",

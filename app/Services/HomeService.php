@@ -26,7 +26,8 @@ class HomeService
      */
     public function getPublicCards(int $page = 1, int $perPage = 12, ?User $currentUser = null): array
     {
-        $result = $this->cardRepository->getPublicCards($page, $perPage);
+        $excludeIds = $currentUser ? \App\Models\HiddenCard::getHiddenCardIds($currentUser->id) : [];
+        $result     = $this->cardRepository->getPublicCards($page, $perPage, $excludeIds);
         return $this->formatCards($result, $currentUser);
     }
 
@@ -45,7 +46,8 @@ class HomeService
             return $this->getPublicCards($page, $perPage, $currentUser);
         }
 
-        $result = $this->cardRepository->searchPublicCards($query, $page, $perPage);
+        $excludeIds = $currentUser ? \App\Models\HiddenCard::getHiddenCardIds($currentUser->id) : [];
+        $result     = $this->cardRepository->searchPublicCards($query, $page, $perPage, $excludeIds);
         return $this->formatCards($result, $currentUser);
     }
 

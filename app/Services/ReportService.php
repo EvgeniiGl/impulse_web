@@ -68,7 +68,10 @@ class ReportService
     public function hideCard(string $cardId, string $userId): HiddenCard
     {
         // Проверяем существование карточки
-        $card = Card::findFirst($cardId);
+        $card = Card::findFirst([
+            'conditions' => 'id = :id:',
+            'bind'       => ['id' => $cardId]
+        ]);
         if (!$card) {
             throw new \RuntimeException('Card not found');
         }

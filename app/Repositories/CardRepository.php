@@ -11,28 +11,27 @@ class CardRepository
     /**
      * Получить последние публичные карточки с данными автора
      */
-    public function getPublicCards(int $page = 1, int $perPage = 12): array
+    public function getPublicCards(int $page = 1, int $perPage = 12, array $excludeCardIds = []): array
     {
         $offset = ($page - 1) * $perPage;
 
-        $phql = "
-            SELECT c.*, u.name as creator_name
-            FROM App\Models\Card c
-            LEFT JOIN App\Models\User u ON c.creator_id = u.id
-            WHERE c.access_type = 'public' AND c.is_active = true
-            ORDER BY c.created_at DESC
-            LIMIT :limit: OFFSET :offset:
-        ";
+        $conditions = "access_type = 'public' AND is_active = true";
+        $bind       = [];
 
-        $cards = Card::query()
-            ->where("access_type = 'public' AND is_active = true")
-            ->orderBy('created_at DESC')
-            ->limit($perPage, $offset)
-            ->execute();
+        if (!empty($excludeCardIds)) {
+            $placeholders = implode(',', array_map(fn($id) => "'$id'", $excludeCardIds));
+            $conditions   .= " AND id NOT IN ($placeholders)";
+        }
 
-        $total = Card::count([
-            'conditions' => "access_type = 'public' AND is_active = true"
+        $cards = Card::find([
+            'conditions' => $conditions,
+            'bind'       => $bind,
+            'order'      => 'created_at DESC',
+            'limit'      => $perPage,
+            'offset'     => $offset,
         ]);
+
+        $total = Card::count(['conditions' => $conditions, 'bind' => $bind]);
 
         return [
             'cards' => $cards,
@@ -41,15 +40,11 @@ class CardRepository
         ];
     }
 
-    /**
-     * Поиск по публичным карточкам: title, description, creator name
-     */
-    public function searchPublicCards(string $query, int $page = 1, int $perPage = 12): array
+    public function searchPublicCards(string $query, int $page = 1, int $perPage = 12, array $excludeCardIds = []): array
     {
         $offset     = ($page - 1) * $perPage;
         $searchTerm = '%' . trim($query) . '%';
 
-        // Получаем IDs пользователей, чьи имена совпадают
         $userIds = \App\Models\User::find([
             'conditions' => 'name LIKE :name:',
             'bind'       => ['name' => $searchTerm],
@@ -66,26 +61,24 @@ class CardRepository
             $userCondition = " OR creator_id IN (" . implode(',', $userIdList) . ")";
         }
 
-        $conditions = "access_type = 'public' AND is_active = true AND (title LIKE :search: OR description LIKE :search2:" . $userCondition . ")";
+        $excludeCondition = '';
+        if (!empty($excludeCardIds)) {
+            $placeholders     = implode(',', array_map(fn($id) => "'$id'", $excludeCardIds));
+            $excludeCondition = " AND id NOT IN ($placeholders)";
+        }
+
+        $conditions = "access_type = 'public' AND is_active = true AND (title LIKE :search: OR description LIKE :search2:" . $userCondition . ")" . $excludeCondition;
+        $bind       = ['search' => $searchTerm, 'search2' => $searchTerm];
 
         $cards = Card::find([
             'conditions' => $conditions,
-            'bind'       => [
-                'search'  => $searchTerm,
-                'search2' => $searchTerm,
-            ],
+            'bind'       => $bind,
             'order'      => 'created_at DESC',
             'limit'      => $perPage,
             'offset'     => $offset,
         ]);
 
-        $total = Card::count([
-            'conditions' => $conditions,
-            'bind'       => [
-                'search'  => $searchTerm,
-                'search2' => $searchTerm,
-            ],
-        ]);
+        $total = Card::count(['conditions' => $conditions, 'bind' => $bind]);
 
         return [
             'cards' => $cards,

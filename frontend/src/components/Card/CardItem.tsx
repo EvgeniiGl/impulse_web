@@ -7,7 +7,7 @@ import {IoCloseCircleOutline, IoTrashOutline} from "react-icons/io5";
 import {ScheduleForm} from '@/components/Notifications/ScheduleForm';
 import {useAppDispatch, useAppSelector} from '@store/store.ts';
 import {closeScheduleForm, toggleScheduleForm, deleteCard} from '@store/card/myCardSlice.ts';
-import {submitReport} from '@store/card/reportSlice.ts';
+import {submitReport, hideCard} from '@store/card/reportSlice.ts';
 import {useDrag} from 'react-dnd';
 import {ItemTypes} from '@/types/dnd';
 import {useTranslation} from 'react-i18next';
@@ -77,6 +77,8 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const cardRef = useRef<HTMLDivElement | null>(null);
     const [hasDescriptionScroll, setHasDescriptionScroll] = useState(false);
     const [cardHeight, setCardHeight] = useState(0);
+    const [reportSuccess, setReportSuccess] = useState(false);
+    const [hideSuccess, setHideSuccess] = useState(false);
 
     const currentUser = useAppSelector(state => state.auth.user);
     const isOwner = !!(currentUser && card.creator_id === currentUser.id);
@@ -281,13 +283,13 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const handleHideClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsMenuOpen(false);
-        // TODO: Реализовать логику скрытия карточки
-        console.log('Hide card:', card.id);
+        dispatch(hideCard(card.id));
     };
 
     const handleCloseReport = () => {
         setIsReportOpen(false);
         setSelectedReason(null);
+        setReportSuccess(false); // ← добавить
     };
 
     const handleReasonChange = (reason: ReportReason) => {
@@ -303,6 +305,8 @@ export default function CardItem({card, onDrop}: CardItemProps) {
             }));
             setIsReportOpen(false);
             setSelectedReason(null);
+            setReportSuccess(true);
+            setTimeout(() => setReportSuccess(false), 3000);
         }
     };
 
@@ -870,6 +874,35 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                 </div>
                             </div>
                         </>
+                    )}
+                    {/* Сообщение об успешной отправке жалобы */}
+                    {reportSuccess && (
+                        <div
+                            className="absolute bottom-0 left-0 right-0 transition-all duration-300 ease-in-out"
+                            style={{zIndex: 40}}
+                        >
+                            <div
+                                className="bg-[var(--color-primary)] text-white flex flex-col items-center justify-center p-5 rounded-t-xl gap-3">
+                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/20">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                         stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </div>
+                                <p className="text-sm font-semibold text-center">
+                                    {t('report.success_title')}
+                                </p>
+                                <p className="text-xs text-white/70 text-center">
+                                    {t('report.success_description')}
+                                </p>
+                                <button
+                                    onClick={() => setReportSuccess(false)}
+                                    className="mt-1 px-5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors border-none outline-none"
+                                >
+                                    {t('common.close')}
+                                </button>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
