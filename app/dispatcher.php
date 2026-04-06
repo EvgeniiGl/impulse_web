@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Middleware\CorsMiddleware;
+use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Mvc\Dispatcher;
 
 /**

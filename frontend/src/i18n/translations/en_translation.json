@@ -140,6 +140,8 @@
     "createdBy": "Created by",
     "createdAt": "Created at",
     "updatedAt": "Updated at",
+    "showTitleOnImage": "Display the title on the image",
+    "descriptionLabel": "Description",
     "views": "Views",
     "likes": "Likes",
     "like": "Like",

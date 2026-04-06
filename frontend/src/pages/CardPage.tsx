@@ -21,10 +21,7 @@ export default function CardPage() {
 
     const authUser = useAppSelector((state: RootState) => state.auth.user);
     const isOwner = !!(currentCard && authUser && currentCard.creator?.id === authUser.id);
-    console.log("log--",
-        "\ncurrentCard--", currentCard,
-        "\nauthUser--", authUser,
-    );
+
     const [showTitle, setShowTitle] = useState(false);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [titleValue, setTitleValue] = useState('');
@@ -349,7 +346,7 @@ export default function CardPage() {
                                                         transition-transform duration-200"/>
                                     </div>
                                     <span className="text-sm font-medium text-gray-700">
-                                        {t('createCard.showTitleOnImage')}
+                                        {t('cards.showTitleOnImage')}
                                     </span>
                                 </label>
                                 {isUpdating && !isEditingTitle && !isEditingDescription && (
@@ -369,7 +366,7 @@ export default function CardPage() {
                                             className={`w-5 h-5 bg-white rounded-full shadow transform translate-y-0.5 transition-transform ${showTitle ? 'translate-x-4' : 'translate-x-1'}`}/>
                                     </div>
                                     <span className="text-sm font-medium text-gray-700">
-                                        {t('createCard.showTitleOnImage')}
+                                        {t('cards.showTitleOnImage')}
                                     </span>
                                 </div>
                             </div>
@@ -380,7 +377,7 @@ export default function CardPage() {
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center">
                                     <LiaSignatureSolid className="w-4 h-4 text-gray-500 mr-2"/>
-                                    <h3 className="font-medium text-gray-900">{t('createCard.descriptionLabel')}</h3>
+                                    <h3 className="font-medium text-gray-900">{t('cards.descriptionLabel')}</h3>
                                 </div>
                                 {isOwner && !isEditingDescription && (
                                     <button
@@ -412,7 +409,7 @@ export default function CardPage() {
                                         }}
                                         onKeyDown={handleDescriptionKeyDown}
                                         disabled={isUpdating}
-                                        placeholder={t('createCard.descriptionPlaceholder')}
+                                        placeholder={t('cards.descriptionPlaceholder')}
                                         className="w-full text-gray-700 leading-relaxed border border-gray-300 rounded-lg p-3 outline-none focus:border-[var(--color-primary)] disabled:opacity-50 resize-none"
                                         rows={3}
                                         style={{minHeight: '80px'}}
@@ -463,7 +460,7 @@ export default function CardPage() {
                             ) : (
                                 <p className="text-gray-700 leading-relaxed">
                                     {currentCard.description || (
-                                        <span className="text-gray-400 italic">{t('createCard.noDescription')}</span>
+                                        <span className="text-gray-400 italic">{t('cards.noDescription')}</span>
                                     )}
                                 </p>
                             )}

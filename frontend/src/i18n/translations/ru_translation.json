@@ -140,6 +140,8 @@
     "createdBy": "Создано",
     "createdAt": "Дата создания",
     "updatedAt": "Дата обновления",
+    "showTitleOnImage": "Отображать на картинке",
+    "descriptionLabel": "Описание",
     "views": "Просмотры",
     "likes": "Лайки",
     "like": "Нравится",

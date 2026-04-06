@@ -133,7 +133,7 @@ export default function CreateCardPage() {
             if (!file.type.startsWith('image/')) {
                 setValidationErrors(prev => ({
                     ...prev,
-                    file: t('errors.invalidFileType') || 'Пожалуйста, выберите изображение'
+                    file: t('errors.invalidFileType')
                 }));
                 return;
             }
@@ -143,7 +143,7 @@ export default function CreateCardPage() {
             if (file.size > maxSize) {
                 setValidationErrors(prev => ({
                     ...prev,
-                    file: t('errors.fileTooLarge') || 'Файл слишком большой (макс 5MB)'
+                    file: t('errors.fileTooLarge')
                 }));
                 return;
             }
@@ -184,17 +184,17 @@ export default function CreateCardPage() {
         const errors: Record<string, string> = {};
 
         if (!formData.title.trim()) {
-            errors.title = t('errors.titleRequired') || 'Введите название карточки';
+            errors.title = t('errors.titleRequired');
         } else if (formData.title.length > 100) {
-            errors.title = t('errors.titleTooLong') || 'Название не должно превышать 100 символов';
+            errors.title = t('errors.titleTooLong');
         }
 
         if (formData.description && formData.description.length > 5000) {
-            errors.description = t('errors.descriptionTooLong') || 'Описание не должно превышать 5000 символов';
+            errors.description = t('errors.descriptionTooLong');
         }
 
         if (!formData.file) {
-            errors.file = t('errors.fileRequired') || 'Выберите файл';
+            errors.file = t('errors.fileRequired');
         }
 
         setValidationErrors(errors);
@@ -248,10 +248,10 @@ export default function CreateCardPage() {
                         {/* Заголовок */}
                         <div className="text-center mb-8">
                             <h1 className="text-3xl font-bold text-gray-900">
-                                {t('createCard.title') || 'Создать карточку'}
+                                {t('cards.title')}
                             </h1>
                             <p className="mt-2 text-sm text-gray-600">
-                                {t('createCard.subtitle') || 'Заполните форму для создания новой карточки'}
+                                {t('cards.subtitle')}
                             </p>
                         </div>
 
@@ -262,7 +262,7 @@ export default function CreateCardPage() {
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
                                         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                                            {t('createCard.titleLabel') || 'Название карточки'} *
+                                            {t('cards.titleLabel')} *
                                         </label>
 
                                         {/* Чекбокс "Отображать на картинке" */}
@@ -280,7 +280,7 @@ export default function CreateCardPage() {
                                             />
                                             <label htmlFor="show_title_on_image"
                                                    className="ml-2 block text-sm text-gray-700">
-                                                {t('createCard.showTitleOnImage') || 'Отображать на картинке'}
+                                                {t('cards.showTitleOnImage')}
                                             </label>
                                         </div>
                                     </div>
@@ -297,7 +297,7 @@ export default function CreateCardPage() {
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
-                                        placeholder={t('createCard.titlePlaceholder') || 'Введите название'}
+                                        placeholder={t('cards.titlePlaceholder')}
                                         required
                                     />
 
@@ -311,7 +311,7 @@ export default function CreateCardPage() {
                                         </p>
                                         {formData.show_title_on_image && (
                                             <p className="text-xs text-[var(--text-primary)]">
-                                                {t('createCard.titleWillBeShown') || 'Название будет отображаться на изображении'}
+                                                {t('cards.titleWillBeShown')}
                                             </p>
                                         )}
                                     </div>
@@ -321,7 +321,7 @@ export default function CreateCardPage() {
                                 <div>
                                     <label htmlFor="description"
                                            className="block text-sm font-medium text-gray-700 mb-2">
-                                        {t('createCard.descriptionLabel') || 'Описание'}
+                                        {t('cards.descriptionLabel')}
                                     </label>
                                     <textarea
                                         id="description"
@@ -335,7 +335,7 @@ export default function CreateCardPage() {
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
-                                        placeholder={t('createCard.descriptionPlaceholder') || 'Введите описание'}
+                                        placeholder={t('cards.descriptionPlaceholder')}
                                     />
                                     {validationErrors.description && (
                                         <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
@@ -360,7 +360,7 @@ export default function CreateCardPage() {
                                 <div>
                                     <label htmlFor="access_type"
                                            className="block text-sm font-medium text-gray-700 mb-2">
-                                        {t('createCard.accessType') || 'Тип доступа'} *
+                                        {t('cards.accessType')} *
                                     </label>
                                     <select
                                         id="access_type"
@@ -370,16 +370,16 @@ export default function CreateCardPage() {
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                                     >
                                         <option value="private">
-                                            {t('createCard.private') || 'Приватная'} - {t('createCard.privateDesc') || 'Только вы'}
+                                            {t('cards.private')} - {t('cards.privateDesc')}
                                         </option>
                                         <option value="public">
-                                            {t('createCard.public') || 'Публичная'} - {t('createCard.publicDesc') || 'Все пользователи'}
+                                            {t('cards.public')} - {t('cards.publicDesc')}
                                         </option>
                                     </select>
                                     <p className="mt-1 text-xs text-gray-500">
                                         {formData.access_type === 'public'
-                                            ? t('createCard.publicInfo') || 'Карточка будет видна всем пользователям'
-                                            : t('createCard.privateInfo') || 'Карточка видна только вам'
+                                            ? t('cards.publicInfo')
+                                            : t('cards.privateInfo')
                                         }
                                     </p>
                                 </div>
@@ -387,7 +387,7 @@ export default function CreateCardPage() {
                                 {/* Загрузка файла */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        {t('createCard.fileLabel' as any) || 'Изображение'} *
+                                        {t('cards.fileLabel' as any)} *
                                     </label>
 
                                     {!preview ? (
@@ -413,7 +413,7 @@ export default function CreateCardPage() {
                                                           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                                 </svg>
                                                 <span className="text-sm text-gray-600">
-                                                    {t('createCard.uploadText') || 'Нажмите для загрузки изображения'}
+                                                    {t('cards.uploadText')}
                                                 </span>
                                                 <span className="text-xs text-gray-500 mt-1">
                                                     PNG, JPG, GIF до 5MB
@@ -440,7 +440,7 @@ export default function CreateCardPage() {
                                                 type="button"
                                                 onClick={handleRemoveFile}
                                                 className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition"
-                                                title={t('common.remove') || 'Удалить'}
+                                                title={t('common.remove')}
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor"
                                                      viewBox="0 0 24 24">
@@ -449,7 +449,7 @@ export default function CreateCardPage() {
                                                 </svg>
                                             </button>
                                             <p className="mt-2 text-sm text-gray-600">
-                                                {t('createCard.fileSelected') || 'Файл выбран'}: {formData.file?.name}
+                                                {t('cards.fileSelected')}: {formData.file?.name}
                                             </p>
                                         </div>
                                     )}
@@ -461,7 +461,7 @@ export default function CreateCardPage() {
                                 {/* Сообщения об ошибках */}
                                 {error && (
                                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                                        <p className="font-medium">{t('common.error') || 'Ошибка'}</p>
+                                        <p className="font-medium">{t('common.error')}</p>
                                         <p className="text-sm">{error}</p>
                                     </div>
                                 )}
@@ -470,7 +470,7 @@ export default function CreateCardPage() {
                                 {success && (
                                     <div
                                         className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                                        <p className="font-medium">{t('common.success') || 'Успешно'}</p>
+                                        <p className="font-medium">{t('common.success')}</p>
                                         <p className="text-sm">{success}</p>
                                     </div>
                                 )}
@@ -491,10 +491,10 @@ export default function CreateCardPage() {
                                                     <path className="opacity-75" fill="currentColor"
                                                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                {t('createCard.creating') || 'Создание...'}
+                                                {t('cards.creating')}
                                             </span>
                                         ) : (
-                                            t('createCard.create') || 'Создать карточку'
+                                            t('cards.create')
                                         )}
                                     </button>
 
@@ -503,7 +503,7 @@ export default function CreateCardPage() {
                                         onClick={() => navigate('/my')}
                                         className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium"
                                     >
-                                        {t('common.cancel') || 'Отмена'}
+                                        {t('common.cancel')}
                                     </button>
                                 </div>
                             </form>
