@@ -13,8 +13,7 @@ interface LikeButtonProps {
 export const LikeButton: React.FC<LikeButtonProps> = ({
                                                           cardId,
                                                           className = '',
-                                                          showCount = false,
-                                                          size = 'md'
+                                                          showCount = false
                                                       }) => {
     const dispatch = useAppDispatch();
     const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated);

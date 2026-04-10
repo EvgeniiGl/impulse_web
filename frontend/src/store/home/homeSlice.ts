@@ -1,10 +1,10 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
-import {SearchApi, SearchCardsResponse, CardWithCreator} from "@api/searchApi.ts";
-import {PaginationState} from "@store/store.ts";
+import {SearchApi, SearchCardsResponse} from "@api/searchApi.ts";
+import {PaginationState, Card} from "@store/store.ts";
 import {initCardLikesFromCards} from "@store/like/likeSlice.ts";
 
 export interface HomeState {
-    cards: CardWithCreator[];
+    cards: Card[];
     isLoading: boolean;
     error: string | null;
     searchQuery: string;

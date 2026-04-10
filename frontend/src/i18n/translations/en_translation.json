@@ -128,6 +128,7 @@
     "myCards": "My Cards",
     "noCards": "No cards found",
     "deleteCard": "Delete card",
+    "createCard": "Create card",
     "editCard": "Edit card",
     "viewCard": "View card",
     "cardDeleted": "Card deleted successfully",

@@ -5,17 +5,10 @@ import {Card} from "@store/store.ts";
 export interface SearchCardsResponse {
     success: boolean;
     data: {
-        cards: CardWithCreator[];
+        cards: Card[];
         total: number;
         page: number;
         per_page: number;
-    };
-}
-
-export interface CardWithCreator extends Card {
-    creator?: {
-        id: string;
-        name: string;
     };
 }
 

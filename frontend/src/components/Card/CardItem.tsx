@@ -78,7 +78,6 @@ export default function CardItem({card, onDrop}: CardItemProps) {
     const [hasDescriptionScroll, setHasDescriptionScroll] = useState(false);
     const [cardHeight, setCardHeight] = useState(0);
     const [reportSuccess, setReportSuccess] = useState(false);
-    const [hideSuccess, setHideSuccess] = useState(false);
 
     const currentUser = useAppSelector(state => state.auth.user);
     const isOwner = !!(currentUser && card.creator_id === currentUser.id);
