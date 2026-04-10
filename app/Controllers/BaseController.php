@@ -30,7 +30,6 @@ class BaseController extends PhalconController
         '/card/create',
         '/collection/create',
         '/register',
-        '/card/*',
         '/notification',
         '/api/home/cards',
         '/api/home/search',
@@ -85,7 +84,10 @@ class BaseController extends PhalconController
         if (in_array($uri, $this->publicRoutes)) {
             return true;
         }
-        if ($this->request->isGet() && preg_match('/^\/card\/[a-f0-9\-]{36}$/', $uri)) {
+        if ($this->request->isGet() && preg_match('/^\/card\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $uri)) {
+            return true;
+        }
+        if ($this->request->isGet() && preg_match('/^\/card\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\/edit$/', $uri)) {
             return true;
         }
         if ($this->request->isGet() && preg_match('/^\/api\/card\/[a-f0-9\-]{36}$/', $uri)) {

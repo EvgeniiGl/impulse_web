@@ -174,17 +174,19 @@ export default class ApiClient implements IApiClient {
 
     async patch<TRequest, TResponse>(
         path: string,
-        payload: TRequest
+        payload: TRequest,
+        config?: AxiosRequestConfig
     ): Promise<TResponse> {
-        const response = await this.client.patch<TResponse>(path, payload);
+        const response = await this.client.patch<TResponse>(path, payload, config);
         return response.data;
     }
 
     async put<TRequest, TResponse>(
         path: string,
-        payload: TRequest
+        payload: TRequest,
+        config?: AxiosRequestConfig
     ): Promise<TResponse> {
-        const response = await this.client.put<TResponse>(path, payload);
+        const response = await this.client.put<TResponse>(path, payload, config);
         return response.data;
     }
 

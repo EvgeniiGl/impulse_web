@@ -195,6 +195,13 @@ return function (): Router {
         'GET'
     ]);
 
+    $router->add('/card/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/edit', [
+        'controller' => 'index',
+        'action'     => 'index'
+    ], [
+        'GET'
+    ]);
+
     $router->add('/login', [
         'controller' => 'index',
         'action'     => 'index'

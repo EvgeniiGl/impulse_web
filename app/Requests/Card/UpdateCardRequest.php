@@ -7,15 +7,14 @@ use App\Helpers\TranslationHelper;
 use Phalcon\Filter\Validation;
 use Phalcon\Filter\Validation\Validator\StringLength;
 use Phalcon\Filter\Validation\Validator\InclusionIn;
-use Phalcon\Http\Request\File;
 use Phalcon\Messages\Messages;
 
 class UpdateCardRequest
 {
     private ?array $data;
-    private ?File  $file;
+    private ?array $file;
 
-    public function __construct(?array $data, ?File $file = null)
+    public function __construct(?array $data, ?array $file = null)
     {
         $this->data = $data;
         $this->file = $file;
@@ -23,7 +22,11 @@ class UpdateCardRequest
 
     public function getTitle(): ?string
     {
-        return $this->data['title'] ?? null;
+        if (!$this->hasTitle()) {
+            return null;
+        }
+        $title = $this->data['title'] ?? null;
+        return $title ? trim($title) : '';
     }
 
     public function getDescription(): ?string
@@ -36,29 +39,43 @@ class UpdateCardRequest
         return $this->data['access_type'] ?? null;
     }
 
-//    public function getCollectionIds(): array
-//    {
-//        return $this->data['collectionIds'] ?? [];
-//    }
-
-    public function getIsActive(): bool
+    public function getIsActive(): ?bool
     {
-        return $this->data['isActive'] ?? false;
+        if (!isset($this->data['is_active'])) {
+            return null;
+        }
+        return $this->data['is_active'] === 'true' || $this->data['is_active'] === true;
     }
 
     public function getShowTitleOnImage(): ?bool
     {
-        return $this->data['show_title_on_image'] ?? null;
+        if (!isset($this->data['show_title_on_image'])) {
+            return null;
+        }
+        // Если нет заголовка, не показываем его на изображении
+        $title = $this->getTitle();
+        if ($title !== null && empty($title)) {
+            return false;
+        }
+        return $this->data['show_title_on_image'] === 'true' || $this->data['show_title_on_image'] === true;
     }
 
-    public function getFile(): ?File
+    public function getTitleColor(): ?string
+    {
+        if (!isset($this->data['title_color'])) {
+            return null;
+        }
+        return $this->data['title_color'];
+    }
+
+    public function getFile(): ?array
     {
         return $this->file;
     }
 
     public function hasFile(): bool
     {
-        return $this->file !== null && !empty($this->file->getTempName());
+        return $this->file !== null && !empty($this->file['tmp_name']);
     }
 
     public function hasTitle(): bool
@@ -76,21 +93,28 @@ class UpdateCardRequest
         return isset($this->data['access_type']);
     }
 
+    public function hasTitleColor(): bool
+    {
+        return isset($this->data['title_color']);
+    }
+
     public function validate(): Messages
     {
         $validation = new Validation();
 
-        // Валидация заголовка (только если присутствует)
+        // Валидация заголовка (только если присутствует и не пустой)
         if ($this->hasTitle()) {
-            $validation->add(
-                'title',
-                new StringLength([
-                    'min'            => 3,
-                    'max'            => 100,
-                    'messageMinimum' => TranslationHelper::translate('Title must be at least 3 characters'),
-                    'messageMaximum' => TranslationHelper::translate('Title must not exceed 100 characters')
-                ])
-            );
+            $title = $this->getTitle();
+            if (!empty($title)) {
+                $validation->add(
+                    'title',
+                    new StringLength([
+                        'max'            => 100,
+                        'messageMaximum' => TranslationHelper::translate('Title must not exceed 100 characters'),
+                        'allowEmpty'     => true
+                    ])
+                );
+            }
         }
 
         // Валидация описания (только если присутствует)
@@ -98,8 +122,8 @@ class UpdateCardRequest
             $validation->add(
                 'description',
                 new StringLength([
-                    'max'            => 1500,
-                    'messageMaximum' => TranslationHelper::translate('Description must not exceed 1500 characters'),
+                    'max'            => 5000,
+                    'messageMaximum' => TranslationHelper::translate('Description must not exceed 5000 characters'),
                     'allowEmpty'     => true
                 ])
             );
@@ -116,6 +140,22 @@ class UpdateCardRequest
             );
         }
 
+        // Валидация цвета заголовка
+        if ($this->hasTitleColor()) {
+            $titleColor = $this->getTitleColor();
+            if ($titleColor && !preg_match('/^#[0-9A-Fa-f]{6}$/', $titleColor)) {
+                $messages = new Messages();
+                $messages->appendMessage(
+                    new \Phalcon\Messages\Message(
+                        TranslationHelper::translate('Title color must be a valid HEX color'),
+                        'title_color',
+                        'InvalidFormat'
+                    )
+                );
+                return $messages;
+            }
+        }
+
         return $validation->validate([
             'title'       => $this->getTitle(),
             'description' => $this->getDescription(),
@@ -126,24 +166,24 @@ class UpdateCardRequest
     public function validateFile(array $allowedTypes, int $maxSize): bool
     {
         if (!$this->hasFile()) {
-            return true;
+            return true; // При обновлении файл опционален
         }
 
         $file = $this->file;
 
         // Проверка ошибок загрузки
-        if ($file->getError()) {
+        if (isset($file['error']) && $file['error'] !== UPLOAD_ERR_OK) {
             return false;
         }
 
         // Проверка размера файла
-        if ($file->getSize() > $maxSize) {
+        if ($file['size'] > $maxSize) {
             return false;
         }
 
         // Проверка типа файла
         $finfo    = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $file->getTempName());
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
         finfo_close($finfo);
 
         if (!in_array($mimeType, $allowedTypes, true)) {
@@ -158,6 +198,8 @@ class UpdateCardRequest
         return $this->hasTitle() ||
             $this->hasDescription() ||
             $this->hasAccessType() ||
-            $this->hasFile();
+            $this->hasTitleColor() ||
+            $this->hasFile() ||
+            isset($this->data['show_title_on_image']);
     }
 }

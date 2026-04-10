@@ -91,6 +91,7 @@ class CardsController extends BaseController
                     'access_type'         => $card->access_type,
                     'is_active'           => $card->is_active,
                     'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
                     'creator_id'          => $card->creator_id,
                     'creator'             => [
                         'id'    => $user->id,
@@ -168,6 +169,7 @@ class CardsController extends BaseController
             $locale    = TranslationHelper::getLocale();
             $createdAt = Date::fromString($card->created_at);
             $updatedAt = Date::fromString($card->updated_at);
+
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
@@ -182,6 +184,7 @@ class CardsController extends BaseController
                     'access_type_label'   => $card->getAccessTypeLabel(),
                     'is_active'           => $card->is_active,
                     'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
                     'creator'             => $creator ? [
                         'id'    => $creator->id,
                         'name'  => $creator->name,
@@ -219,8 +222,8 @@ class CardsController extends BaseController
                 ], 401);
             }
 
-            $page    = (int)($this->request->getQuery('page', 'int', 1));
-            $perPage = (int)($this->request->getQuery('per_page', 'int', 12));
+            $page    = (int)$this->request->getQuery('page', 'int', 1);
+            $perPage = (int)$this->request->getQuery('per_page', 'int', 12);
 
             // Получаем карточки с пагинацией
             $offset = ($page - 1) * $perPage;
@@ -240,6 +243,7 @@ class CardsController extends BaseController
 
             $result = [];
             foreach ($cards as $card) {
+                $creator       = $card->getCreator();
                 $collectionIds = [];
                 if (method_exists($card, 'getCollections')) {
                     foreach ($card->getCollections() as $collection) {
@@ -249,7 +253,7 @@ class CardsController extends BaseController
 
                 // Получаем информацию о лайках
                 $likesCount = CardLike::getCardLikesCount($card->id);
-                $isLiked    = CardLike::isLiked($card->id, $user->id);
+                $isLiked    = $user && CardLike::isLiked($card->id, $user->id);
 
                 $result[] = [
                     'id'                  => $card->id,
@@ -260,7 +264,11 @@ class CardsController extends BaseController
                     'creator_id'          => $card->creator_id,
                     'collectionIds'       => $collectionIds,
                     'show_title_on_image' => $card->show_title_on_image,
-                    'is_active'           => $card->is_active,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
+                    'creator'             => $creator ? [
+                        'id'   => $creator->id,
+                        'name' => $creator->name,
+                    ] : null,
                     'likes_count'         => $likesCount,
                     'is_liked'            => $isLiked,
                     'created_at'          => $card->created_at,
@@ -271,9 +279,10 @@ class CardsController extends BaseController
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
-                    'cards' => $result,
-                    'total' => $total,
-                    'page'  => $page
+                    'cards'    => $result,
+                    'total'    => (int)$total,
+                    'page'     => $page,
+                    'per_page' => $perPage
                 ]
             ]);
 
@@ -281,7 +290,7 @@ class CardsController extends BaseController
             return $this->jsonResponse([
                 'success' => false,
                 'error'   => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -357,6 +366,7 @@ class CardsController extends BaseController
                     'access_type_label'   => $card->getAccessTypeLabel(),
                     'is_active'           => $card->is_active,
                     'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
                     'creator'             => $creator ? [
                         'id'    => $creator->id,
                         'name'  => $creator->name,
@@ -472,6 +482,7 @@ class CardsController extends BaseController
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
                     'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
                     'is_active'           => $card->is_active,
                 ];
             }

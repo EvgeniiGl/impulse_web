@@ -9,12 +9,10 @@ import {initializeAuth, selectAuthToken, refreshAccessToken} from '@store/auth/a
 import {isTokenExpired} from "@/utils/tokenUtils.ts";
 import {useAppDispatch, useAppSelector} from "@store/store.ts";
 import {useEffect} from 'react';
-import CreateCardPage from "@pages/CreateCardPage.tsx";
+import CardEditorPage from "@pages/CardEditorPage.tsx";
 import CardPage from "@pages/CardPage.tsx";
 import {NotificationsPage} from "@pages/NotificationsPage.tsx";
 import {SubscriptionWarning} from "@components/Notifications/SubscriptionWarning.tsx";
-
-// import {notificationManager} from '@utils/notificationManager.ts';
 
 function App() {
     const dispatch = useAppDispatch();
@@ -27,32 +25,6 @@ function App() {
         dispatch(initializeAuth());
     }, [dispatch]);
 
-    //
-    // useEffect(() => {
-    //     // Проверяем подписку при загрузке приложения
-    //     const checkSubscriptionOnLoad = async () => {
-    //         try {
-    //             if (notificationManager.isSupported()) {
-    //                 const permission = notificationManager.getPermissionStatus();
-    //
-    //                 if (permission === 'granted') {
-    //                     // Проверяем валидность подписки
-    //                     const isValid = await notificationManager.validateSubscription();
-    //
-    //                     if (!isValid) {
-    //                         console.log('Subscription invalid, attempting to resubscribe...');
-    //                         await notificationManager.resubscribeIfNeeded();
-    //                     }
-    //                 }
-    //             }
-    //         } catch (error) {
-    //             console.error('Error checking subscription on load:', error);
-    //         }
-    //     };
-    //
-    //     checkSubscriptionOnLoad();
-    // }, []);
-
     return (
         <>
             <Router>
@@ -62,7 +34,8 @@ function App() {
                         <Route path="/today" element={<TodayPage/>}/>
                         <Route path="/my" element={<MyPage/>}/>
                         <Route path="/login" element={<LoginPage/>}/>
-                        <Route path="/card/create" element={<CreateCardPage/>}/>
+                        <Route path="/card/create" element={<CardEditorPage/>}/>
+                        <Route path="/card/:id/edit" element={<CardEditorPage/>}/>
                         <Route path="/collection/create" element={<CreateCollectionPage/>}/>
                         <Route path="/register" element={<RegisterPage/>}/>
                         <Route path="/card/:id" element={<CardPage/>}/>

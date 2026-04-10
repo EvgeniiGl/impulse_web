@@ -15,6 +15,7 @@ export interface CreateCardRequest {
     collection_ids: string[];
     file: File | null;
     show_title_on_image: boolean;
+    title_color?: string;
 }
 
 export interface UpdateCardRequest {
@@ -24,6 +25,8 @@ export interface UpdateCardRequest {
     is_active?: boolean;
     collection_ids?: string[];
     show_title_on_image?: boolean;
+    title_color?: string;
+    file?: File;  // Опционален при обновлении
 }
 
 export interface GetCardsResponse {
@@ -58,6 +61,12 @@ export class Api extends ApiClient {
             formData.append("access_type", data.card.access_type);
             formData.append("is_active", data.card.is_active.toString());
             formData.append("show_title_on_image", data.card.show_title_on_image.toString());
+
+            // Добавляем title_color только если есть title и show_title_on_image
+            if (data.card.show_title_on_image && data.card.title && data.card.title_color) {
+                formData.append("title_color", data.card.title_color);
+            }
+
             data.card.collection_ids.forEach((id, index) => {
                 formData.append(`collection_ids[${index}]`, id);
             });
@@ -126,9 +135,46 @@ export class Api extends ApiClient {
 
     async updateCard(id: string, data: UpdateCardRequest): Promise<GetCardResponse | null> {
         try {
-            const response = await this.put<UpdateCardRequest, GetCardResponse>(
+            const formData = new FormData();
+
+            // Файл добавляем только если он есть
+            if (data.file) {
+                formData.append("file", data.file, data.file.name);
+            }
+
+            if (data.title !== undefined) {
+                formData.append("title", data.title);
+            }
+            if (data.description !== undefined) {
+                formData.append("description", data.description ?? "");
+            }
+            if (data.access_type !== undefined) {
+                formData.append("access_type", data.access_type);
+            }
+            if (data.is_active !== undefined) {
+                formData.append("is_active", data.is_active.toString());
+            }
+            if (data.show_title_on_image !== undefined) {
+                formData.append("show_title_on_image", data.show_title_on_image.toString());
+            }
+            // title_color добавляем только если есть title и show_title_on_image
+            if (data.show_title_on_image && data.title && data.title_color) {
+                formData.append("title_color", data.title_color);
+            }
+            if (data.collection_ids) {
+                data.collection_ids.forEach((collectionId, index) => {
+                    formData.append(`collection_ids[${index}]`, collectionId);
+                });
+            }
+
+            const response = await this.put<FormData, GetCardResponse>(
                 `${this.client.defaults.baseURL}/cards/${id}`,
-                data
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
             );
             return response;
         } catch (exception) {

@@ -13,6 +13,7 @@ export type AccessType = 'private' | 'public' | 'shared';
 export interface Card {
     id: string;
     title: string;
+    title_color: string;
     description?: string;
     url: string;
     creator_id: string;

@@ -5,7 +5,6 @@ namespace App\Requests\Card;
 
 use App\Helpers\TranslationHelper;
 use Phalcon\Filter\Validation;
-use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Filter\Validation\Validator\StringLength;
 use Phalcon\Filter\Validation\Validator\InclusionIn;
 use Phalcon\Http\Request\File;
@@ -24,7 +23,8 @@ class CreateCardRequest
 
     public function getTitle(): ?string
     {
-        return $this->data['title'] ?? null;
+        $title = $this->data['title'] ?? null;
+        return $title ? trim($title) : null;
     }
 
     public function getDescription(): ?string
@@ -37,9 +37,22 @@ class CreateCardRequest
         return $this->data['access_type'] ?? 'private';
     }
 
-    public function getShowTitleOnImage(): ?bool
+    public function getShowTitleOnImage(): bool
     {
-        return $this->data['show_title_on_image'] === 'true';
+        // Показывать заголовок на изображении только если есть заголовок
+        if (empty($this->getTitle())) {
+            return false;
+        }
+        return $this->data['show_title_on_image'] === 'true' || $this->data['show_title_on_image'] === true;
+    }
+
+    public function getTitleColor(): ?string
+    {
+        // Цвет заголовка имеет смысл только если показываем заголовок
+        if (!$this->getShowTitleOnImage()) {
+            return null;
+        }
+        return $this->data['title_color'] ?? '#FFFFFF';
     }
 
     public function getCollectionIds(): array
@@ -85,30 +98,25 @@ class CreateCardRequest
     {
         $validation = new Validation();
 
-        // Валидация заголовка
-        $validation->add(
-            'title',
-            new PresenceOf([
-                'message' => TranslationHelper::translate('Title is required')
-            ])
-        );
-
-        $validation->add(
-            'title',
-            new StringLength([
-                'min'            => 3,
-                'max'            => 100,
-                'messageMinimum' => TranslationHelper::translate('Title must be at least 3 characters'),
-                'messageMaximum' => TranslationHelper::translate('Title must not exceed 100 characters')
-            ])
-        );
+        // Валидация заголовка (опционально, но если есть - проверяем длину)
+        $title = $this->getTitle();
+        if (!empty($title)) {
+            $validation->add(
+                'title',
+                new StringLength([
+                    'max'            => 100,
+                    'messageMaximum' => TranslationHelper::translate('Title must not exceed 100 characters'),
+                    'allowEmpty'     => true
+                ])
+            );
+        }
 
         // Валидация описания
         $validation->add(
             'description',
             new StringLength([
-                'max'            => 1500,
-                'messageMaximum' => TranslationHelper::translate('Description must not exceed 1500 characters'),
+                'max'            => 5000,
+                'messageMaximum' => TranslationHelper::translate('Description must not exceed 5000 characters'),
                 'allowEmpty'     => true
             ])
         );
@@ -124,41 +132,12 @@ class CreateCardRequest
 
         // Валидация collection_ids
         $collectionIds = $this->getCollectionIds();
-
-        // Проверка, что collection_ids массив
-        if (!is_array($collectionIds)) {
-            $messages = new Messages();
-            $messages->appendMessage(
-                new \Phalcon\Messages\Message(
-                    TranslationHelper::translate('Collection IDs must be an array'),
-                    'collection_ids',
-                    'InvalidType'
-                )
-            );
-            return $messages;
-        }
-
-        // Проверка максимального количества коллекций (опционально)
-        $maxCollections = 10; // можно вынести в конфиг
-        if (count($collectionIds) > $maxCollections) {
-            $messages = new Messages();
-            $messages->appendMessage(
-                new \Phalcon\Messages\Message(
-                    TranslationHelper::translate('Maximum %d collections allowed', $maxCollections),
-                    'collection_ids',
-                    'TooMany'
-                )
-            );
-            return $messages;
-        }
-
-        // Валидация каждого ID коллекции (если нужно проверить формат UUID или другой формат)
         foreach ($collectionIds as $index => $id) {
-            if (!is_string($id) || empty($id)) {
+            if (!is_string($id) || empty(trim($id))) {
                 $messages = new Messages();
                 $messages->appendMessage(
                     new \Phalcon\Messages\Message(
-                        TranslationHelper::translate('Each collection ID must be a non-empty string'),
+                        TranslationHelper::translate('Collection ID must be a non-empty string'),
                         "collection_ids[{$index}]",
                         'InvalidValue'
                     )
@@ -180,6 +159,20 @@ class CreateCardRequest
             }
         }
 
+        // Валидация цвета заголовка (если есть)
+        $titleColor = $this->data['title_color'] ?? null;
+        if ($titleColor && !preg_match('/^#[0-9A-Fa-f]{6}$/', $titleColor)) {
+            $messages = new Messages();
+            $messages->appendMessage(
+                new \Phalcon\Messages\Message(
+                    TranslationHelper::translate('Title color must be a valid HEX color'),
+                    'title_color',
+                    'InvalidFormat'
+                )
+            );
+            return $messages;
+        }
+
         return $validation->validate([
             'title'       => $this->getTitle(),
             'description' => $this->getDescription(),
@@ -190,10 +183,11 @@ class CreateCardRequest
     public function validateFile(array $allowedTypes, int $maxSize): bool
     {
         if (!$this->hasFile()) {
-            return true;
+            return false; // Файл обязателен
         }
 
         $file = $this->file;
+
         // Проверка ошибок загрузки
         if ($file->getError()) {
             return false;
@@ -217,11 +211,10 @@ class CreateCardRequest
     }
 
     /**
-     * Проверка валидности UUID (опционально)
+     * Проверка валидности UUID
      */
     private function isValidUuid(string $uuid): bool
     {
-        // Базовая проверка формата UUID
         return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid) === 1;
     }
 }

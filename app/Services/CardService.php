@@ -38,7 +38,7 @@ class CardService extends Injectable
             throw new Exception(implode(', ', $errors));
         }
 
-        // Валидация файла
+        // Валидация файла (файл обязателен)
         if (!$request->validateFile($this->uploadConfig['allowedTypes'], $this->uploadConfig['maxFileSize'])) {
             throw new Exception('Invalid file. Check file type and size (max 32MB)');
         }
@@ -55,33 +55,27 @@ class CardService extends Injectable
 
         try {
             $card                      = new Card();
-            $card->title               = $request->getTitle();
+            $card->title               = $request->getTitle() ?? '';
             $card->description         = $request->getDescription() ?? '';
             $card->access_type         = $request->getAccessType();
             $card->show_title_on_image = $request->getShowTitleOnImage();
+            $card->title_color         = $request->getTitleColor() ?? '#FFFFFF';
             $card->creator_id          = $creator->id;
 
-            if ($request->hasFile()) {
-                $file         = $request->getFile();
-                $isPublic     = $card->access_type === 'public';
-                $uploadResult = $this->storageService->uploadFile(
-                    $file->getTempName(),
-                    $file->getName(),
-                    $creator->id,
-                    $isPublic
-                );
+            // Файл обязателен
+            $file         = $request->getFile();
+            $isPublic     = $card->access_type === 'public';
+            $uploadResult = $this->storageService->uploadFile(
+                $file->getTempName(),
+                $file->getName(),
+                $creator->id,
+                $isPublic
+            );
 
-                $card->url           = $uploadResult['url'];
-                $card->object_path   = $uploadResult['object_path'];
-                $card->file_name     = $uploadResult['file_name'];
-                $card->original_name = $uploadResult['original_name'];
-            } else {
-                // Если файла нет, используем заглушку
-                $card->url           = '';
-                $card->object_path   = '';
-                $card->file_name     = 'card_' . bin2hex(random_bytes(8)) . '_' . time();
-                $card->original_name = 'no_file';
-            }
+            $card->url           = $uploadResult['url'];
+            $card->object_path   = $uploadResult['object_path'];
+            $card->file_name     = $uploadResult['file_name'];
+            $card->original_name = $uploadResult['original_name'];
 
             // Сохраняем карточку
             if (!$card->create()) {
@@ -124,13 +118,15 @@ class CardService extends Injectable
             throw new Exception('You do not have permission to update this card');
         }
 
-//        // Получаем ID коллекций из запроса (если есть)
-//        $collectionIds = $request->getCollectionIds();
-//
-//        // Проверяем существование коллекций и права доступа
-//        if (!empty($collectionIds)) {
-//            $this->validateCollectionsAccess($collectionIds, $user);
-//        }
+        // Валидация данных
+        $validation = $request->validate();
+        if ($validation->count() > 0) {
+            $errors = [];
+            foreach ($validation as $message) {
+                $errors[] = $message->getMessage();
+            }
+            throw new Exception(implode(', ', $errors));
+        }
 
         $this->db->begin();
         $oldFilePath = null;
@@ -161,12 +157,12 @@ class CardService extends Injectable
             }
 
             // Обновляем остальные поля
-            if ($request->getTitle() !== null) {
-                $card->title = $request->getTitle();
+            if ($request->hasTitle()) {
+                $card->title = $request->getTitle() ?? '';
             }
 
-            if ($request->getDescription() !== null) {
-                $card->description = $request->getDescription();
+            if ($request->hasDescription()) {
+                $card->description = $request->getDescription() ?? '';
             }
 
             if ($request->getAccessType() !== null) {
@@ -181,6 +177,10 @@ class CardService extends Injectable
                 $card->show_title_on_image = $request->getShowTitleOnImage();
             }
 
+            if ($request->hasTitleColor()) {
+                $card->title_color = $request->getTitleColor();
+            }
+
             if (!$card->update()) {
                 $messages = [];
                 foreach ($card->getMessages() as $message) {
@@ -188,19 +188,6 @@ class CardService extends Injectable
                 }
                 throw new Exception(implode(', ', $messages));
             }
-
-            // Обновляем связи с коллекциями
-//            if ($collectionIds !== null) {
-//                // Удаляем старые связи
-//                $this->deleteCardCollections($card->id);
-//
-//                // Сохраняем новые связи
-//                if (!empty($collectionIds)) {
-//                    if (!$this->saveCardCollections($card->id, $collectionIds)) {
-//                        throw new Exception('Failed to update card collections');
-//                    }
-//                }
-//            }
 
             // Удаляем старый файл после успешного обновления
             if ($oldFilePath && !empty($oldFilePath)) {
@@ -224,11 +211,6 @@ class CardService extends Injectable
 
     /**
      * Сохраняет связи карточки с коллекциями
-     *
-     * @param string $cardId
-     * @param array $collectionIds
-     * @return bool
-     * @throws Exception
      */
     private function saveCardCollections(string $cardId, array $collectionIds): bool
     {
@@ -255,9 +237,6 @@ class CardService extends Injectable
 
     /**
      * Удаляет все связи карточки с коллекциями
-     *
-     * @param string $cardId
-     * @return void
      */
     private function deleteCardCollections(string $cardId): void
     {
@@ -275,15 +254,10 @@ class CardService extends Injectable
                 throw new Exception('Failed to delete collection relation: ' . implode(', ', $messages));
             }
         }
-
     }
 
     /**
      * Проверяет существование коллекций и права доступа к ним
-     *
-     * @param array $collectionIds
-     * @param User $user
-     * @throws Exception
      */
     private function validateCollectionsAccess(array $collectionIds, User $user): void
     {
@@ -297,7 +271,6 @@ class CardService extends Injectable
                 throw new Exception("Collection with ID {$collectionId} not found");
             }
 
-            // Проверяем, имеет ли пользователь доступ к коллекции
             if (!$collection->hasAccess($user->id, 'write')) {
                 throw new Exception("You don't have permission to add cards to collection: {$collection->name}");
             }
@@ -309,7 +282,6 @@ class CardService extends Injectable
      */
     public function deleteCard(Card $card, User $user): bool
     {
-        // Проверяем права доступа
         if ($card->creator_id !== $user->id && !$user->isAdmin()) {
             throw new Exception('You do not have permission to delete this card');
         }
@@ -317,15 +289,12 @@ class CardService extends Injectable
         $this->db->begin();
 
         try {
-            // Удаляем связи с коллекциями
             $this->deleteCardCollections($card->id);
 
-            // Удаляем файл из MinIO, если он существует
             if (!empty($card->object_path)) {
                 $this->storageService->deleteFile($card->object_path);
             }
 
-            // Удаляем карточку из базы
             if (!$card->delete()) {
                 $messages = [];
                 foreach ($card->getMessages() as $message) {
@@ -357,7 +326,6 @@ class CardService extends Injectable
             return null;
         }
 
-        // Проверяем доступ
         if (!$card->hasAccess($user)) {
             throw new Exception('Access denied');
         }
@@ -375,11 +343,6 @@ class CardService extends Injectable
 
     /**
      * Получает карточки по коллекции
-     *
-     * @param string $collectionId
-     * @param User|null $user
-     * @return array
-     * @throws Exception
      */
     public function getCardsByCollection(string $collectionId, ?User $user): array
     {
@@ -392,7 +355,6 @@ class CardService extends Injectable
             throw new Exception('Collection not found');
         }
 
-        // Проверяем доступ к коллекции
         if (!$collection->hasAccess($user, 'read')) {
             throw new Exception('Access denied to collection');
         }

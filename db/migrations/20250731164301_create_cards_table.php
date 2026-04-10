@@ -13,13 +13,14 @@ final class CreateCardsTable extends AbstractMigration
             
             CREATE TABLE cards (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                title VARCHAR(100) NOT NULL,
+                title VARCHAR(100) DEFAULT NULL,
                 description TEXT,
                 url TEXT NOT NULL,
                 creator_id UUID NOT NULL,
                 access_type access_type NOT NULL DEFAULT 'private',
                 is_active BOOLEAN NOT NULL DEFAULT true,
                 show_title_on_image BOOLEAN NOT NULL DEFAULT false,
+                title_color VARCHAR(7) NOT NULL DEFAULT '#FFFFFF',
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 
