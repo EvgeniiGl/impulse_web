@@ -143,10 +143,20 @@ class CardService extends Injectable
                 $oldFilePath = $card->object_path;
 
                 // Загружаем новый файл
-                $file         = $request->getFile();
+                $file = $request->getFile();
+
+                // Получаем данные файла в зависимости от типа
+                if ($file instanceof \Phalcon\Http\Request\File) {
+                    $tmpName  = $file->getTempName();
+                    $fileName = $file->getName();
+                } else {
+                    $tmpName  = $file['tmp_name'];
+                    $fileName = $file['name'];
+                }
+
                 $uploadResult = $this->storageService->uploadFile(
-                    $file['tmp_name'],
-                    $file['name'],
+                    $tmpName,
+                    $fileName,
                     $user->id
                 );
 
@@ -154,6 +164,7 @@ class CardService extends Injectable
                 $card->object_path   = $uploadResult['object_path'];
                 $card->file_name     = $uploadResult['file_name'];
                 $card->original_name = $uploadResult['original_name'];
+                $card->title_color   = $request->getTitleColor() ?? '#FFFFFF';
             }
 
             // Обновляем остальные поля
@@ -189,6 +200,9 @@ class CardService extends Injectable
                 throw new Exception(implode(', ', $messages));
             }
 
+            $this->saveCardCollections($card->id, $request->getCollectionIds() ?? []);
+
+
             // Удаляем старый файл после успешного обновления
             if ($oldFilePath && !empty($oldFilePath)) {
                 $this->storageService->deleteFile($oldFilePath);
@@ -214,6 +228,10 @@ class CardService extends Injectable
      */
     private function saveCardCollections(string $cardId, array $collectionIds): bool
     {
+        // Удаляем все текущие связи
+        $this->deleteCardCollections($cardId);
+
+        // Создаём новые связи
         foreach ($collectionIds as $collectionId) {
             if (empty($collectionId)) {
                 continue;

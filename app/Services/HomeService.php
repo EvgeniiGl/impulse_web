@@ -90,6 +90,7 @@ class HomeService
             $formatted[] = [
                 'id'                  => $card->id,
                 'title'               => $card->title,
+                'title_color'         => $card->title_color,
                 'description'         => $card->description,
                 'url'                 => $card->url,
                 'access_type'         => $card->access_type,

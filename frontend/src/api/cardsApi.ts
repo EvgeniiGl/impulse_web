@@ -167,8 +167,8 @@ export class Api extends ApiClient {
                 });
             }
 
-            const response = await this.put<FormData, GetCardResponse>(
-                `${this.client.defaults.baseURL}/cards/${id}`,
+            const response = await this.post<FormData, GetCardResponse>(
+                `${this.client.defaults.baseURL}/cards/${id}/update`,
                 formData,
                 {
                     headers: {

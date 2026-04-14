@@ -168,16 +168,17 @@ export default class ApiClient implements IApiClient {
         payload: TRequest,
         config?: AxiosRequestConfig
     ): Promise<TResponse> {
-        const response = await this.client.post<TResponse>(path, payload, config);
-        return response.data;
-    }
+        const finalConfig = payload instanceof FormData
+            ? {
+                ...config,
+                headers: {
+                    ...config?.headers,
+                    'Content-Type': undefined,
+                },
+            }
+            : config;
 
-    async patch<TRequest, TResponse>(
-        path: string,
-        payload: TRequest,
-        config?: AxiosRequestConfig
-    ): Promise<TResponse> {
-        const response = await this.client.patch<TResponse>(path, payload, config);
+        const response = await this.client.post<TResponse>(path, payload, finalConfig);
         return response.data;
     }
 
@@ -186,7 +187,36 @@ export default class ApiClient implements IApiClient {
         payload: TRequest,
         config?: AxiosRequestConfig
     ): Promise<TResponse> {
-        const response = await this.client.put<TResponse>(path, payload, config);
+        const finalConfig = payload instanceof FormData
+            ? {
+                ...config,
+                headers: {
+                    ...config?.headers,
+                    'Content-Type': undefined,
+                },
+            }
+            : config;
+
+        const response = await this.client.put<TResponse>(path, payload, finalConfig);
+        return response.data;
+    }
+
+    async patch<TRequest, TResponse>(
+        path: string,
+        payload: TRequest,
+        config?: AxiosRequestConfig
+    ): Promise<TResponse> {
+        const finalConfig = payload instanceof FormData
+            ? {
+                ...config,
+                headers: {
+                    ...config?.headers,
+                    'Content-Type': undefined,
+                },
+            }
+            : config;
+
+        const response = await this.client.patch<TResponse>(path, payload, finalConfig);
         return response.data;
     }
 

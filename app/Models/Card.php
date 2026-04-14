@@ -34,6 +34,7 @@ class Card extends Model
 
     public ?string $id                  = null;
     public string  $title;
+    public string  $title_color;
     public string  $description;
     public string  $url;
     public string  $object_path         = '';

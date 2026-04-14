@@ -44,7 +44,7 @@ export default function CardEditorPage() {
     const [preview, setPreview] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     // Флаг: был ли выбран новый файл в режиме редактирования
-    const [hasNewFile, setHasNewFile] = useState(false);
+    const [_, setHasNewFile] = useState(false);
 
     const {
         isCreating,
@@ -98,8 +98,21 @@ export default function CardEditorPage() {
             });
             setPreview(currentCard.url || null);
             setHasNewFile(false);
+
+            // Синхронизируем selectedCollections с коллекциями карточки
+            if (currentCard.collectionIds && currentCard.collectionIds.length > 0) {
+                if (currentCard.collections) {
+                    dispatch(setSelectedCollections(currentCard.collections));
+                }
+            } else if (currentCard.collectionIds && currentCard.collectionIds.length > 0 && collections.length > 0) {
+                // Если есть только ID, находим коллекции по ID
+                const cardCollections = collections.filter(c =>
+                    currentCard.collectionIds.includes(c.id)
+                );
+                dispatch(setSelectedCollections(cardCollections));
+            }
         }
-    }, [currentCard, isEditMode, dispatch]);
+    }, [currentCard, isEditMode, collections, dispatch]);
 
     // Установка выбранной коллекции при создании
     useEffect(() => {
@@ -260,6 +273,7 @@ export default function CardEditorPage() {
                 access_type: formData.access_type,
                 collection_ids: formData.collection_ids,
                 show_title_on_image: showTitleOnImage,
+                is_active: formData.is_active,
             };
 
             // Добавляем title_color только если показываем заголовок

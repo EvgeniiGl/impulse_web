@@ -9,9 +9,17 @@ interface CardGridProps {
     onLoadMore: () => void;
     hasMore: boolean;
     onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
+    showAccessType?: boolean;
 }
 
-export default function CardGrid({cards, isLoading, onLoadMore, hasMore, onCardDrop}: CardGridProps) {
+export default function CardGrid({
+                                     cards,
+                                     isLoading,
+                                     onLoadMore,
+                                     hasMore,
+                                     onCardDrop,
+                                     showAccessType = true
+                                 }: CardGridProps) {
     const hiddenCardIds = useAppSelector(state => state.report.hiddenCardIds);
     useEffect(() => {
         const handleScroll = () => {
@@ -37,6 +45,7 @@ export default function CardGrid({cards, isLoading, onLoadMore, hasMore, onCardD
                         <CardItem
                             card={card}
                             onDrop={onCardDrop}
+                            showAccessType={showAccessType}
                         />
                     </div>
                 ))}

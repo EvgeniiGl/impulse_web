@@ -30,6 +30,7 @@ export type ReportReason =
 interface CardItemProps {
     card: Card;
     onDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
+    showAccessType?: boolean
 }
 
 // SVG иконка трех точек
@@ -41,7 +42,7 @@ const ThreeDotsIcon = () => (
     </svg>
 );
 
-export default function CardItem({card, onDrop}: CardItemProps) {
+export default function CardItem({card, onDrop, showAccessType = true}: CardItemProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
@@ -433,28 +434,31 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             <div
                                 className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none z-10">
                                 <div className="text-center group">
-                                    <h3 className="font-['Pacifico'] text-white text-3xl md:text-4xl
-                       drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]
-                       mb-3 transition-all duration-300
-                       group-hover:text-[var(--color-primary-light2)]">
+                                    <h3
+                                        className="font-['Pacifico'] text-3xl md:text-4xl
+                   drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]
+                   mb-3 transition-all duration-300"
+                                        style={{color: card.title_color || '#FFFFFF'}}
+                                    >
                                         {card.title}
                                     </h3>
 
-                                    <div className="w-16 h-0.5 mx-auto
-                      bg-gradient-to-r from-transparent via-white to-transparent
-                      transition-all duration-500 ease-in-out
-                      group-hover:w-44
-                      group-hover:via-[var(--color-primary-light2)]">
-                                    </div>
+                                    <div
+                                        className="w-16 h-0.5 mx-auto transition-all duration-500 ease-in-out group-hover:w-44"
+                                        style={{
+                                            background: `linear-gradient(to right, transparent, ${card.title_color || '#FFFFFF'}, transparent)`
+                                        }}
+                                    />
 
-                                    <div className="w-8 h-0.5 mx-auto mt-1
-                      bg-white/40 blur-sm
-                      transition-all duration-700 ease-in-out
-                      group-hover:w-36
-                      group-hover:bg-[var(--color-primary-light2)]/40">
-                                    </div>
+                                    <div
+                                        className="w-8 h-0.5 mx-auto mt-1 blur-sm transition-all duration-700 ease-in-out group-hover:w-36"
+                                        style={{
+                                            backgroundColor: `${card.title_color || '#FFFFFF'}66`
+                                        }}
+                                    />
                                 </div>
-                            </div>}
+                            </div>
+                        }
                     </div>
                     {isDragging && (
                         <div
@@ -465,8 +469,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                             </span>
                         </div>
                     )}
-                    {/* Статус доступа поверх изображения сверху слева - z-index 20 */}
-                    <div className="absolute top-3 left-3 z-20 pointer-events-none">
+                    {showAccessType && <div className="absolute top-3 left-3 z-20 pointer-events-none">
                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full shadow-lg ${
                             card.access_type === 'private'
                                 ? 'bg-[var(--color-white)] text-[var(--text-primary)] border border-[var(--text-primary)]'
@@ -478,7 +481,7 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                                     ? t('cards.shared')
                                     : t('cards.private')}
                         </span>
-                    </div>
+                    </div>}
 
                     {/* Кнопка меню (три точки) - правый верхний угол */}
                     <div className="absolute top-3 right-3 z-30">
@@ -575,12 +578,13 @@ export default function CardItem({card, onDrop}: CardItemProps) {
                         </>
                     )}
 
-                    {currentUser && <div className="absolute bottom-3 left-3 z-30">
-                        <LikeButton
-                            cardId={card.id}
-                            size="md"
-                        />
-                    </div>}
+                    {currentUser && currentUser.id !== card.creator_id &&
+                        <div className="absolute bottom-3 left-3 z-30">
+                            <LikeButton
+                                cardId={card.id}
+                                size="md"
+                            />
+                        </div>}
 
                     {/* Кнопки действий снизу справа — автоматически сдвигаются по flex */}
                     <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1.5">

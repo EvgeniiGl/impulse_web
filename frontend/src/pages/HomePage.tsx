@@ -146,6 +146,7 @@ export default function HomePage() {
                                 isLoading={isLoading}
                                 onLoadMore={handleLoadMore}
                                 hasMore={pagination.hasMore}
+                                showAccessType={false}
                             />
                         ) : (
                             <div className="text-center py-20">

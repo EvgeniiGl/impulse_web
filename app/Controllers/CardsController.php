@@ -320,11 +320,10 @@ class CardsController extends BaseController
                 ], 404);
             }
 
-            $data    = $this->request->getPut();
+            $data    = $this->request->getPost();
             $file    = $this->request->getUploadedFiles();
             $file    = !empty($file) ? $file[0] : null;
-            $request = new UpdateCardRequest($data, $file ? $file->toArray() : null);
-
+            $request = new UpdateCardRequest($data, $file ?: null);
             // Обновляем карточку
             $updatedCard = $this->cardService->updateCard($card, $request, $user);
 

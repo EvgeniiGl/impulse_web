@@ -7,14 +7,15 @@ use App\Helpers\TranslationHelper;
 use Phalcon\Filter\Validation;
 use Phalcon\Filter\Validation\Validator\StringLength;
 use Phalcon\Filter\Validation\Validator\InclusionIn;
+use Phalcon\Http\Request\File;
 use Phalcon\Messages\Messages;
 
 class UpdateCardRequest
 {
     private ?array $data;
-    private ?array $file;
+    private ?File  $file;
 
-    public function __construct(?array $data, ?array $file = null)
+    public function __construct(?array $data, ?File $file = null)
     {
         $this->data = $data;
         $this->file = $file;
@@ -68,14 +69,14 @@ class UpdateCardRequest
         return $this->data['title_color'];
     }
 
-    public function getFile(): ?array
+    public function getFile(): ?File
     {
         return $this->file;
     }
 
     public function hasFile(): bool
     {
-        return $this->file !== null && !empty($this->file['tmp_name']);
+        return $this->file !== null && !empty($this->file->isUploadedFile());
     }
 
     public function hasTitle(): bool
@@ -163,27 +164,71 @@ class UpdateCardRequest
         ]);
     }
 
+    public function getCollectionIds(): array
+    {
+        // Обработка различных форматов входящих данных
+        if (isset($this->data['collection_ids']) && is_array($this->data['collection_ids'])) {
+            // Если пришел как обычный массив
+            return array_values(array_filter($this->data['collection_ids']));
+        }
+
+        // Если пришел как collection_ids[] или collection_ids[0], collection_ids[1] и т.д.
+        $collectionIds = [];
+        foreach ($this->data as $key => $value) {
+            if (strpos($key, 'collection_ids') === 0) {
+                if (!empty($value)) {
+                    $collectionIds[] = $value;
+                }
+            }
+        }
+
+        // Если пришел как JSON строка
+        if (isset($this->data['collection_ids']) && is_string($this->data['collection_ids'])) {
+            $decoded = json_decode($this->data['collection_ids'], true);
+            if (is_array($decoded)) {
+                return array_values(array_filter($decoded));
+            }
+        }
+
+        return array_values(array_filter($collectionIds));
+    }
+
     public function validateFile(array $allowedTypes, int $maxSize): bool
     {
         if (!$this->hasFile()) {
-            return true; // При обновлении файл опционален
+            return true;
         }
 
-        $file = $this->file;
+        // Определяем данные файла в зависимости от типа
+        if ($this->file instanceof File) {
+            $error   = $this->file->getError();
+            $size    = $this->file->getSize();
+            $tmpName = $this->file->getTempName();
+        } elseif (is_array($this->file)) {
+            $error   = $this->file['error'] ?? UPLOAD_ERR_OK;
+            $size    = $this->file['size'] ?? 0;
+            $tmpName = $this->file['tmp_name'] ?? null;
+        } else {
+            return false;
+        }
 
         // Проверка ошибок загрузки
-        if (isset($file['error']) && $file['error'] !== UPLOAD_ERR_OK) {
+        if ($error !== UPLOAD_ERR_OK) {
             return false;
         }
 
         // Проверка размера файла
-        if ($file['size'] > $maxSize) {
+        if ($size > $maxSize) {
             return false;
         }
 
         // Проверка типа файла
+        if (!$tmpName || !file_exists($tmpName)) {
+            return false;
+        }
+
         $finfo    = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        $mimeType = finfo_file($finfo, $tmpName);
         finfo_close($finfo);
 
         if (!in_array($mimeType, $allowedTypes, true)) {

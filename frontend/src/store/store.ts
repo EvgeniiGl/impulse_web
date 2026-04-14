@@ -31,6 +31,7 @@ export interface Card {
     file_name: string;
     original_name: string;
     collectionIds: string[];
+    collections?: Collection[];
     likes_count?: number;
     is_liked?: boolean;
 }
