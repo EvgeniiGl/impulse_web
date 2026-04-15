@@ -70,7 +70,7 @@ class ReportController extends BaseController
         } catch (\RuntimeException $e) {
             return $this->jsonResponse([
                 'success' => false,
-                'error'   => $e->getMessage()
+                'message' => $e->getMessage()
             ], 400);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());

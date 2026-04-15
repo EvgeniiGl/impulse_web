@@ -484,7 +484,7 @@ export default function CardItem({card, onDrop, showAccessType = true}: CardItem
                     </div>}
 
                     {/* Кнопка меню (три точки) - правый верхний угол */}
-                    <div className="absolute top-3 right-3 z-30">
+                    {!currentUser || currentUser.id !== card.creator_id && <div className="absolute top-3 right-3 z-30">
                         <button
                             onClick={handleMenuToggle}
                             className="rounded-full hover:bg-black/80 transition-colors shadow-lg"
@@ -499,7 +499,7 @@ export default function CardItem({card, onDrop, showAccessType = true}: CardItem
                         >
                             <ThreeDotsIcon/>
                         </button>
-                    </div>
+                    </div>}
 
                     {/* Модальное меню внутри карточки */}
                     {isMenuOpen && (
@@ -661,9 +661,6 @@ export default function CardItem({card, onDrop, showAccessType = true}: CardItem
                             </div>
 
                             <div className="p-4 h-full flex flex-col">
-                                <p className="text-sm font-medium mb-2 flex-shrink-0 text-[var(--color-primary-light2)]">
-                                    Описание:
-                                </p>
                                 <div
                                     ref={descriptionRef}
                                     className={`text-sm leading-relaxed pr-2 flex-1 overflow-y-auto scrollbar-custom ${

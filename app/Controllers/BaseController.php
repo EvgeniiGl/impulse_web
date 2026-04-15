@@ -152,6 +152,8 @@ class BaseController extends PhalconController
                 'conditions' => 'id = :id: AND is_active = true',
                 'bind'       => ['id' => $payload->sub]
             ]) ?: null;
+        } catch (ExpiredException  $e) {
+            throw new UnauthorizedException();
         } catch (\Exception $e) {
             return null;
         }

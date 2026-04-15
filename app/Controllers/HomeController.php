@@ -44,7 +44,7 @@ class HomeController extends BaseController
             return $this->jsonResponse([
                 'success' => false,
                 'error'   => $e->getMessage()
-            ], 500);
+            ], $e->getCode());
         }
     }
 
@@ -72,7 +72,7 @@ class HomeController extends BaseController
             return $this->jsonResponse([
                 'success' => false,
                 'error'   => $e->getMessage()
-            ], 500);
+            ], $e->getCode());
         }
     }
 
@@ -81,10 +81,6 @@ class HomeController extends BaseController
      */
     private function getAuthenticatedUserOrNull(): ?\App\Models\User
     {
-        try {
-            return $this->getAuthenticatedUser();
-        } catch (Exception $e) {
-            return null;
-        }
+        return $this->getAuthenticatedUser();
     }
 }
