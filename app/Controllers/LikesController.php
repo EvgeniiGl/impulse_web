@@ -18,7 +18,7 @@ class LikesController extends BaseController
     public function toggleCardLikeAction(string $id)
     {
         $user = $this->getAuthenticatedUser();
-        
+
         if (!$user) {
             return $this->response
                 ->setStatusCode(401)
@@ -137,7 +137,7 @@ class LikesController extends BaseController
     public function toggleCollectionLikeAction(string $id)
     {
         $user = $this->getAuthenticatedUser();
-        
+
         if (!$user) {
             return $this->response
                 ->setStatusCode(401)
@@ -256,7 +256,7 @@ class LikesController extends BaseController
     public function getLikedCardsAction()
     {
         $user = $this->getAuthenticatedUser();
-        
+
         if (!$user) {
             return $this->response
                 ->setStatusCode(401)
@@ -266,12 +266,22 @@ class LikesController extends BaseController
                 ]);
         }
 
-        $page    = (int) $this->request->getQuery('page', 'int', 1);
-        $perPage = (int) $this->request->getQuery('per_page', 'int', 12);
-        $offset  = ($page - 1) * $perPage;
+        $page       = (int)$this->request->getQuery('page', 'int', 1);
+        $perPage    = (int)$this->request->getQuery('per_page', 'int', 12);
+        $offset     = ($page - 1) * $perPage;
+        $conditions = 'user_id = :user_id:';
+
+        $excludeIds = array_unique(array_merge(
+            \App\Models\HiddenCard::getHiddenCardIds($user->id),
+            \App\Models\CardReport::getReportedCardIds($user->id)
+        ));
+        if (!empty($excludeIds)) {
+            $placeholders = implode(',', array_map(fn($id) => "'$id'", $excludeIds));
+            $conditions   .= " AND card_id NOT IN ($placeholders)";
+        }
 
         $likes = CardLike::find([
-            'conditions' => 'user_id = :user_id:',
+            'conditions' => $conditions,
             'bind'       => ['user_id' => $user->id],
             'order'      => 'created_at DESC',
             'limit'      => $perPage,
@@ -285,17 +295,33 @@ class LikesController extends BaseController
 
         $cards = [];
         foreach ($likes as $like) {
-            $card = $like->getCard();
+            $card          = $like->getCard();
+            $creator       = $card->getCreator();
+            $collectionIds = [];
+            if (method_exists($card, 'getCollections')) {
+                foreach ($card->getCollections() as $collection) {
+                    $collectionIds[] = $collection->id;
+                }
+            }
             if ($card) {
                 $cards[] = [
-                    'id'          => $card->id,
-                    'title'       => $card->title,
-                    'description' => $card->description,
-                    'url'         => $card->url,
-                    'access_type' => $card->access_type,
-                    'creator_id'  => $card->creator_id,
-                    'liked_at'    => $like->created_at,
-                    'likes_count' => CardLike::getCardLikesCount($card->id)
+                    'id'                  => $card->id,
+                    'title'               => $card->title,
+                    'description'         => $card->description,
+                    'url'                 => $card->url,
+                    'access_type'         => $card->access_type,
+                    'creator_id'          => $card->creator_id,
+                    'liked_at'            => $like->created_at,
+                    'likes_count'         => CardLike::getCardLikesCount($card->id),
+                    'collectionIds'       => $collectionIds,
+                    'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
+                    'creator'             => $creator ? [
+                        'id'   => $creator->id,
+                        'name' => $creator->name,] : null,
+                    'is_liked'            => true,
+                    'created_at'          => $card->created_at,
+                    'updated_at'          => $card->updated_at,
                 ];
             }
         }
@@ -317,7 +343,7 @@ class LikesController extends BaseController
     public function getLikedCollectionsAction()
     {
         $user = $this->getAuthenticatedUser();
-        
+
         if (!$user) {
             return $this->response
                 ->setStatusCode(401)
@@ -327,8 +353,8 @@ class LikesController extends BaseController
                 ]);
         }
 
-        $page    = (int) $this->request->getQuery('page', 'int', 1);
-        $perPage = (int) $this->request->getQuery('per_page', 'int', 12);
+        $page    = (int)$this->request->getQuery('page', 'int', 1);
+        $perPage = (int)$this->request->getQuery('per_page', 'int', 12);
         $offset  = ($page - 1) * $perPage;
 
         $likes = CollectionLike::find([

@@ -1,0 +1,9 @@
+parameters:
+    level: 5
+    paths:
+        - app
+    excludePaths:
+        - vendor
+        - storage
+        - db
+        - public

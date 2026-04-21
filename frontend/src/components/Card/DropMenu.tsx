@@ -35,10 +35,7 @@ export const DropMenu: React.FC<DropMenuProps> = ({
         targetCollectionId !== undefined &&
         sourceCollectionId !== targetCollectionId;
 
-    console.log("log--",
-        "\nsourceCollectionId--", sourceCollectionId,
-        "\ntargetCollectionId--", targetCollectionId,
-    );
+
     return createPortal(
         <div
             className="drop-menu fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-[9999] min-w-[220px]"

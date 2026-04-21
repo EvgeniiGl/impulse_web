@@ -27,9 +27,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     const isSupported = useAppSelector(state => state.notifications.isSupported);
     const isValidSubscription = useAppSelector(state => state.notifications.isValidSubscription);
     const showActive = useAppSelector(state => state.notifications.filter.showActive);
-    console.log("log--",
-        "\nshowActive--", showActive,
-    );
+
     useEffect(() => {
         const supported = notificationManager.isSupported();
         dispatch(setSupported(supported));

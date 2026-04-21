@@ -1,5 +1,6 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {ReportApi, ReportReason, ReportResponse} from '@/api/reportApi';
+import {fetchLikedCards, myCollections} from "@store/card/myCardSlice.ts";
 
 export type {ReportReason} from '@/api/reportApi';
 
@@ -31,12 +32,17 @@ export const submitReport = createAsyncThunk<
     { rejectValue: string }
 >(
     'report/submitReport',
-    async ({cardId, reason}, {rejectWithValue}) => {
+    async ({cardId, reason}, {rejectWithValue, dispatch}) => {
         try {
             const response = await ReportApi.reportCard(cardId, reason);
             if (!response) {
                 return rejectWithValue('Failed to submit report');
             }
+            dispatch(fetchLikedCards({
+                page: 1,
+                perPage: 12
+            }))
+            dispatch(myCollections())
             return response;
         } catch (error) {
             if (error instanceof Error) {
@@ -54,12 +60,17 @@ export const hideCard = createAsyncThunk<
     { rejectValue: string }
 >(
     'report/hideCard',
-    async (cardId, {rejectWithValue}) => {
+    async (cardId, {rejectWithValue, dispatch}) => {
         try {
             const response = await ReportApi.hideCard(cardId);
             if (!response) {
                 return rejectWithValue('Failed to hide card');
             }
+            dispatch(fetchLikedCards({
+                page: 1,
+                perPage: 12
+            }))
+            dispatch(myCollections())
             return cardId;
         } catch (error) {
             if (error instanceof Error) {

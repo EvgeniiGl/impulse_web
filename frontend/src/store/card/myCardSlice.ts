@@ -17,7 +17,7 @@ export interface MyCardState {
     collectionsLoading: boolean;
     collections: Collection[];
     selectedCollections: Collection[];
-    selectedCollectionId: string | null;
+    selectedCollectionId: string;
     isLoading: boolean,
     isCreating: boolean,
     isUpdating: boolean,
@@ -37,7 +37,7 @@ const initialState: MyCardState = {
     collectionsLoading: false,
     collections: [],
     selectedCollections: [],
-    selectedCollectionId: null,
+    selectedCollectionId: 'common',
     openScheduleCardId: null,
     pagination: {
         page: 1,
@@ -96,6 +96,30 @@ export const fetchCardsByCollection = createAsyncThunk(
             const response = await CardsApi.getCardsByCollection(collectionId, page, perPage);
             if (!response) {
                 return rejectWithValue('Failed to fetch cards');
+            }
+
+            // Инициализируем лайки из загруженных карточек
+            if (response.data.cards && response.data.cards.length > 0) {
+                dispatch(initCardLikesFromCards(response.data.cards));
+            }
+
+            return response;
+        } catch (error) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+);
+
+export const fetchLikedCards = createAsyncThunk(
+    'cards/fetchLikedCards',
+    async ({page, perPage}: {
+        page: number;
+        perPage: number
+    }, {rejectWithValue, dispatch}) => {
+        try {
+            const response = await CardsApi.getLikedCards(page, perPage);
+            if (!response) {
+                return rejectWithValue('Failed to fetch liked cards');
             }
 
             // Инициализируем лайки из загруженных карточек
@@ -215,7 +239,7 @@ const myCardSlice = createSlice({
             state.myCards = [];
         },
         resetMyCardsState: () => initialState,
-        setSelectedCollectionId: (state: MyCardState, action: PayloadAction<string | null>) => {
+        setSelectedCollectionId: (state: MyCardState, action: PayloadAction<string>) => {
             state.selectedCollectionId = action.payload;
             state.myCards = [];
             state.pagination = {
@@ -314,6 +338,23 @@ const myCardSlice = createSlice({
                 state.pagination.hasMore = action.payload.data.cards.length === state.pagination.perPage;
             })
             .addCase(fetchCardsByCollection.rejected, (state: MyCardState, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            });
+
+        builder
+            .addCase(fetchLikedCards.pending, (state: MyCardState) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchLikedCards.fulfilled, (state: MyCardState, action: PayloadAction<GetCardsResponse>) => {
+                state.isLoading = false;
+                state.myCards = action.payload.data.cards;
+                state.pagination.total = action.payload.data.total;
+                state.pagination.page = action.payload.data.page;
+                state.pagination.hasMore = action.payload.data.cards.length === state.pagination.perPage;
+            })
+            .addCase(fetchLikedCards.rejected, (state: MyCardState, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             });

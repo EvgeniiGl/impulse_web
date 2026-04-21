@@ -45,9 +45,9 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
             style={{
                 padding: '3px',
                 borderRadius: '50%',
-                backgroundColor: liked ? '#fff' : 'rgba(0,0,0,0.5)',
+                backgroundColor: liked ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.5)',
                 color: 'white',
-                border: liked ? '1px solid rgba(239, 68, 68, 0.7)' : '1px solid var(--color-white)',
+                border: liked ? '1px solid #fff' : '1px solid var(--color-white)',
                 opacity: isLoading ? 0.5 : 1,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
             }}
@@ -56,7 +56,7 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
             <span className="flex items-center justify-center">
                 {liked ? (
                     <IoHeart className="w-3.5 h-3.5"
-                             style={{color: liked ? 'rgba(239, 68, 68, 0.7)' : 'rgba(0,0,0,0.5)'}}
+                             style={{color: liked ? '#fff' : 'rgba(0,0,0,0.5)'}}
                     />
                 ) : (
                     <IoHeartOutline className="w-3.5 h-3.5"/>

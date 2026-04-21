@@ -196,10 +196,11 @@ class Collection extends Model
 
         // Получаем количество карточек без коллекций
         $cardsWithoutCollectionCount = $this->getCardsWithoutCollectionCount($user->id);
+        $likedCardsCount             = $this->getLikedCardsCount($user->id);
 
         // Добавляем виртуальную коллекцию "Общая"
         $generalCollection = [
-            'id'           => null,
+            'id'           => 'common',
             'name'         => 'Общая',
             'creator_id'   => $user->id,
             'access_type'  => 'private', // или другой подходящий тип
@@ -211,8 +212,21 @@ class Collection extends Model
             'is_general'   => true // Флаг для идентификации общей коллекции
         ];
 
+        $likedCollection = [
+            'id'           => 'liked',
+            'name'         => 'Избраное',
+            'creator_id'   => null,
+            'access_type'  => 'public', // или другой подходящий тип
+            'is_active'    => false,
+            'created_at'   => null,
+            'updated_at'   => null,
+            'creator_name' => null,
+            'card_count'   => $likedCardsCount,
+            'is_general'   => false // Флаг для идентификации общей коллекции
+        ];
+
         // Добавляем общую коллекцию в начало или конец массива
-        array_unshift($collections, $generalCollection); // В начало
+        array_unshift($collections, $generalCollection, $likedCollection); // В начало
         // или
         // $collections[] = $generalCollection; // В конец
 
@@ -232,6 +246,24 @@ class Collection extends Model
             )
         ";
 
+        $query  = $this->getModelsManager()->createQuery($phql);
+        $result = $query->execute([$userId]);
+
+        return $result->getFirst()['count'] ?? 0;
+    }
+
+    protected function getLikedCardsCount(string $userId): int
+    {
+        $phql = "
+            SELECT COUNT(DISTINCT cl.id) as count
+            FROM App\Models\CardLike cl
+            LEFT JOIN App\Models\HiddenCard hc ON hc.card_id = cl.card_id
+            LEFT JOIN App\Models\CardReport cr ON cr.card_id = cl.card_id
+            WHERE cl.user_id = ?0
+            AND hc.card_id is null 
+            AND cr.card_id is null 
+        ";
+        
         $query  = $this->getModelsManager()->createQuery($phql);
         $result = $query->execute([$userId]);
 

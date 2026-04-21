@@ -1,6 +1,7 @@
 import {createSlice, createAsyncThunk, PayloadAction} from '@reduxjs/toolkit';
 import {LikesApi, LikeResponse} from '@/api/likesApi';
 import {Card} from '@store/store';
+import {fetchLikedCards, myCollections} from "@store/card/myCardSlice.ts";
 
 interface LikeData {
     liked: boolean;
@@ -38,11 +39,19 @@ interface CollectionLikePayload extends LikeResponse {
 // Async thunks
 export const toggleCardLike = createAsyncThunk<CardLikePayload, string>(
     'likes/toggleCardLike',
-    async (cardId: string, {rejectWithValue}) => {
+    async (cardId: string, {rejectWithValue, dispatch}) => {
+
         try {
             const response = await LikesApi.toggleCardLike(cardId);
             if (!response) {
                 return rejectWithValue('Failed to toggle like');
+            }
+            if (location.pathname === '/my') {
+                dispatch(fetchLikedCards({
+                    page: 1,
+                    perPage: 12
+                }))
+                dispatch(myCollections())
             }
             return {cardId, ...response};
         } catch (error) {

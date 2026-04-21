@@ -5,8 +5,8 @@ import CollectionDropZone from './CollectionDropZone';
 
 interface CollectionTabsProps {
     collections: Collection[];
-    selectedId: string | null;
-    onSelect: (id: string | null) => void;
+    selectedId: string;
+    onSelect: (id: string) => void;
     isLoading: boolean;
     onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
 }
@@ -79,7 +79,6 @@ export default function CollectionTabs({
                     onScroll={checkScroll}
                     className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide"
                 >
-                    {/* Остальные коллекции */}
                     {collections.map((collection) => {
                         return <CollectionDropZone
                             collectionId={collection.id}

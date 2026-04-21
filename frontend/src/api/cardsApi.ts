@@ -111,6 +111,17 @@ export class Api extends ApiClient {
         }
     }
 
+    async getLikedCards(page: number = 1, perPage: number = 12): Promise<GetCardsResponse | undefined> {
+        try {
+            const response = await this.get<GetCardsResponse>(
+                `${this.client.defaults.baseURL}/api/cards/liked?page=${page}&per_page=${perPage}`
+            );
+            return response;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
     async getMyCards(page: number, perPage: number): Promise<GetCardsResponse | null> {
         try {
             const response = await this.get<GetCardsResponse>(

@@ -14,12 +14,13 @@ import {
     fetchCardsByCollection,
     setSelectedCollectionId,
     resetPagination,
-    updateCardCollections, MyCardState
+    updateCardCollections, MyCardState, fetchLikedCards
 } from "@store/card/myCardSlice.ts";
 import {DndProvider} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
 import {useDropMenu} from '@/hooks/useDropMenu';
 import {DropMenu} from '@components/Card/DropMenu';
+import {COMMON, LIKED} from "@/constants/collections.ts";
 
 export default function MyPage() {
     const {t} = useTranslation();
@@ -57,9 +58,14 @@ export default function MyPage() {
     useEffect(() => {
         if (!isAuthenticated) return;
 
-        if (selectedCollectionId === null) {
+        if (selectedCollectionId === COMMON) {
             // Загружаем все карточки пользователя
             dispatch(fetchMyCards({page: 1, perPage: 12}));
+        } else if (selectedCollectionId === LIKED) {
+            dispatch(fetchLikedCards({
+                page: 1,
+                perPage: 12
+            }));
         } else {
             // Загружаем карточки коллекции
             dispatch(fetchCardsByCollection({
@@ -84,7 +90,7 @@ export default function MyPage() {
         }
     };
 
-    const handleSelectCollection = (id: string | null) => {
+    const handleSelectCollection = (id: string) => {
         if (selectedCollectionId === id) {
             return;
         }

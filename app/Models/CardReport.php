@@ -159,4 +159,21 @@ class CardReport extends Model
                 ]
             ]) > 0;
     }
+
+    public static function getReportedCardIds(string $userId): array
+    {
+        $records = self::find([
+            'conditions' => 'user_id = :user_id:',
+            'bind'       => ['user_id' => $userId],
+            'columns'    => 'card_id',
+            'group'      => 'card_id'
+        ]);
+
+        $ids = [];
+        foreach ($records as $record) {
+            $ids[] = $record->card_id;
+        }
+
+        return $ids;
+    }
 }

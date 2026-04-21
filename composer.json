@@ -17,6 +17,7 @@
   },
   "require-dev": {
     "phalcon/ide-stubs": "^5.8.0",
+    "phpstan/phpstan": "^2.1",
     "swoole/ide-helper": "^6.0",
     "symfony/yaml": "^7.4"
   },

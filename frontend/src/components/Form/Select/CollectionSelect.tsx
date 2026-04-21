@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import Select, {StylesConfig, MultiValue, ActionMeta} from 'react-select';
 import {Collection} from "@store/store.ts";
+import {COMMON, LIKED} from "@/constants/collections.ts";
 
 interface CollectionSelectProps {
     collections: Collection[];
@@ -29,21 +30,26 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                                                                disabled = false
                                                            }) => {
     const [options, setOptions] = useState<SelectOption[]>([]);
-    // Преобразуем коллекции в опции для react-select
+
+    const filterCollections = (i: Collection) => {
+        return i.id !== COMMON && i.id !== LIKED
+    }
+
     useEffect(() => {
-        const collectionOptions = collections.filter(i => i.id).map(collection => ({
+        const collectionOptions = collections.filter(filterCollections).map(collection => ({
             value: collection.id,
             label: `${collection.name}${collection.access_type === 'public' ? ' 🌎' : ''}`
         }));
         setOptions(collectionOptions);
     }, [collections]);
 
-    // Преобразуем выбранные коллекции в формат react-select
-    const selectedOptions = selectedCollections.map(collection => ({
+    const selectedOptions = selectedCollections.filter(filterCollections).map(collection => ({
         value: collection.id,
         label: `${collection.name}${collection.access_type === 'public' ? ' 🌎' : ''}`
     }));
-
+    console.log("log--",
+        "\ndata--", selectedOptions,
+    );
     const handleChange = (
         newValue: MultiValue<SelectOption>,
         _actionMeta: ActionMeta<SelectOption>
@@ -148,16 +154,15 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                     {selectedCollections.length > 0 && (
                         <div className="mt-3">
                             <div className="flex flex-wrap gap-2">
-                                {selectedCollections.map((collection) => (
+                                {selectedOptions.map((collection) => (
                                     <div
-                                        key={collection.id}
+                                        key={collection.value}
                                         className="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-blue-100 text-blue-800"
                                     >
-                                        {collection.name}
-                                        {collection.access_type === 'public' && ' 🌎'}
+                                        {collection.label}
                                         <button
                                             type="button"
-                                            onClick={() => handleRemoveCollection(collection.id)}
+                                            onClick={() => handleRemoveCollection(collection.value)}
                                             className="ml-2 text-blue-600 hover:text-blue-800 text-lg leading-none"
                                             disabled={disabled}
                                         >

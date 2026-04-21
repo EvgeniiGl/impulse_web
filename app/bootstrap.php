@@ -29,7 +29,7 @@ $dotenv = Dotenv::createImmutable(APP_PATH);
 $dotenv->load();
 
 // Enable error reporting in development
-if (getenv('APP_DEBUG') ?? false) {
+if (!empty(getenv('APP_DEBUG'))) {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
     (new Debug())->listen();
