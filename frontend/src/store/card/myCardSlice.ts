@@ -298,14 +298,12 @@ const myCardSlice = createSlice({
             .addCase(fetchMyCards.fulfilled, (state: MyCardState, action: PayloadAction<GetCardsResponse>) => {
                 state.isLoading = false;
                 const newCards = action.payload.data.cards || [];
-
-                state.myCards = state.pagination.page === 1
-                    ? newCards
-                    : [...state.myCards, ...newCards];
-
                 state.pagination.total = action.payload.data.total || 0;
                 state.pagination.page = action.payload.data.page || 1;
                 state.pagination.hasMore = newCards.length === state.pagination.perPage;
+                state.myCards = state.pagination.page === 1
+                    ? newCards
+                    : [...state.myCards, ...newCards];
             })
             .addCase(fetchMyCards.rejected, (state: MyCardState, action) => {
                 state.isLoading = false;

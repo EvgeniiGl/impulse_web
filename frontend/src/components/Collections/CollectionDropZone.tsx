@@ -3,9 +3,9 @@ import {ItemTypes, DragItem, DropResult} from '@/types/dnd';
 import css from './CollectionDropZone.module.css'
 
 interface CollectionDropZoneProps {
-    collectionId: string | null;
+    collectionId: string;
     children: React.ReactNode;
-    onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
+    onCardDrop?: (cardId: string, targetCollectionId: string, sourceCollectionId: string) => void;
     className?: string;
     isActive?: boolean;
 }

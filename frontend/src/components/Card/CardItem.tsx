@@ -29,7 +29,7 @@ export type ReportReason =
 
 interface CardItemProps {
     card: Card;
-    onDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
+    onDrop?: (cardId: string, targetCollectionId: string, sourceCollectionId: string) => void;
     showAccessType?: boolean
 }
 

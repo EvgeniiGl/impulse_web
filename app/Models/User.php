@@ -228,7 +228,7 @@ class User extends Model
     /**
      * Получить карточки пользователя с правом записи, которые не привязаны к коллекциям
      */
-    public function getMyCardsWithWriteAccess(): array
+    public function getMyCardsWithWriteAccess(int $offset, int $perPage): array
     {
         $result = [];
 
@@ -238,7 +238,10 @@ class User extends Model
         // 1. Собственные карточки (владелец = текущий пользователь) БЕЗ коллекций
         $ownCards = Card::find([
             'conditions' => 'creator_id = :user_id: AND id NOT IN (' . $inCollectionSubquery . ')',
-            'bind'       => ['user_id' => $this->id]
+            'bind'       => ['user_id' => $this->id],
+            'order'      => 'created_at DESC',
+            'limit'      => $perPage,
+            'offset'     => $offset,
         ]);
 
         foreach ($ownCards as $card) {

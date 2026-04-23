@@ -8,7 +8,7 @@ interface CardGridProps {
     isLoading: boolean;
     onLoadMore: () => void;
     hasMore: boolean;
-    onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
+    onCardDrop?: (cardId: string, targetCollectionId: string, sourceCollectionId: string) => void;
     showAccessType?: boolean;
 }
 
@@ -51,14 +51,12 @@ export default function CardGrid({
                 ))}
             {isLoading && (
                 <>
-                    {[...Array(4)].map((_, i) => (
-                        <div key={`skeleton-${i}`} className="rounded-lg animate-pulse flex flex-col">
-                            <div className="w-full" style={{aspectRatio: '9/20'}}>
-                                <div className="w-full h-full bg-gray-300"/>
-                            </div>
-                            <div className="p-3 space-y-2 flex-1 flex flex-col">
-                                <div className="h-4 bg-gray-300 rounded w-3/4"/>
-                                <div className="h-3 bg-gray-300 rounded w-1/2 mt-auto"/>
+                    {[...Array(3)].map((_, i) => (
+                        <div key={`skeleton-${i}`}>
+                            <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full">
+                                <div className="relative w-full overflow-clip" style={{aspectRatio: '9/16'}}>
+                                    <div className="w-full h-full bg-gray-300 animate-pulse"/>
+                                </div>
                             </div>
                         </div>
                     ))}

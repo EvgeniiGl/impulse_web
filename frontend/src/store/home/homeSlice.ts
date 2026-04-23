@@ -99,16 +99,14 @@ const homeSlice = createSlice({
             .addCase(fetchPublicCards.fulfilled, (state: HomeState, action: PayloadAction<SearchCardsResponse>) => {
                 state.isLoading = false;
                 const newCards = action.payload.data.cards;
-
-                if (state.pagination.page === 1) {
+                state.pagination.total = action.payload.data.total;
+                state.pagination.page = action.payload.data.page;
+                state.pagination.hasMore = newCards.length === state.pagination.perPage;
+                if (action.payload.data.page === 1) {
                     state.cards = newCards;
                 } else {
                     state.cards = [...state.cards, ...newCards];
                 }
-
-                state.pagination.total = action.payload.data.total;
-                state.pagination.page = action.payload.data.page;
-                state.pagination.hasMore = newCards.length === state.pagination.perPage;
             })
             .addCase(fetchPublicCards.rejected, (state: HomeState, action) => {
                 state.isLoading = false;

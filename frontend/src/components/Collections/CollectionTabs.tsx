@@ -2,13 +2,14 @@ import {useRef, useState, useEffect} from 'react';
 import css from './CollectionTabs.module.css'
 import {Collection} from "@store/store.ts";
 import CollectionDropZone from './CollectionDropZone';
+import {LIKED} from "@/constants/collections.ts";
 
 interface CollectionTabsProps {
     collections: Collection[];
     selectedId: string;
     onSelect: (id: string) => void;
     isLoading: boolean;
-    onCardDrop?: (cardId: string, targetCollectionId: string | null, sourceCollectionId: string | null) => void;
+    onCardDrop?: (cardId: string, targetCollectionId: string, sourceCollectionId: string) => void;
 }
 
 export default function CollectionTabs({
@@ -77,13 +78,15 @@ export default function CollectionTabs({
                 <div
                     ref={scrollContainerRef}
                     onScroll={checkScroll}
-                    className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide"
+                    className="flex-1 flex gap-2 scrollbar-hide"
                 >
                     {collections.map((collection) => {
+                        const isActive = collection.id !== LIKED && selectedId !== collection.id
+
                         return <CollectionDropZone
                             collectionId={collection.id}
                             onCardDrop={onCardDrop}
-                            isActive={true}
+                            isActive={isActive}
                         >
                             <button
                                 onClick={() => onSelect(collection.id)}

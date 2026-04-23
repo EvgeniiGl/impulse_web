@@ -79,7 +79,7 @@ export default function MyPage() {
     const handleLoadMore = () => {
         const nextPage = pagination.page + 1;
 
-        if (selectedCollectionId === null) {
+        if (selectedCollectionId === COMMON) {
             dispatch(fetchMyCards({page: nextPage, perPage: 12}));
         } else {
             dispatch(fetchCardsByCollection({
@@ -100,8 +100,8 @@ export default function MyPage() {
 
     const handleCardDrop = async (
         cardId: string,
-        targetCollectionId: string | null,
-        sourceCollectionId: string | null  // Теперь получаем sourceCollectionId
+        targetCollectionId: string,
+        sourceCollectionId: string
     ) => {
         try {
             // Находим карточку
@@ -113,7 +113,7 @@ export default function MyPage() {
 
             let newCollectionIds: string[];
 
-            if (targetCollectionId === null) {
+            if (targetCollectionId === COMMON) {
                 // Перемещение в "Общую" - удаляем все коллекции
                 newCollectionIds = [];
             } else {
@@ -152,7 +152,7 @@ export default function MyPage() {
     };
 
     const refreshCards = () => {
-        if (selectedCollectionId === null) {
+        if (selectedCollectionId === COMMON) {
             dispatch(fetchMyCards({page: 1, perPage: 12}));
         } else {
             dispatch(fetchCardsByCollection({

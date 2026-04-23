@@ -444,7 +444,12 @@ class CardsController extends BaseController
                 ], 401);
             }
 
-            $accessibleCards = $user->getMyCardsWithWriteAccess();
+            $page    = (int)$this->request->getQuery('page', 'int', 1);
+            $perPage = (int)$this->request->getQuery('per_page', 'int', 12);
+
+            $offset = ($page - 1) * $perPage;
+
+            $accessibleCards = $user->getMyCardsWithWriteAccess($offset, $perPage);
             $cards           = [];
 
             foreach ($accessibleCards as $cardData) {
@@ -497,8 +502,10 @@ class CardsController extends BaseController
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
-                    'cards' => $cards,
-                    'total' => count($cards)
+                    'cards'    => $cards,
+                    'total'    => count($cards),
+                    'page'     => $page,
+                    'per_page' => $perPage
                 ]
             ]);
 

@@ -289,7 +289,7 @@ class LikesController extends BaseController
         ]);
 
         $total = CardLike::count([
-            'conditions' => 'user_id = :user_id:',
+            'conditions' => $conditions,
             'bind'       => ['user_id' => $user->id]
         ]);
 
