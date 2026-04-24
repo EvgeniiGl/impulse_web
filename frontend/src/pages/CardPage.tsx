@@ -92,7 +92,7 @@ export default function CardPage() {
         <>
             <Header/>
             <Main>
-                <div className="flex h-screen" style={{justifyContent: 'center'}}>
+                <div className="flex h-screen" style={{justifyContent: 'center', background: 'var(--bg-secondary)'}}>
                     {/* Image panel */}
                     <div style={{display: 'flex', flexDirection: 'column', height: '100vh', maxWidth: '50%'}}>
                         <div style={{flex: 1, minHeight: 0}}>
