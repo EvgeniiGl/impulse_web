@@ -3,4 +3,15 @@
     flex-direction: column;
     justify-content: space-between;
     min-width: 320px;
+    max-height: 960px;
+}
+
+@media (min-height: 900px) {
+    .info_panel {
+        min-height: 900px;
+    }
+
+    .info_panel_container {
+        align-items: center;
+    }
 }

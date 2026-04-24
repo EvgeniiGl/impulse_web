@@ -92,7 +92,7 @@ export default function CardPage() {
         <>
             <Header/>
             <Main>
-                <div className="flex h-screen">
+                <div className="flex h-screen" style={{justifyContent: 'center'}}>
                     {/* Image panel */}
                     <div style={{display: 'flex', flexDirection: 'column', height: '100vh', maxWidth: '50%'}}>
                         <div style={{flex: 1, minHeight: 0}}>
@@ -163,87 +163,89 @@ export default function CardPage() {
                     </div>
 
                     {/* Info panel */}
-                    <div className={`p-8 overflow-y-auto ${css.info_panel}`}>
-                        <div>
-                            {/* Заголовок */}
-                            <div className="flex items-start gap-2">
-                                <h3 className="text-2xl font-bold text-gray-900">{currentCard.title}</h3>
-                            </div>
-
-                            {/* Статус отображения названия */}
-                            {/*<div className="mt-5 flex items-center gap-3">*/}
-                            {/*    <div className="flex items-center gap-3">*/}
-                            {/*        <div*/}
-                            {/*            className={`w-10 h-6 rounded-full ${showTitle ? 'bg-[var(--color-primary)]' : 'bg-gray-200'}`}*/}
-                            {/*        >*/}
-                            {/*            <div*/}
-                            {/*                className={`w-5 h-5 bg-white rounded-full shadow transform translate-y-0.5 transition-transform ${showTitle ? 'translate-x-4' : 'translate-x-1'}`}*/}
-                            {/*            />*/}
-                            {/*        </div>*/}
-                            {/*        <span className="text-sm font-medium text-gray-700">*/}
-                            {/*        {t('cards.showTitleOnImage')}*/}
-                            {/*    </span>*/}
-                            {/*    </div>*/}
-                            {/*</div>*/}
-
-                            {/* Description section */}
-                            <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center">
-                                        <LiaSignatureSolid className="w-4 h-4 text-gray-500 mr-2"/>
-                                        <h3 className="font-medium text-gray-900">{t('cards.descriptionLabel')}</h3>
-                                    </div>
+                    <div className={`flex ${css.info_panel_container}`}>
+                        <div className={`p-8 overflow-y-auto ${css.info_panel}`}>
+                            <div>
+                                {/* Заголовок */}
+                                <div className="flex items-start gap-2">
+                                    <h3 className="text-2xl font-bold text-gray-900">{currentCard.title}</h3>
                                 </div>
 
-                                {currentCard.description ? (
-                                    <p className="text-gray-700 whitespace-pre-wrap">
-                                        {currentCard.description}
-                                    </p>
-                                ) : (
-                                    <p className="text-gray-400 italic">
-                                        {t('cards.noDescription')}
-                                    </p>
-                                )}
-                            </div>
+                                {/* Статус отображения названия */}
+                                {/*<div className="mt-5 flex items-center gap-3">*/}
+                                {/*    <div className="flex items-center gap-3">*/}
+                                {/*        <div*/}
+                                {/*            className={`w-10 h-6 rounded-full ${showTitle ? 'bg-[var(--color-primary)]' : 'bg-gray-200'}`}*/}
+                                {/*        >*/}
+                                {/*            <div*/}
+                                {/*                className={`w-5 h-5 bg-white rounded-full shadow transform translate-y-0.5 transition-transform ${showTitle ? 'translate-x-4' : 'translate-x-1'}`}*/}
+                                {/*            />*/}
+                                {/*        </div>*/}
+                                {/*        <span className="text-sm font-medium text-gray-700">*/}
+                                {/*        {t('cards.showTitleOnImage')}*/}
+                                {/*    </span>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
 
-                            {/* Creator info */}
-                            {currentCard.creator && (
-                                <div className="mt-6 pt-6 border-t border-gray-200">
-                                    <h4 className="text-sm font-medium text-gray-500 mb-3">
-                                        {t('cards.createdBy')}
-                                    </h4>
-                                    <div className="flex items-center gap-3">
-                                        {/* Аватар */}
-                                        <div
-                                            className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-medium shrink-0">
+                                {/* Description section */}
+                                <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center">
+                                            <LiaSignatureSolid className="w-4 h-4 text-gray-500 mr-2"/>
+                                            <h3 className="font-medium text-gray-900">{t('cards.descriptionLabel')}</h3>
+                                        </div>
+                                    </div>
+
+                                    {currentCard.description ? (
+                                        <p className="text-gray-700 whitespace-pre-wrap">
+                                            {currentCard.description}
+                                        </p>
+                                    ) : (
+                                        <p className="text-gray-400 italic">
+                                            {t('cards.noDescription')}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Creator info */}
+                                {currentCard.creator && (
+                                    <div className="mt-6 pt-6 border-t border-gray-200">
+                                        <h4 className="text-sm font-medium text-gray-500 mb-3">
+                                            {t('cards.createdBy')}
+                                        </h4>
+                                        <div className="flex items-center gap-3">
+                                            {/* Аватар */}
+                                            <div
+                                                className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-medium shrink-0">
                                         <span>
                                             {currentCard.creator.name?.charAt(0).toUpperCase() || '?'}
                                         </span>
-                                        </div>
-                                        {/* Имя и email */}
-                                        <div className="flex flex-col min-w-0">
+                                            </div>
+                                            {/* Имя и email */}
+                                            <div className="flex flex-col min-w-0">
                                         <span className="text-sm font-medium text-gray-900 truncate">
                                             {currentCard.creator.name}
                                         </span>
-                                            <span className="text-xs text-gray-500 truncate">
+                                                <span className="text-xs text-gray-500 truncate">
                                             {currentCard.creator.email}
                                         </span>
+                                            </div>
                                         </div>
                                     </div>
+                                )}
+                            </div>
+                            {isOwner && (
+                                <div>
+                                    <button
+                                        onClick={handleEditClick}
+                                        className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full hover:bg-[var(--color-primary-dark)] transition font-medium shadow-lg hover:shadow-xl"
+                                    >
+                                        <RiEdit2Line size={20}/>
+                                        {t('common.edit')}
+                                    </button>
                                 </div>
                             )}
                         </div>
-                        {isOwner && (
-                            <div>
-                                <button
-                                    onClick={handleEditClick}
-                                    className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full hover:bg-[var(--color-primary-dark)] transition font-medium shadow-lg hover:shadow-xl"
-                                >
-                                    <RiEdit2Line size={20}/>
-                                    {t('common.edit')}
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </div>
 

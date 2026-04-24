@@ -76,6 +76,16 @@ class BaseController extends PhalconController
     }
 
     /**
+     * @throws UnauthorizedException
+     */
+    protected function getUserId(): string
+    {
+        $user = $this->getAuthenticatedUser();
+
+        return $user->id;
+    }
+
+    /**
      * Проверяет, является ли маршрут публичным
      */
     private function isPublicRoute(string $uri): bool

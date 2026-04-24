@@ -48,7 +48,41 @@
   },
   "today": {
     "title": "Today's Page",
-    "content": "Content for today page"
+    "content": "Content for today page",
+    "pageTitle": "Today",
+    "sent": "Sent",
+    "waiting": "Pending",
+    "untitledCard": "Untitled",
+    "autoRefresh": "Auto-refresh",
+    "refresh": "Refresh",
+    "noFilterResults": "No notifications for this filter",
+    "stats": {
+      "total": "Total",
+      "sent": "Sent",
+      "pending": "Pending"
+    },
+    "filter": {
+      "all": "All",
+      "pending": "Pending",
+      "sent": "Sent"
+    },
+    "frequency": {
+      "once": "Once",
+      "minutely": "Every minute",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "empty": {
+      "title": "No notifications for today",
+      "description": "You don't have any scheduled notifications for today. Set up notifications for your cards.",
+      "goToNotifications": "Go to notifications"
+    },
+    "error": {
+      "loadFailed": "Failed to load notifications"
+    }
   },
   "my": {
     "title": "My Cards",

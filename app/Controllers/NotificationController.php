@@ -263,13 +263,6 @@ class NotificationController extends BaseController
         }
     }
 
-    private function getUserId(): string
-    {
-        $user = $this->getAuthenticatedUser();
-
-        return $user->id;
-    }
-
     /**
      * Валидация подписки
      * POST /api/notifications/validate-subscription

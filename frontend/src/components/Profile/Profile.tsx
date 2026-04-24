@@ -98,7 +98,8 @@ const Profile = () => {
             </div>
             {/* Имя или Email */}
             <div className="hidden sm:flex flex-col cursor-pointer">
-                <span className="text-sm font-medium text-gray-800 truncate max-w-[150px]">
+                <span
+                    className="text-sm font-medium text-[var(--text-primary)] hover:text-[var(--text-secondary)] truncate max-w-[150px] underline decoration-dotted underline-offset-2 transition-colors duration-200">
                     {displayName}
                 </span>
             </div>

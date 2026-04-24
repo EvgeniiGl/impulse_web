@@ -157,6 +157,12 @@ return function (): Router {
         'action'     => 'validateSubscription'
     ]);
 
+// Today — уведомления на сегодня
+    $router->addGet('/api/today/notifications', [
+        'controller' => 'today',
+        'action'     => 'getNotifications'
+    ]);
+
 // Для React Router - все остальные пути на главную страницу
     $router->add('/', [
         'controller' => 'index',
