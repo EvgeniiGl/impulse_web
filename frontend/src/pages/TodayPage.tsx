@@ -17,9 +17,6 @@ export default function TodayPage() {
     const token = useAppSelector((state) => state.auth.token);
 
     const [notifications, setNotifications] = useState<TodayNotificationItem[]>([]);
-    console.log("log--",
-        "\ndnotificationsata--", notifications,
-    );
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<TodayFilter>('all');

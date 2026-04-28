@@ -58,29 +58,6 @@ export default function TodayNotificationCard({item, index}: TodayNotificationCa
             className={cardClasses}
             style={{animationDelay: `${index * 60}ms`}}
         >
-            {/* Время */}
-            <div className={css.timeBlock}>
-                <span className={css.time}>{time}</span>
-                {item.is_sent ? (
-                    <span className={`${css.badge} ${css.badgeSent}`}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        {t('today.sent')}
-                    </span>
-                ) : (
-                    <span className={`${css.badge} ${css.badgePending}`}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        {t('today.waiting')}
-                    </span>
-                )}
-            </div>
-
             {/* Карточка */}
             <div className={css.content}>
                 <Link
@@ -130,6 +107,29 @@ export default function TodayNotificationCard({item, index}: TodayNotificationCa
                         </p>
                     )}
                 </div>
+            </div>
+
+            {/* Время */}
+            <div className={css.timeBlock}>
+                <span className={css.time}>{time}</span>
+                {item.is_sent ? (
+                    <span className={`${css.badge} ${css.badgeSent}`}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {t('today.sent')}
+                    </span>
+                ) : (
+                    <span className={`${css.badge} ${css.badgePending}`}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        {t('today.waiting')}
+                    </span>
+                )}
             </div>
         </div>
     );
