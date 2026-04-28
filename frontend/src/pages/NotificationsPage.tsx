@@ -115,7 +115,6 @@ export const NotificationsPage: React.FC = () => {
     const getFrequencyLabel = (frequency: string): string => {
         const labels: Record<string, string> = {
             once: 'Один раз',
-            minutely: 'Каждую минуту',
             hourly: 'Каждый час',
             daily: 'Каждый день',
             weekly: 'Каждую неделю',

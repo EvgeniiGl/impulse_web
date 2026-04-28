@@ -68,7 +68,6 @@
     },
     "frequency": {
       "once": "Once",
-      "minutely": "Every minute",
       "hourly": "Hourly",
       "daily": "Daily",
       "weekly": "Weekly",

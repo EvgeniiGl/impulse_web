@@ -52,7 +52,6 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
 
     const frequencyOptions: { value: NotificationFrequency; label: string }[] = [
         {value: 'once', label: 'Один раз'},
-        {value: 'minutely', label: 'Каждую минуту'},
         {value: 'hourly', label: 'Каждый час'},
         {value: 'daily', label: 'Каждый день'},
         {value: 'weekly', label: 'Каждую неделю'},

@@ -121,8 +121,6 @@ class CardNotificationSchedule extends Model
     private function getDateInterval(): ?\DateInterval
     {
         switch ($this->frequency) {
-            case 'minutely':
-                return new \DateInterval('PT1M');
             case 'hourly':
                 return new \DateInterval('PT1H');
             case 'daily':
@@ -161,8 +159,6 @@ class CardNotificationSchedule extends Model
         $totalMinutes = $diff->days * 24 * 60 + $diff->h * 60 + $diff->i;
 
         switch ($frequency) {
-            case 'minutely':
-                return (int)($totalMinutes / 1);
             case 'hourly':
                 return (int)($totalMinutes / 60);
             case 'daily':

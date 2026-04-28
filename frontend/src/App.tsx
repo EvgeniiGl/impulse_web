@@ -13,6 +13,7 @@ import CardEditorPage from "@pages/CardEditorPage.tsx";
 import CardPage from "@pages/CardPage.tsx";
 import {NotificationsPage} from "@pages/NotificationsPage.tsx";
 import {SubscriptionWarning} from "@components/Notifications/SubscriptionWarning.tsx";
+import {DevicesPage} from "@pages/DevicesPage .tsx";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -40,6 +41,7 @@ function App() {
                         <Route path="/register" element={<RegisterPage/>}/>
                         <Route path="/card/:id" element={<CardPage/>}/>
                         <Route path="/notification" element={<NotificationsPage/>}/>
+                        <Route path="/devices" element={<DevicesPage/>}/>
                     </Routes>
                 </div>
             </Router>

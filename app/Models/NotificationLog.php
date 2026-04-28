@@ -9,14 +9,16 @@ use Ramsey\Uuid\Uuid;
 
 class NotificationLog extends Model
 {
-    public ?string $id            = null;
+    public ?string $id              = null;
     public string  $schedule_id;
     public string  $user_id;
     public string  $card_id;
     public string  $status;
-    public ?string $error_message = null;
-    public ?string $sent_at       = null;
-    public ?string $clicked_at    = null;
+    public ?string $error_message   = null;
+    public ?string $sent_at         = null;
+    public ?string $clicked_at      = null;
+    public string  $channel         = 'web_push'; // 'web_push' | 'fcm' | 'apns'
+    public ?string $device_token_id = null;
 
     public function initialize()
     {

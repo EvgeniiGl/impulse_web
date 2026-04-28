@@ -157,6 +157,33 @@ return function (): Router {
         'action'     => 'validateSubscription'
     ]);
 
+    // ============ Mobile Device Token маршруты ============
+
+    $router->addPost('/api/devices/register', [
+        'controller' => 'mobileDevice',
+        'action'     => 'register',
+    ]);
+
+    $router->addGet('/api/devices', [
+        'controller' => 'mobileDevice',
+        'action'     => 'list',
+    ]);
+
+    $router->addDelete('/api/devices/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}', [
+        'controller' => 'mobileDevice',
+        'action'     => 'unregister',
+    ]);
+
+    $router->addPatch('/api/devices/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/toggle', [
+        'controller' => 'mobileDevice',
+        'action'     => 'toggle',
+    ]);
+
+    $router->addPost('/api/devices/{id:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}}/test', [
+        'controller' => 'mobileDevice',
+        'action'     => 'testPush',
+    ]);
+
 // Today — уведомления на сегодня
     $router->addGet('/api/today/notifications', [
         'controller' => 'today',
@@ -190,6 +217,11 @@ return function (): Router {
     ]);
 
     $router->add('/notification', [
+        'controller' => 'index',
+        'action'     => 'index'
+    ]);
+
+    $router->add('/devices', [
         'controller' => 'index',
         'action'     => 'index'
     ]);

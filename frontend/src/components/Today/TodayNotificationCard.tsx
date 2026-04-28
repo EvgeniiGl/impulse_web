@@ -22,7 +22,6 @@ const ImagePlaceholder = () => (
 const getFrequencyLabel = (frequency: string, t: (key: string) => string): string => {
     const labels: Record<string, string> = {
         once: t('today.frequency.once'),
-        minutely: t('today.frequency.minutely'),
         hourly: t('today.frequency.hourly'),
         daily: t('today.frequency.daily'),
         weekly: t('today.frequency.weekly'),

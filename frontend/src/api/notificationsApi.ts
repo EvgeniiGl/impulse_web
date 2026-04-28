@@ -3,7 +3,6 @@ import {config} from "@api/api_config.ts";
 
 export type NotificationFrequency =
     | 'once'
-    | 'minutely'
     | 'hourly'
     | 'daily'
     | 'weekly'

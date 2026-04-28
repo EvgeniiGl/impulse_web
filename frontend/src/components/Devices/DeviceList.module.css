@@ -1,0 +1,441 @@
+.container {
+    max-width: 720px;
+    margin: 40px auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-black);
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    margin: 4px 0 0;
+}
+
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--color-white);
+    color: var(--color-gray-600);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refreshBtn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light2);
+}
+
+.refreshBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.spinning {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Список устройств */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Карточка устройства */
+.deviceCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    background: var(--color-white);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.deviceCard:hover {
+    border-color: var(--color-primary-light);
+    box-shadow: 0 2px 8px rgba(137, 125, 245, 0.08);
+}
+
+.deviceCardInactive {
+    opacity: 0.55;
+    background: var(--color-gray-50);
+}
+
+.deviceCardInactive:hover {
+    opacity: 0.75;
+}
+
+/* Иконка платформы */
+.platformIcon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.3rem;
+}
+
+.platformIos {
+    background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+    color: #333;
+}
+
+.platformAndroid {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #2e7d32;
+}
+
+/* Информация об устройстве */
+.deviceInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.deviceNameRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.deviceName {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-black);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badgeActive {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.badgeInactive {
+    background: rgba(107, 114, 128, 0.1);
+    color: var(--color-gray-500);
+}
+
+.deviceMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-top: 6px;
+}
+
+.metaItem {
+    font-size: 0.78rem;
+    color: var(--color-gray-500);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.metaLabel {
+    color: var(--color-gray-400);
+}
+
+.deviceToken {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: var(--color-gray-400);
+    font-family: monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    padding: 4px 8px;
+    background: var(--color-gray-50);
+    border-radius: 4px;
+    border: 1px solid var(--border-primary);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.deviceToken:hover {
+    background: var(--color-gray-100);
+}
+
+/* Действия */
+.actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.actionBtn {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--color-white);
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.9rem;
+}
+
+.actionBtn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light2);
+}
+
+.actionBtnDanger:hover {
+    border-color: var(--color-error);
+    color: var(--color-error);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.actionBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Пустое состояние */
+.emptyState {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--color-gray-50);
+    border-radius: 12px;
+    border: 1px dashed var(--border-secondary);
+}
+
+.emptyIcon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.emptyTitle {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-black);
+    margin: 0 0 6px;
+}
+
+.emptyText {
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Лоадер */
+.loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    color: var(--color-primary);
+}
+
+.loaderDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    animation: pulse 1.2s ease-in-out infinite;
+    margin: 0 4px;
+}
+
+.loaderDot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loaderDot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Уведомления (toast-like) */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alertSuccess {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #065f46;
+}
+
+.alertError {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #991b1b;
+}
+
+.alertDismiss {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.1rem;
+    opacity: 0.6;
+    padding: 0;
+    line-height: 1;
+}
+
+.alertDismiss:hover {
+    opacity: 1;
+}
+
+/* Счётчик */
+.statsRow {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.statCard {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--color-white);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+    margin-top: 2px;
+}
+
+/* Фильтр по платформе */
+.filterRow {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.filterBtn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-primary);
+    border-radius: 20px;
+    background: var(--color-white);
+    color: var(--color-gray-600);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.filterBtn:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.filterBtnActive {
+    background: var(--color-primary);
+    color: var(--text-white);
+    border-color: var(--color-primary);
+}
+
+.filterBtnActive:hover {
+    background: var(--color-primary-dark);
+    color: var(--text-white);
+    border-color: var(--color-primary-dark);
+}
+
+/* Адаптивность */
+@media (max-width: 640px) {
+    .deviceCard {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .statsRow {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}

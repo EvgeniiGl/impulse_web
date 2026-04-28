@@ -31,6 +31,7 @@ class BaseController extends PhalconController
         '/collection/create',
         '/register',
         '/notification',
+        '/devices',
         '/api/home/cards',
         '/api/home/search',
     ];
