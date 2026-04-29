@@ -47,7 +47,7 @@ export default function CollectionList({
                                 ({collection.card_count})
                             </span>
                         </span>
-                        {collection.id && <button
+                        {collection.id !== 'common' && collection.id !== 'liked' && <button
                             onClick={(e) => handleDelete(e, collection.id)}
                             className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs"
                             title={t('collections.delete') || 'Удалить'}

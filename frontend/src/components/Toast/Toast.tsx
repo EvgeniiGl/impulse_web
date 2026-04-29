@@ -26,7 +26,7 @@ export const Toast: React.FC = () => {
 
             setTimeout(() => {
                 setToasts(prev => prev.filter(toast => toast.id !== id));
-            }, 2000);
+            }, 3000);
         };
 
         return () => {

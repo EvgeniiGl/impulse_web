@@ -46,6 +46,7 @@ return [
     'Card not found or access denied'                                                           => 'Карточка не найдена или доступ запрещён',
     'Access denied'                                                                             => 'Доступ запрещён',
     'Card hidden successfully'                                                                  => 'Карточка скрыта',
+    'Private cards limit reached'                                                               => 'Достигнут лимит приватных карточек. Нельзя иметь более %limit% приватных карточек.',
 
     // -------------------------------------------------------------------------
     // Validation — users / auth

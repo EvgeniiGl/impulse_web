@@ -1,5 +1,5 @@
-import {useRef, useState, useEffect} from 'react';
-import css from './CollectionTabs.module.css'
+import {useRef, useState, useEffect, useCallback} from 'react';
+import css from './CollectionTabs.module.css';
 import {Collection} from "@store/store.ts";
 import CollectionDropZone from './CollectionDropZone';
 import {LIKED} from "@/constants/collections.ts";
@@ -23,101 +23,103 @@ export default function CollectionTabs({
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
 
-    const checkScroll = () => {
-        if (scrollContainerRef.current) {
-            const {scrollLeft, scrollWidth, clientWidth} = scrollContainerRef.current;
-            setCanScrollLeft(scrollLeft > 0);
-            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-        }
-    };
+    const checkScroll = useCallback(() => {
+        const el = scrollContainerRef.current;
+        if (!el) return;
+        setCanScrollLeft(el.scrollLeft > 0);
+        setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    }, []);
 
     useEffect(() => {
         checkScroll();
         window.addEventListener('resize', checkScroll);
-        return () => window.removeEventListener('resize', checkScroll);
-    }, [collections]);
+        // ResizeObserver следит за изменением размера самого контейнера
+        const ro = new ResizeObserver(checkScroll);
+        if (scrollContainerRef.current) ro.observe(scrollContainerRef.current);
+        return () => {
+            window.removeEventListener('resize', checkScroll);
+            ro.disconnect();
+        };
+    }, [collections, checkScroll]);
 
     const scroll = (direction: 'left' | 'right') => {
-        if (scrollContainerRef.current) {
-            const scrollAmount = 200;
-            scrollContainerRef.current.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-            setTimeout(checkScroll, 300);
-        }
+        const el = scrollContainerRef.current;
+        if (!el) return;
+        el.scrollBy({left: direction === 'left' ? -200 : 200, behavior: 'smooth'});
+        setTimeout(checkScroll, 300);
     };
 
     if (isLoading) {
         return (
-            <div className="flex gap-2 mb-6">
+            <div className={css.skeleton}>
                 {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-10 w-24 rounded-lg animate-pulse"/>
+                    <div key={i} className={css.skeletonItem}/>
                 ))}
             </div>
         );
     }
 
     return (
-        <div className="mb-6">
-            <div className="flex items-center gap-2">
-                {/* Левая кнопка прокрутки */}
-                {canScrollLeft && (
-                    <button
-                        onClick={() => scroll('left')}
-                        className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition"
-                        aria-label="Scroll left"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-                        </svg>
-                    </button>
-                )}
-
-                {/* Контейнер с табами */}
-                <div
-                    ref={scrollContainerRef}
-                    onScroll={checkScroll}
-                    className="flex-1 flex gap-2 scrollbar-hide"
+        <div className={css.wrapper}>
+            {/* Кнопка прокрутки влево */}
+            {canScrollLeft && (
+                <button
+                    className={css.scrollBtn}
+                    onClick={() => scroll('left')}
+                    aria-label="Scroll left"
                 >
-                    {collections.map((collection) => {
-                        const isActive = collection.id !== LIKED && selectedId !== collection.id
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+            )}
 
-                        return <CollectionDropZone
+            {/* Контейнер со скроллом — ключевые свойства в CSS-модуле */}
+            <div
+                ref={scrollContainerRef}
+                onScroll={checkScroll}
+                className={css.scrollContainer}
+            >
+                {collections.map((collection) => {
+                    const isDropActive = collection.id !== LIKED && selectedId !== collection.id;
+
+                    return (
+                        <CollectionDropZone
+                            key={collection.id}
                             collectionId={collection.id}
                             onCardDrop={onCardDrop}
-                            isActive={isActive}
+                            isActive={isDropActive}
                         >
                             <button
                                 onClick={() => onSelect(collection.id)}
-                                className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition whitespace-nowrap ${
-                                    (selectedId === collection.id)
-                                        ? `${css.tabBtnActive}`
-                                        : `${css.tabBtn}`
+                                className={`${css.tabBase} ${
+                                    selectedId === collection.id
+                                        ? css.tabBtnActive
+                                        : css.tabBtn
                                 }`}
                             >
                                 {collection.name}
-                                <span className="ml-2 text-xs opacity-75">
+                                <span className={css.count}>
                                     ({collection.card_count})
                                 </span>
                             </button>
                         </CollectionDropZone>
-                    })}
-                </div>
-
-                {/* Правая кнопка прокрутки */}
-                {canScrollRight && (
-                    <button
-                        onClick={() => scroll('right')}
-                        className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition"
-                        aria-label="Scroll right"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-                        </svg>
-                    </button>
-                )}
+                    );
+                })}
             </div>
+
+            {/* Кнопка прокрутки вправо */}
+            {canScrollRight && (
+                <button
+                    className={css.scrollBtn}
+                    onClick={() => scroll('right')}
+                    aria-label="Scroll right"
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            )}
         </div>
     );
 }

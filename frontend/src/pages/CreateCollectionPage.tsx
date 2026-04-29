@@ -19,7 +19,7 @@ export default function CreateCollectionPage() {
 
     const [formData, setFormData] = useState({
         name: '',
-        access_type: 'private' as AccessType,
+        access_type: 'public' as AccessType,
     });
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false); // Добавляем состояние для блокировки повторных отправок
@@ -53,12 +53,12 @@ export default function CreateCollectionPage() {
         }
     };
 
-    const handleAccessTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFormData(prev => ({
-            ...prev,
-            access_type: e.target.value as AccessType
-        }));
-    };
+    // const handleAccessTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         access_type: e.target.value as AccessType
+    //     }));
+    // };
 
     const validateForm = (): boolean => {
         const errors: Record<string, string> = {};
@@ -151,33 +151,33 @@ export default function CreateCollectionPage() {
                                 </div>
 
                                 {/* Тип доступа */}
-                                <div>
-                                    <label htmlFor="access_type"
-                                           className="block text-sm font-medium text-gray-700 mb-2">
-                                        {t('cards.accessType') || 'Тип доступа'} *
-                                    </label>
-                                    <select
-                                        id="access_type"
-                                        name="access_type"
-                                        value={formData.access_type}
-                                        onChange={handleAccessTypeChange}
-                                        disabled={isSubmitting} // Блокируем select во время отправки
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    >
-                                        <option value="private">
-                                            {t('cards.private') || 'Приватная'} - {t('cards.privateDesc') || 'Только вы'}
-                                        </option>
-                                        <option value="public">
-                                            {t('cards.public') || 'Публичная'} - {t('cards.publicDesc') || 'Все пользователи'}
-                                        </option>
-                                    </select>
-                                    <p className="mt-1 text-xs text-gray-500">
-                                        {formData.access_type === 'public'
-                                            ? t('cards.publicInfo') || 'Коллекция будет видна всем пользователям'
-                                            : t('cards.privateInfo') || 'Коллекция видна только вам'
-                                        }
-                                    </p>
-                                </div>
+                                {/*<div>*/}
+                                {/*    <label htmlFor="access_type"*/}
+                                {/*           className="block text-sm font-medium text-gray-700 mb-2">*/}
+                                {/*        {t('cards.accessType') || 'Тип доступа'} **/}
+                                {/*    </label>*/}
+                                {/*    <select*/}
+                                {/*        id="access_type"*/}
+                                {/*        name="access_type"*/}
+                                {/*        value={formData.access_type}*/}
+                                {/*        onChange={handleAccessTypeChange}*/}
+                                {/*        disabled={isSubmitting} // Блокируем select во время отправки*/}
+                                {/*        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"*/}
+                                {/*    >*/}
+                                {/*        <option value="private">*/}
+                                {/*            {t('cards.private') || 'Приватная'} - {t('cards.privateDesc') || 'Только вы'}*/}
+                                {/*        </option>*/}
+                                {/*        <option value="public">*/}
+                                {/*            {t('cards.public') || 'Публичная'} - {t('cards.publicDesc') || 'Все пользователи'}*/}
+                                {/*        </option>*/}
+                                {/*    </select>*/}
+                                {/*    <p className="mt-1 text-xs text-gray-500">*/}
+                                {/*        {formData.access_type === 'public'*/}
+                                {/*            ? t('cards.publicInfo') || 'Коллекция будет видна всем пользователям'*/}
+                                {/*            : t('cards.privateInfo') || 'Коллекция видна только вам'*/}
+                                {/*        }*/}
+                                {/*    </p>*/}
+                                {/*</div>*/}
 
                                 {/* Кнопки */}
                                 <div className="flex gap-4 pt-4">

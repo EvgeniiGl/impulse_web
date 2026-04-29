@@ -29,7 +29,10 @@ export function handleServiceError(error: unknown) {
 
     if (error instanceof AxiosError) {
         if (error.response) {
-            errorMessage = error.response.data?.message || `Ошибка ${error.response.status}`;
+            console.log("log--",
+                "\nerror.response--", error.response,
+            );
+            errorMessage = error.response.data?.error || error.response.data?.message || `Ошибка ${error.response.status}`;
         } else if (error.request) {
             errorMessage = 'Нет ответа от сервера';
         } else {

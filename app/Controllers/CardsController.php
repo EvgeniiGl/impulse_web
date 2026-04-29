@@ -17,6 +17,11 @@ use Exception;
 
 class CardsController extends BaseController
 {
+    /**
+     * Максимальное количество приватных карточек на пользователя
+     */
+    private const int PRIVATE_CARDS_LIMIT = 10;
+
     private CardService $cardService;
 
     /**
@@ -29,12 +34,25 @@ class CardsController extends BaseController
     }
 
     /**
+     * Подсчёт приватных карточек пользователя
+     */
+    private function countUserPrivateCards(string $userId): int
+    {
+        return (int)Card::count([
+            'conditions' => 'creator_id = :creator_id: AND access_type = :access_type:',
+            'bind'       => [
+                'creator_id'  => $userId,
+                'access_type' => Card::ACCESS_PRIVATE,
+            ],
+        ]);
+    }
+
+    /**
      * Создание карточки
      */
     public function createAction(): \Phalcon\Http\Response
     {
         try {
-            // Получаем текущего пользователя из JWT
             $user = $this->getAuthenticatedUser();
             if (!$user) {
                 return $this->jsonResponse([
@@ -43,7 +61,6 @@ class CardsController extends BaseController
                 ], 401);
             }
 
-            // Получаем данные из запроса
             $data = $this->request->getPost();
             $file = $this->request->getUploadedFiles();
             $file = !empty($file) ? $file[0] : null;
@@ -55,12 +72,27 @@ class CardsController extends BaseController
                 ], 422);
             }
 
+            // Проверка лимита приватных карточек
+            $accessType = $data['access_type'] ?? Card::ACCESS_PRIVATE;
+            if ($accessType === Card::ACCESS_PRIVATE) {
+                $privateCount = $this->countUserPrivateCards($user->id);
+                if ($privateCount >= self::PRIVATE_CARDS_LIMIT) {
+                    return $this->jsonResponse([
+                        'success' => false,
+                        'error'   => TranslationHelper::translate(
+                            'Private cards limit reached',
+                            ['%limit%' => self::PRIVATE_CARDS_LIMIT]
+                        ),
+                        'limit'   => self::PRIVATE_CARDS_LIMIT,
+                        'current' => $privateCount,
+                    ], 403);
+                }
+            }
+
             $request = new CreateCardRequest($data, $file);
 
-            // Создаем карточку
             $card = $this->cardService->createCard($request, $user);
 
-            // Получаем информацию о коллекциях карточки
             $collections   = [];
             $collectionIds = [];
             if (method_exists($card, 'getCollections')) {
@@ -92,197 +124,10 @@ class CardsController extends BaseController
                     'is_active'           => $card->is_active,
                     'show_title_on_image' => $card->show_title_on_image,
                     'title_color'         => $card->title_color ?? '#FFFFFF',
-                    'creator_id'          => $card->creator_id,
-                    'creator'             => [
-                        'id'    => $user->id,
-                        'name'  => $user->name,
-                        'email' => $user->email
-                    ],
                     'collectionIds'       => $collectionIds,
                     'collections'         => $collections,
-                    'collections_count'   => count($collections),
-                    'likes_count'         => 0,
-                    'is_liked'            => false,
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
-                ]
-            ], 201);
-
-        } catch (Exception $e) {
-            return $this->jsonResponse([
-                'success' => false,
-                'error'   => $e->getMessage()
-            ], 400);
-        }
-    }
-
-    /**
-     * Получение карточки по ID
-     */
-    public function getAction(string $id): \Phalcon\Http\Response
-    {
-        try {
-            $user = $this->getAuthenticatedUser();
-            $card = Card::findFirst([
-                'conditions' => 'id = :id:',
-                'bind'       => ['id' => $id]
-            ]);
-
-            if (!$card) {
-                return $this->jsonResponse([
-                    'success' => false,
-                    'error'   => TranslationHelper::translate('Card not found')
-                ], 404);
-            }
-
-            // Проверяем доступ
-            if (!$card->hasAccess($user)) {
-                return $this->jsonResponse([
-                    'success' => false,
-                    'error'   => TranslationHelper::translate('Access denied')
-                ], 403);
-            }
-
-            // Получаем создателя
-            $creator = $card->getCreator();
-
-            // Получаем коллекции карточки
-            $collections   = [];
-            $collectionIds = [];
-            if (method_exists($card, 'getCollections')) {
-                $cardCollections = $card->getCollections();
-                foreach ($cardCollections as $collection) {
-                    $collectionIds[] = $collection->id;
-                    $collections[]   = [
-                        'id'          => $collection->id,
-                        'name'        => $collection->name,
-                        'description' => $collection->description,
-                        'access_type' => $collection->access_type,
-                    ];
-                }
-            }
-
-            // Получаем информацию о лайках
-            $likesCount = CardLike::getCardLikesCount($card->id);
-            $isLiked    = $user ? CardLike::isLiked($card->id, $user->id) : false;
-
-            $locale    = TranslationHelper::getLocale();
-            $createdAt = Date::fromString($card->created_at);
-            $updatedAt = Date::fromString($card->updated_at);
-
-            return $this->jsonResponse([
-                'success' => true,
-                'data'    => [
-                    'id'                  => $card->id,
-                    'title'               => $card->title,
-                    'description'         => $card->description,
-                    'url'                 => $card->url,
-                    'object_path'         => $card->object_path,
-                    'file_name'           => $card->file_name,
-                    'original_name'       => $card->original_name,
-                    'access_type'         => $card->access_type,
-                    'access_type_label'   => $card->getAccessTypeLabel(),
-                    'is_active'           => $card->is_active,
-                    'show_title_on_image' => $card->show_title_on_image,
-                    'title_color'         => $card->title_color ?? '#FFFFFF',
-                    'creator'             => $creator ? [
-                        'id'    => $creator->id,
-                        'name'  => $creator->name,
-                        'email' => $creator->email
-                    ] : null,
-                    'collectionIds'       => $collectionIds,
-                    'collections'         => $collections,
-                    'collections_count'   => count($collections),
-                    'likes_count'         => $likesCount,
-                    'is_liked'            => $isLiked,
-                    'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),
-                    'updated_at'          => $updatedAt->toLocale('%day% %month% %year%', $locale),
-                ]
-            ]);
-
-        } catch (Exception $e) {
-            return $this->jsonResponse([
-                'success' => false,
-                'error'   => $e->getMessage()
-            ], 400);
-        }
-    }
-
-    /**
-     * Получение всех карточек пользователя
-     */
-    public function indexAction(): \Phalcon\Http\Response
-    {
-        try {
-            $user = $this->getAuthenticatedUser();
-            if (!$user) {
-                return $this->jsonResponse([
-                    'success' => false,
-                    'error'   => TranslationHelper::translate('Authentication required')
-                ], 401);
-            }
-
-            $page    = (int)$this->request->getQuery('page', 'int', 1);
-            $perPage = (int)$this->request->getQuery('per_page', 'int', 12);
-
-            // Получаем карточки с пагинацией
-            $offset = ($page - 1) * $perPage;
-
-            $cards = Card::find([
-                'conditions' => 'creator_id = :user_id:',
-                'bind'       => ['user_id' => $user->id],
-                'order'      => 'created_at DESC',
-                'limit'      => $perPage,
-                'offset'     => $offset
-            ]);
-
-            $total = Card::count([
-                'conditions' => 'creator_id = :user_id:',
-                'bind'       => ['user_id' => $user->id]
-            ]);
-
-            $result = [];
-            foreach ($cards as $card) {
-                $creator       = $card->getCreator();
-                $collectionIds = [];
-                if (method_exists($card, 'getCollections')) {
-                    foreach ($card->getCollections() as $collection) {
-                        $collectionIds[] = $collection->id;
-                    }
-                }
-
-                // Получаем информацию о лайках
-                $likesCount = CardLike::getCardLikesCount($card->id);
-                $isLiked    = $user && CardLike::isLiked($card->id, $user->id);
-
-                $result[] = [
-                    'id'                  => $card->id,
-                    'title'               => $card->title,
-                    'description'         => $card->description,
-                    'url'                 => $card->url,
-                    'access_type'         => $card->access_type,
-                    'creator_id'          => $card->creator_id,
-                    'collectionIds'       => $collectionIds,
-                    'show_title_on_image' => $card->show_title_on_image,
-                    'title_color'         => $card->title_color ?? '#FFFFFF',
-                    'creator'             => $creator ? [
-                        'id'   => $creator->id,
-                        'name' => $creator->name,
-                    ] : null,
-                    'likes_count'         => $likesCount,
-                    'is_liked'            => $isLiked,
-                    'created_at'          => $card->created_at,
-                    'updated_at'          => $card->updated_at,
-                ];
-            }
-
-            return $this->jsonResponse([
-                'success' => true,
-                'data'    => [
-                    'cards'    => $result,
-                    'total'    => (int)$total,
-                    'page'     => $page,
-                    'per_page' => $perPage
                 ]
             ]);
 
@@ -320,14 +165,35 @@ class CardsController extends BaseController
                 ], 404);
             }
 
-            $data    = $this->request->getPost();
+            $data          = $this->request->getPost();
+            $newAccessType = $data['access_type'] ?? $card->access_type;
+
+            // Проверка лимита приватных карточек:
+            // срабатывает только если карточка переводится в private из другого типа
+            if (
+                $newAccessType === Card::ACCESS_PRIVATE
+                && $card->access_type !== Card::ACCESS_PRIVATE
+            ) {
+                $privateCount = $this->countUserPrivateCards($user->id);
+                if ($privateCount >= self::PRIVATE_CARDS_LIMIT) {
+                    return $this->jsonResponse([
+                        'success' => false,
+                        'error'   => TranslationHelper::translate(
+                            'Private cards limit reached',
+                            ['%limit%' => self::PRIVATE_CARDS_LIMIT]
+                        ),
+                        'limit'   => self::PRIVATE_CARDS_LIMIT,
+                        'current' => $privateCount,
+                    ], 403);
+                }
+            }
+
             $file    = $this->request->getUploadedFiles();
             $file    = !empty($file) ? $file[0] : null;
             $request = new UpdateCardRequest($data, $file ?: null);
-            // Обновляем карточку
+
             $updatedCard = $this->cardService->updateCard($card, $request, $user);
 
-            // Получаем обновленные коллекции
             $collections   = [];
             $collectionIds = [];
             if (method_exists($updatedCard, 'getCollections')) {
@@ -341,9 +207,7 @@ class CardsController extends BaseController
                 }
             }
 
-            $creator = $card->getCreator();
-
-            // Получаем информацию о лайках
+            $creator    = $card->getCreator();
             $likesCount = CardLike::getCardLikesCount($card->id);
             $isLiked    = CardLike::isLiked($card->id, $user->id);
 
@@ -399,8 +263,8 @@ class CardsController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'error'   => TranslationHelper::translate('Authentication required')],
-                    401);
+                    'error'   => TranslationHelper::translate('Authentication required')
+                ], 401);
             }
 
             $card = Card::findFirst([
@@ -431,7 +295,7 @@ class CardsController extends BaseController
     }
 
     /**
-     * Получение карточек пользователя: созданные им + с правом записи (write/admin)
+     * Получение карточек пользователя
      */
     public function myAction(): \Phalcon\Http\Response
     {
@@ -446,26 +310,22 @@ class CardsController extends BaseController
 
             $page    = (int)$this->request->getQuery('page', 'int', 1);
             $perPage = (int)$this->request->getQuery('per_page', 'int', 12);
-
-            $offset = ($page - 1) * $perPage;
+            $offset  = ($page - 1) * $perPage;
 
             $accessibleCards = $user->getMyCardsWithWriteAccess($offset, $perPage);
             $cards           = [];
 
             foreach ($accessibleCards as $cardData) {
                 /** @var Card $card */
-                $card = $cardData['card'];
-
-                // Получаем только ID коллекций карточки
+                $card          = $cardData['card'];
                 $collectionIds = [];
                 if (method_exists($card, 'getCollections')) {
-                    $cardCollections = $card->getCollections();
-                    foreach ($cardCollections as $collection) {
+                    foreach ($card->getCollections() as $collection) {
                         $collectionIds[] = $collection->id;
                     }
                 }
 
-                // Получаем информацию о лайках
+                $creator    = $card->getCreator();
                 $likesCount = CardLike::getCardLikesCount($card->id);
                 $isLiked    = CardLike::isLiked($card->id, $user->id);
 
@@ -475,35 +335,28 @@ class CardsController extends BaseController
                     'description'         => $card->description,
                     'url'                 => $card->url,
                     'access_type'         => $card->access_type,
-                    'access_type_label'   => $card->getAccessTypeLabel(),
-                    'access_level'        => $cardData['permission'],
-                    'is_owner'            => $cardData['access_type'] === 'owner',
                     'creator_id'          => $card->creator_id,
                     'collectionIds'       => $collectionIds,
-                    'collections_count'   => count($collectionIds),
+                    'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
+                    'creator'             => $creator ? [
+                        'id'   => $creator->id,
+                        'name' => $creator->name,
+                    ] : null,
                     'likes_count'         => $likesCount,
                     'is_liked'            => $isLiked,
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
-                    'show_title_on_image' => $card->show_title_on_image,
-                    'title_color'         => $card->title_color ?? '#FFFFFF',
-                    'is_active'           => $card->is_active,
                 ];
             }
 
-            // Сортировка: сначала свои, затем по дате создания (новые выше)
-            usort($cards, function ($a, $b) {
-                if ($a['is_owner'] !== $b['is_owner']) {
-                    return $b['is_owner'] <=> $a['is_owner']; // Свои в начало
-                }
-                return strtotime($b['created_at']) <=> strtotime($a['created_at']);
-            });
+            $total = count($accessibleCards);
 
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => [
                     'cards'    => $cards,
-                    'total'    => count($cards),
+                    'total'    => (int)$total,
                     'page'     => $page,
                     'per_page' => $perPage
                 ]
@@ -513,7 +366,92 @@ class CardsController extends BaseController
             return $this->jsonResponse([
                 'success' => false,
                 'error'   => $e->getMessage()
-            ], 500);
+            ], 400);
+        }
+    }
+
+    /**
+     * Получение одной карточки
+     */
+    public function showAction(string $id): \Phalcon\Http\Response
+    {
+        try {
+            $user = $this->getAuthenticatedUser();
+
+            $card = Card::findFirst([
+                'conditions' => 'id = :id:',
+                'bind'       => ['id' => $id]
+            ]);
+
+            if (!$card) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'error'   => TranslationHelper::translate('Card not found')
+                ], 404);
+            }
+
+            if (!$card->hasAccess($user)) {
+                return $this->jsonResponse([
+                    'success' => false,
+                    'error'   => TranslationHelper::translate('Access denied')
+                ], 403);
+            }
+
+            $creator       = $card->getCreator();
+            $collectionIds = [];
+            $collections   = [];
+            if (method_exists($card, 'getCollections')) {
+                foreach ($card->getCollections() as $collection) {
+                    $collectionIds[] = $collection->id;
+                    $collections[]   = [
+                        'id'   => $collection->id,
+                        'name' => $collection->name,
+                    ];
+                }
+            }
+
+            $likesCount = CardLike::getCardLikesCount($card->id);
+            $isLiked    = $user ? CardLike::isLiked($card->id, $user->id) : false;
+
+            $locale    = TranslationHelper::getLocale();
+            $createdAt = Date::fromString($card->created_at);
+            $updatedAt = Date::fromString($card->updated_at);
+
+            return $this->jsonResponse([
+                'success' => true,
+                'data'    => [
+                    'id'                  => $card->id,
+                    'title'               => $card->title,
+                    'description'         => $card->description,
+                    'url'                 => $card->url,
+                    'object_path'         => $card->object_path,
+                    'file_name'           => $card->file_name,
+                    'original_name'       => $card->original_name,
+                    'access_type'         => $card->access_type,
+                    'access_type_label'   => $card->getAccessTypeLabel(),
+                    'is_active'           => $card->is_active,
+                    'show_title_on_image' => $card->show_title_on_image,
+                    'title_color'         => $card->title_color ?? '#FFFFFF',
+                    'creator'             => $creator ? [
+                        'id'    => $creator->id,
+                        'name'  => $creator->name,
+                        'email' => $creator->email
+                    ] : null,
+                    'collectionIds'       => $collectionIds,
+                    'collections'         => $collections,
+                    'collections_count'   => count($collections),
+                    'likes_count'         => $likesCount,
+                    'is_liked'            => $isLiked,
+                    'created_at'          => $createdAt->toLocale('%day% %month% %year%', $locale),
+                    'updated_at'          => $updatedAt->toLocale('%day% %month% %year%', $locale),
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => $e->getMessage()
+            ], 400);
         }
     }
 }

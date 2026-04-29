@@ -46,6 +46,7 @@ return [
     'Card not found or access denied'                                                           => 'Card not found or access denied',
     'Access denied'                                                                             => 'Access denied',
     'Card hidden successfully'                                                                  => 'Card hidden successfully',
+    'Private cards limit reached'                                                               => 'Private card limit reached. You cannot have more than %limit% private cards.',
 
     // -------------------------------------------------------------------------
     // Validation — users / auth
