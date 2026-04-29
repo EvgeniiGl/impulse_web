@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Helpers\TranslationHelper;
 use App\Models\PushSubscription;
 use App\Services\WebPushService;
 use App\Models\CardNotificationSchedule;
@@ -18,7 +19,6 @@ class NotificationController extends BaseController
     }
 
     /**
-     * Получение публичного VAPID ключа
      * GET /api/notifications/vapid-key
      */
     public function getVapidKeyAction(): \Phalcon\Http\ResponseInterface
@@ -32,19 +32,18 @@ class NotificationController extends BaseController
     }
 
     /**
-     * Сохранение подписки
      * POST /api/notifications/subscribe
      */
     public function subscribeAction(): \Phalcon\Http\ResponseInterface
     {
         try {
-            $userId = $this->getUserId(); // Получаем из JWT токена
+            $userId = $this->getUserId();
             $data   = $this->request->getJsonRawBody(true);
 
             if (!isset($data['subscription'])) {
                 return $this->response->setJsonContent([
                     'success' => false,
-                    'message' => 'Subscription data required'
+                    'message' => TranslationHelper::translate('Subscription data required')
                 ])->setStatusCode(400);
             }
 
@@ -55,7 +54,9 @@ class NotificationController extends BaseController
 
             return $this->response->setJsonContent([
                 'success' => $success,
-                'message' => $success ? 'Subscription saved' : 'Failed to save subscription'
+                'message' => TranslationHelper::translate(
+                    $success ? 'Subscription saved' : 'Failed to save subscription'
+                )
             ]);
         } catch (\Exception $e) {
             return $this->response->setJsonContent([
@@ -66,7 +67,6 @@ class NotificationController extends BaseController
     }
 
     /**
-     * Создание расписания уведомлений
      * POST /api/notifications/schedules
      */
     public function createScheduleAction(): \Phalcon\Http\ResponseInterface
@@ -87,14 +87,16 @@ class NotificationController extends BaseController
             if ($schedule->save()) {
                 return $this->response->setJsonContent([
                     'success' => true,
-                    'data'    => $schedule
+                    'data'    => $schedule->toArray(),
+                    'message' => TranslationHelper::translate('Schedule saved successfully')
                 ]);
-            } else {
-                return $this->response->setJsonContent([
-                    'success' => false,
-                    'errors'  => $schedule->getMessages()
-                ])->setStatusCode(400);
             }
+
+            return $this->response->setJsonContent([
+                'success' => false,
+                'errors'  => $schedule->getMessages()
+            ])->setStatusCode(400);
+
         } catch (\Exception $e) {
             return $this->response->setJsonContent([
                 'success' => false,
@@ -104,150 +106,28 @@ class NotificationController extends BaseController
     }
 
     /**
-     * Получение расписаний пользователя с фильтром по активности
-     * GET /api/notifications/schedules
-     * Query parameters:
-     * - is_active: boolean (optional) - фильтр по активности
-     */
-    public function getSchedulesAction(): \Phalcon\Http\ResponseInterface
-    {
-        try {
-            $userId = $this->getUserId();
-
-            // Получаем параметр фильтрации из query string
-            $isActive = $this->request->getQuery('is_active');
-
-            // Базовые условия
-            $conditions = 'user_id = :user_id:';
-            $bind       = ['user_id' => $userId];
-
-            // Добавляем фильтр по активности, если параметр передан
-            if ($isActive !== null) {
-                // Преобразуем строковый параметр в булево значение
-                $isActiveBool      = filter_var($isActive, FILTER_VALIDATE_BOOLEAN);
-                $conditions        .= ' AND is_active = :is_active: ';
-                $bind['is_active'] = (int)$isActiveBool;
-            }
-
-            $schedules = CardNotificationSchedule::find([
-                'conditions' => $conditions,
-                'bind'       => $bind,
-                'order'      => 'next_send_at ASC',
-                'with'       => ['card'] // Важно: предзагружаем связанные карточки
-            ]);
-
-            $data = [];
-            foreach ($schedules as $schedule) {
-                $scheduleData = $schedule->toArray();
-
-                // Добавляем данные карточки, если она существует
-                if ($schedule->card) {
-                    $scheduleData['title'] = $schedule->card->title;
-                    $scheduleData['url']   = $schedule->card->url;
-                } else {
-                    // Обработка случая, когда карточка удалена
-                    $scheduleData['title'] = null;
-                    $scheduleData['url']   = null;
-                }
-
-                $data[] = $scheduleData;
-            }
-
-            return $this->response->setJsonContent([
-                'success' => true,
-                'data'    => $data
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->setJsonContent([
-                'success' => false,
-                'message' => $e->getMessage()
-            ])->setStatusCode(500);
-        }
-    }
-
-    /**
-     * Обновление расписания
-     * PUT /api/notifications/schedules/{id}
-     */
-    public function updateScheduleAction(string $id): \Phalcon\Http\ResponseInterface
-    {
-        try {
-            $userId = $this->getUserId();
-            $data   = $this->request->getJsonRawBody(true);
-
-            $schedule = CardNotificationSchedule::findFirst([
-                'conditions' => 'id = :id: AND user_id = :user_id:',
-                'bind'       => [
-                    'id'      => $id,
-                    'user_id' => $userId
-                ]
-            ]);
-
-            if (!$schedule) {
-                return $this->response->setJsonContent([
-                    'success' => false,
-                    'message' => 'Schedule not found'
-                ])->setStatusCode(404);
-            }
-
-            if (isset($data['is_active'])) {
-                $schedule->is_active = $data['is_active'];
-            }
-            if (isset($data['frequency'])) {
-                $schedule->frequency = $data['frequency'];
-            }
-            if (isset($data['scheduled_at'])) {
-                $schedule->scheduled_at = $data['scheduled_at'];
-                $schedule->next_send_at = $data['scheduled_at'];
-            }
-
-            if ($schedule->save()) {
-                return $this->response->setJsonContent([
-                    'success' => true,
-                    'data'    => $schedule
-                ]);
-            } else {
-                return $this->response->setJsonContent([
-                    'success' => false,
-                    'errors'  => $schedule->getMessages()
-                ])->setStatusCode(400);
-            }
-        } catch (\Exception $e) {
-            return $this->response->setJsonContent([
-                'success' => false,
-                'message' => $e->getMessage()
-            ])->setStatusCode(500);
-        }
-    }
-
-    /**
-     * Удаление расписания
      * DELETE /api/notifications/schedules/{id}
      */
     public function deleteScheduleAction(string $id): \Phalcon\Http\ResponseInterface
     {
         try {
-            $userId = $this->getUserId();
-
+            $userId   = $this->getUserId();
             $schedule = CardNotificationSchedule::findFirst([
                 'conditions' => 'id = :id: AND user_id = :user_id:',
-                'bind'       => [
-                    'id'      => $id,
-                    'user_id' => $userId
-                ]
+                'bind'       => ['id' => $id, 'user_id' => $userId]
             ]);
 
             if (!$schedule) {
                 return $this->response->setJsonContent([
                     'success' => false,
-                    'message' => 'Schedule not found'
+                    'message' => TranslationHelper::translate('Schedule not found')
                 ])->setStatusCode(404);
             }
 
             if ($schedule->delete()) {
                 return $this->response->setJsonContent([
                     'success' => true,
-                    'message' => 'Schedule deleted'
+                    'message' => TranslationHelper::translate('Schedule deleted')
                 ]);
             } else {
                 return $this->response->setJsonContent([
@@ -264,7 +144,6 @@ class NotificationController extends BaseController
     }
 
     /**
-     * Валидация подписки
      * POST /api/notifications/validate-subscription
      */
     public function validateSubscriptionAction()
@@ -272,7 +151,6 @@ class NotificationController extends BaseController
         try {
             $userId = $this->getUserId();
 
-            // Проверяем, есть ли активные подписки
             $activeSubscription = PushSubscription::findFirst([
                 'conditions' => 'user_id = :user_id: AND is_active = true',
                 'bind'       => ['user_id' => $userId]

@@ -62,7 +62,7 @@ const Menu = () => {
     ];
 
     return (
-        <div className="flex items-center space-x-8">
+        <div className={`flex items-center space-x-8 ${css.menu}`}>
             <div className="flex flex-col space-y-1">
                 {menuItems.map((item) => (
                     <NavLink

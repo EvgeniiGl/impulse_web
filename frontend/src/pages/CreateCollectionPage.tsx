@@ -154,7 +154,7 @@ export default function CreateCollectionPage() {
                                 <div>
                                     <label htmlFor="access_type"
                                            className="block text-sm font-medium text-gray-700 mb-2">
-                                        {t('createCollection.accessType') || 'Тип доступа'} *
+                                        {t('cards.accessType') || 'Тип доступа'} *
                                     </label>
                                     <select
                                         id="access_type"
@@ -165,16 +165,16 @@ export default function CreateCollectionPage() {
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
                                         <option value="private">
-                                            {t('createCollection.private') || 'Приватная'} - {t('createCollection.privateDesc') || 'Только вы'}
+                                            {t('cards.private') || 'Приватная'} - {t('cards.privateDesc') || 'Только вы'}
                                         </option>
                                         <option value="public">
-                                            {t('createCollection.public') || 'Публичная'} - {t('createCollection.publicDesc') || 'Все пользователи'}
+                                            {t('cards.public') || 'Публичная'} - {t('cards.publicDesc') || 'Все пользователи'}
                                         </option>
                                     </select>
                                     <p className="mt-1 text-xs text-gray-500">
                                         {formData.access_type === 'public'
-                                            ? t('createCollection.publicInfo') || 'Коллекция будет видна всем пользователям'
-                                            : t('createCollection.privateInfo') || 'Коллекция видна только вам'
+                                            ? t('cards.publicInfo') || 'Коллекция будет видна всем пользователям'
+                                            : t('cards.privateInfo') || 'Коллекция видна только вам'
                                         }
                                     </p>
                                 </div>

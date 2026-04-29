@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\TranslationHelper;
 use App\Models\MobileDeviceToken;
 use App\Requests\Notification\RegisterDeviceTokenRequest;
 use App\Services\MobilePushService;
@@ -19,7 +20,6 @@ class MobileDeviceController extends BaseController
     }
 
     /**
-     * Регистрация токена устройства
      * POST /api/devices/register
      */
     public function registerAction(): \Phalcon\Http\ResponseInterface
@@ -29,7 +29,7 @@ class MobileDeviceController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Authentication required',
+                    'message' => TranslationHelper::translate('Authentication required'),
                 ], 401);
             }
 
@@ -47,7 +47,7 @@ class MobileDeviceController extends BaseController
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => $token->toArray(),
-                'message' => 'Device registered successfully',
+                'message' => TranslationHelper::translate('Device registered successfully'),
             ]);
         } catch (InvalidArgumentException $e) {
             return $this->jsonResponse([
@@ -58,13 +58,12 @@ class MobileDeviceController extends BaseController
             error_log("Error registering device: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => 'Failed to register device',
+                'message' => TranslationHelper::translate('Failed to register device'),
             ], 500);
         }
     }
 
     /**
-     * Удаление (отписка) токена устройства
      * DELETE /api/devices/{id}
      */
     public function unregisterAction(string $id): \Phalcon\Http\ResponseInterface
@@ -74,15 +73,14 @@ class MobileDeviceController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Authentication required',
+                    'message' => TranslationHelper::translate('Authentication required'),
                 ], 401);
             }
 
-            // Валидация UUID формата
             if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $id)) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Invalid device ID format',
+                    'message' => TranslationHelper::translate('Invalid device ID format'),
                 ], 400);
             }
 
@@ -91,25 +89,24 @@ class MobileDeviceController extends BaseController
             if (!$success) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Device not found',
+                    'message' => TranslationHelper::translate('Device not found'),
                 ], 404);
             }
 
             return $this->jsonResponse([
                 'success' => true,
-                'message' => 'Device unregistered successfully',
+                'message' => TranslationHelper::translate('Device unregistered successfully'),
             ]);
         } catch (\Exception $e) {
             error_log("Error unregistering device: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => 'Failed to unregister device',
+                'message' => TranslationHelper::translate('Failed to unregister device'),
             ], 500);
         }
     }
 
     /**
-     * Получение списка устройств пользователя
      * GET /api/devices
      */
     public function listAction(): \Phalcon\Http\ResponseInterface
@@ -119,7 +116,7 @@ class MobileDeviceController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Authentication required',
+                    'message' => TranslationHelper::translate('Authentication required'),
                 ], 401);
             }
 
@@ -133,13 +130,12 @@ class MobileDeviceController extends BaseController
             error_log("Error listing devices: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => 'Failed to list devices',
+                'message' => TranslationHelper::translate('Failed to list devices'),
             ], 500);
         }
     }
 
     /**
-     * Переключение активности устройства
      * PATCH /api/devices/{id}/toggle
      */
     public function toggleAction(string $id): \Phalcon\Http\ResponseInterface
@@ -149,14 +145,14 @@ class MobileDeviceController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Authentication required',
+                    'message' => TranslationHelper::translate('Authentication required'),
                 ], 401);
             }
 
             if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $id)) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Invalid device ID format',
+                    'message' => TranslationHelper::translate('Invalid device ID format'),
                 ], 400);
             }
 
@@ -171,7 +167,7 @@ class MobileDeviceController extends BaseController
             if (!$token) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Device not found',
+                    'message' => TranslationHelper::translate('Device not found'),
                 ], 404);
             }
 
@@ -180,26 +176,27 @@ class MobileDeviceController extends BaseController
             if (!$token->save()) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Failed to update device',
+                    'message' => TranslationHelper::translate('Failed to update device'),
                 ], 500);
             }
 
             return $this->jsonResponse([
                 'success' => true,
                 'data'    => $token->toArray(),
-                'message' => $token->is_active ? 'Device activated' : 'Device deactivated',
+                'message' => TranslationHelper::translate(
+                    $token->is_active ? 'Device activated' : 'Device deactivated'
+                ),
             ]);
         } catch (\Exception $e) {
             error_log("Error toggling device: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => 'Failed to toggle device',
+                'message' => TranslationHelper::translate('Failed to toggle device'),
             ], 500);
         }
     }
 
     /**
-     * Отправка тестового push-уведомления на устройство
      * POST /api/devices/{id}/test
      */
     public function testPushAction(string $id): \Phalcon\Http\ResponseInterface
@@ -209,14 +206,14 @@ class MobileDeviceController extends BaseController
             if (!$user) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Authentication required',
+                    'message' => TranslationHelper::translate('Authentication required'),
                 ], 401);
             }
 
             if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $id)) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Invalid device ID format',
+                    'message' => TranslationHelper::translate('Invalid device ID format'),
                 ], 400);
             }
 
@@ -231,21 +228,19 @@ class MobileDeviceController extends BaseController
             if (!$token) {
                 return $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Active device not found',
+                    'message' => TranslationHelper::translate('Active device not found'),
                 ], 404);
             }
 
-            // Отправляем тестовое уведомление — используем FCM напрямую
-            // Для этого создаём фиктивный schedule-like payload
             return $this->jsonResponse([
                 'success' => true,
-                'message' => 'Test notification sent',
+                'message' => TranslationHelper::translate('Test notification sent'),
             ]);
         } catch (\Exception $e) {
             error_log("Error sending test push: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => 'Failed to send test notification: ' . $e->getMessage(),
+                'message' => TranslationHelper::translate('Failed to send test notification'),
             ], 500);
         }
     }

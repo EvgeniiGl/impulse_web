@@ -142,8 +142,8 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
                         options={options}
                         value={selectedOptions}
                         onChange={handleChange}
-                        placeholder={t('createCard.selectCollections') || 'Выберите коллекции...'}
-                        noOptionsMessage={() => t('createCard.noCollectionsAvailable') || 'Нет доступных коллекций'}
+                        placeholder={t('collections.selectCollections') || 'Выберите коллекции...'}
+                        noOptionsMessage={() => t('collections.noCollectionsAvailable') || 'Нет доступных коллекций'}
                         styles={customStyles}
                         isDisabled={disabled}
                         className="react-select-container"

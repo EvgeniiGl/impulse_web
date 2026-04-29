@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Helpers\TranslationHelper;
 use App\Models\User;
 
 class UsersController extends BaseController
@@ -21,20 +22,20 @@ class UsersController extends BaseController
         if (!$user) {
             return $this->response->setJsonContent([
                 'success' => false,
-                'message' => 'Пользователь не найден'
+                'message' => TranslationHelper::translate('User not found')
             ])->setStatusCode(404);
         }
 
         if ($user->block()) {
             return $this->response->setJsonContent([
                 'success' => true,
-                'message' => 'Пользователь заблокирован'
+                'message' => TranslationHelper::translate('User blocked')
             ]);
         }
 
         return $this->response->setJsonContent([
             'success' => false,
-            'message' => 'Ошибка блокировки',
+            'message' => TranslationHelper::translate('Failed to block user'),
             'errors'  => $user->getMessages()
         ])->setStatusCode(500);
     }
@@ -52,20 +53,20 @@ class UsersController extends BaseController
         if (!$user) {
             return $this->response->setJsonContent([
                 'success' => false,
-                'message' => 'Пользователь не найден'
+                'message' => TranslationHelper::translate('User not found')
             ])->setStatusCode(404);
         }
 
         if ($user->unblock()) {
             return $this->response->setJsonContent([
                 'success' => true,
-                'message' => 'Пользователь разблокирован'
+                'message' => TranslationHelper::translate('User unblocked')
             ]);
         }
 
         return $this->response->setJsonContent([
             'success' => false,
-            'message' => 'Ошибка разблокировки',
+            'message' => TranslationHelper::translate('Failed to unblock user'),
             'errors'  => $user->getMessages()
         ])->setStatusCode(500);
     }

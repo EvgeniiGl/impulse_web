@@ -9,7 +9,8 @@
     "logout": "Logout",
     "createCard": "Card",
     "createCollection": "Collection",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "devices": "Devices"
   },
   "home": {
     "welcome": "Welcome to Our App",
@@ -90,7 +91,8 @@
     "noCards": "No Cards",
     "createFirst": "Create your first card",
     "showing": "Showing",
-    "of": "of"
+    "of": "of",
+    "movingCard": "Moving card..."
   },
   "login": {
     "title": "Sign in to your account",
@@ -202,7 +204,13 @@
     "author": "Author",
     "menu": "Menu",
     "report": "Report",
-    "hide": "Don't show"
+    "hide": "Don't show",
+    "confirmDeleteFromCollection": "Remove card from this collection?",
+    "confirmDeletePermanently": "Delete card permanently?",
+    "confirmDeleteFromCollectionHint": "The card will remain in other collections",
+    "confirmDeletePermanentlyHint": "This action cannot be undone",
+    "confirmButton": "Confirm",
+    "cancelButton": "Cancel"
   },
   "report": {
     "title": "Select a reason for reporting",
@@ -267,7 +275,110 @@
     "markAsRead": "Mark as read",
     "markAllAsRead": "Mark all as read",
     "delete": "Delete",
-    "deleteAll": "Delete all"
+    "deleteAll": "Delete all",
+    "pageTitle": "Notifications",
+    "loading": "Loading...",
+    "noSchedules": "You have no scheduled notifications yet",
+    "schedules": "Schedules",
+    "active": "Active",
+    "inactive": "Inactive",
+    "expired": "Expired",
+    "limitReached": "Send limit reached",
+    "frequency": "Frequency",
+    "nextSend": "Next",
+    "lastSend": "Last",
+    "sentCount": "Sent",
+    "enable": "Enable",
+    "disable": "Disable",
+    "edit": "Edit",
+    "cannotEnableExpired": "Cannot enable: schedule has expired",
+    "cannotEnableLimitReached": "Cannot enable: send limit reached",
+    "deleteError": "Failed to delete schedule",
+    "settings": {
+      "title": "Notification settings",
+      "status": "Status",
+      "enabled": "Notifications enabled",
+      "disabled": "Notifications disabled",
+      "denied": "Notifications blocked by browser",
+      "unknownStatus": "Unknown status",
+      "enable": "Enable notifications",
+      "enabling": "Enabling...",
+      "resubscribe": "Restore subscription",
+      "restoring": "Restoring...",
+      "subscriptionExpired": "Subscription expired — notifications may not be delivered",
+      "showActive": "Active only",
+      "showAll": "Show all"
+    }
+  },
+  "scheduleForm": {
+    "frequency": "Notification frequency",
+    "firstNotificationTime": "Date and time of first notification *",
+    "repeatCount": "Number of repetitions",
+    "repeatCountPlaceholder": "Unlimited",
+    "endDate": "End date",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "create": "Create schedule",
+    "creating": "Creating...",
+    "cancel": "Cancel",
+    "dateRequired": "Please specify date and time",
+    "saveError": "Failed to save schedule",
+    "createError": "Failed to create schedule",
+    "frequency_once": "Once",
+    "frequency_hourly": "Every hour",
+    "frequency_daily": "Every day",
+    "frequency_weekly": "Every week",
+    "frequency_monthly": "Every month",
+    "frequency_yearly": "Every year"
+  },
+  "subscriptionWarning": {
+    "title": "Notification issue",
+    "description": "Your notification subscription has expired. Click the button below to restore it.",
+    "restore": "Restore subscription",
+    "restoring": "Restoring...",
+    "restoreError": "Failed to restore subscription. Please enable notifications manually.",
+    "restoreSystemError": "Error restoring subscription"
+  },
+  "dropMenu": {
+    "title": "Choose action",
+    "copy": "Copy",
+    "copyTo": "to",
+    "copyToGeneral": "to General",
+    "copyToCollection": "to collection",
+    "move": "Move",
+    "moveFrom": "from",
+    "moveFromGeneral": "from General",
+    "moveFromCollection": "from collection",
+    "cancel": "Cancel (ESC)"
+  },
+  "devices": {
+    "title": "Mobile devices",
+    "subtitle": "Devices that receive push notifications",
+    "refresh": "Refresh",
+    "total": "Total",
+    "active": "Active",
+    "filterAll": "All",
+    "noDevices": "No registered devices",
+    "noDevicesDescription": "Devices will appear here automatically after signing in to the mobile app on iOS or Android.",
+    "noDevicesForFilter": "No devices",
+    "noDevicesForFilterDescription": "No devices for the selected platform.",
+    "platform": "Platform",
+    "version": "Version",
+    "os": "OS",
+    "lastUsed": "Last used",
+    "createdAt": "Created",
+    "copyToken": "Click to copy token",
+    "tokenCopied": "✓ Copied!",
+    "statusActive": "Active",
+    "statusInactive": "Off",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "sendTest": "Send test notification",
+    "delete": "Delete device",
+    "confirmDelete": "Are you sure you want to remove this device?",
+    "deleteSuccess": "Device removed successfully",
+    "toggleSuccess": "Device status updated",
+    "testSent": "Test notification sent"
   },
   "search": {
     "title": "Search",
@@ -281,5 +392,25 @@
     "recent": "Recent",
     "popular": "Popular",
     "trending": "Trending"
+  },
+  "createCard": {
+    "collections": "Collections",
+    "collectionsPlaceholder": "Select collections...",
+    "collectionsLoading": "Loading collections...",
+    "selectCollections": "Select collections...",
+    "noCollectionsAvailable": "No collections available"
+  },
+  "createCollection": {
+    "title": "Create collection",
+    "subtitle": "Fill in the form to create a new collection",
+    "nameLabel": "Collection name",
+    "namePlaceholder": "Enter collection name...",
+    "accessType": "Access type",
+    "private": "Private",
+    "public": "Public",
+    "privateInfo": "Collection is visible only to you",
+    "publicInfo": "Collection will be visible to all users",
+    "create": "Create collection",
+    "creating": "Creating..."
   }
 }

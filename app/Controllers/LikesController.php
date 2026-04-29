@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Helpers\TranslationHelper;
 use App\Models\Card;
 use App\Models\CardLike;
 use App\Models\Collection;
@@ -24,11 +25,10 @@ class LikesController extends BaseController
                 ->setStatusCode(401)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Unauthorized'
+                    'message' => TranslationHelper::translate('Unauthorized')
                 ]);
         }
 
-        // Проверяем существование карточки
         $card = Card::findFirst([
             'conditions' => 'id = :id:',
             'bind'       => ['id' => $id]
@@ -39,11 +39,10 @@ class LikesController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Card not found'
+                    'message' => TranslationHelper::translate('Card not found')
                 ]);
         }
 
-        // Проверяем, есть ли уже лайк
         $existingLike = CardLike::findFirst([
             'conditions' => 'card_id = :card_id: AND user_id = :user_id:',
             'bind'       => [
@@ -53,13 +52,12 @@ class LikesController extends BaseController
         ]);
 
         if ($existingLike) {
-            // Удаляем лайк
             if (!$existingLike->delete()) {
                 return $this->response
                     ->setStatusCode(500)
                     ->setJsonContent([
                         'success' => false,
-                        'message' => 'Failed to remove like'
+                        'message' => TranslationHelper::translate('Failed to remove like')
                     ]);
             }
 
@@ -69,11 +67,10 @@ class LikesController extends BaseController
                 'success'     => true,
                 'liked'       => false,
                 'likes_count' => $likesCount,
-                'message'     => 'Like removed'
+                'message'     => TranslationHelper::translate('Like removed')
             ]);
         }
 
-        // Создаем новый лайк
         $like          = new CardLike();
         $like->card_id = $id;
         $like->user_id = $user->id;
@@ -83,7 +80,7 @@ class LikesController extends BaseController
                 ->setStatusCode(500)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Failed to add like'
+                    'message' => TranslationHelper::translate('Failed to add like')
                 ]);
         }
 
@@ -93,7 +90,7 @@ class LikesController extends BaseController
             'success'     => true,
             'liked'       => true,
             'likes_count' => $likesCount,
-            'message'     => 'Like added'
+            'message'     => TranslationHelper::translate('Like added')
         ]);
     }
 
@@ -105,7 +102,6 @@ class LikesController extends BaseController
     {
         $user = $this->getAuthenticatedUser();
 
-        // Проверяем существование карточки
         $card = Card::findFirst([
             'conditions' => 'id = :id:',
             'bind'       => ['id' => $id]
@@ -116,7 +112,7 @@ class LikesController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Card not found'
+                    'message' => TranslationHelper::translate('Card not found')
                 ]);
         }
 
@@ -143,11 +139,10 @@ class LikesController extends BaseController
                 ->setStatusCode(401)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Unauthorized'
+                    'message' => TranslationHelper::translate('Unauthorized')
                 ]);
         }
 
-        // Проверяем существование коллекции
         $collection = Collection::findFirst([
             'conditions' => 'id = :id:',
             'bind'       => ['id' => $id]
@@ -158,11 +153,10 @@ class LikesController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Collection not found'
+                    'message' => TranslationHelper::translate('Collection not found')
                 ]);
         }
 
-        // Проверяем, есть ли уже лайк
         $existingLike = CollectionLike::findFirst([
             'conditions' => 'collection_id = :collection_id: AND user_id = :user_id:',
             'bind'       => [
@@ -172,13 +166,12 @@ class LikesController extends BaseController
         ]);
 
         if ($existingLike) {
-            // Удаляем лайк
             if (!$existingLike->delete()) {
                 return $this->response
                     ->setStatusCode(500)
                     ->setJsonContent([
                         'success' => false,
-                        'message' => 'Failed to remove like'
+                        'message' => TranslationHelper::translate('Failed to remove like')
                     ]);
             }
 
@@ -188,11 +181,10 @@ class LikesController extends BaseController
                 'success'     => true,
                 'liked'       => false,
                 'likes_count' => $likesCount,
-                'message'     => 'Like removed'
+                'message'     => TranslationHelper::translate('Like removed')
             ]);
         }
 
-        // Создаем новый лайк
         $like                = new CollectionLike();
         $like->collection_id = $id;
         $like->user_id       = $user->id;
@@ -202,7 +194,7 @@ class LikesController extends BaseController
                 ->setStatusCode(500)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Failed to add like'
+                    'message' => TranslationHelper::translate('Failed to add like')
                 ]);
         }
 
@@ -212,7 +204,7 @@ class LikesController extends BaseController
             'success'     => true,
             'liked'       => true,
             'likes_count' => $likesCount,
-            'message'     => 'Like added'
+            'message'     => TranslationHelper::translate('Like added')
         ]);
     }
 
@@ -224,7 +216,6 @@ class LikesController extends BaseController
     {
         $user = $this->getAuthenticatedUser();
 
-        // Проверяем существование коллекции
         $collection = Collection::findFirst([
             'conditions' => 'id = :id:',
             'bind'       => ['id' => $id]
@@ -235,7 +226,7 @@ class LikesController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Collection not found'
+                    'message' => TranslationHelper::translate('Collection not found')
                 ]);
         }
 
@@ -251,7 +242,6 @@ class LikesController extends BaseController
 
     /**
      * GET /api/cards/liked
-     * Получить список лайкнутых карточек пользователя
      */
     public function getLikedCardsAction()
     {
@@ -262,7 +252,7 @@ class LikesController extends BaseController
                 ->setStatusCode(401)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Unauthorized'
+                    'message' => TranslationHelper::translate('Unauthorized')
                 ]);
         }
 
@@ -318,7 +308,8 @@ class LikesController extends BaseController
                     'title_color'         => $card->title_color ?? '#FFFFFF',
                     'creator'             => $creator ? [
                         'id'   => $creator->id,
-                        'name' => $creator->name,] : null,
+                        'name' => $creator->name,
+                    ] : null,
                     'is_liked'            => true,
                     'created_at'          => $card->created_at,
                     'updated_at'          => $card->updated_at,
@@ -338,7 +329,6 @@ class LikesController extends BaseController
 
     /**
      * GET /api/collections/liked
-     * Получить список лайкнутых коллекций пользователя
      */
     public function getLikedCollectionsAction()
     {
@@ -349,7 +339,7 @@ class LikesController extends BaseController
                 ->setStatusCode(401)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Unauthorized'
+                    'message' => TranslationHelper::translate('Unauthorized')
                 ]);
         }
 

@@ -29,7 +29,6 @@ class CollectionsController extends BaseController
 
     /**
      * GET /api/collections/my
-     * Получить все коллекции пользователя
      */
     public function myAction()
     {
@@ -44,7 +43,6 @@ class CollectionsController extends BaseController
 
     /**
      * GET /api/collections/{id}
-     * Получить коллекцию по ID
      */
     public function showAction(string $id): \Phalcon\Http\ResponseInterface
     {
@@ -63,7 +61,7 @@ class CollectionsController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Collection not found'
+                    'message' => TranslationHelper::translate('Collection not found')
                 ]);
         }
 
@@ -75,7 +73,6 @@ class CollectionsController extends BaseController
 
     /**
      * POST /api/collections
-     * Создать коллекцию
      */
     public function createAction()
     {
@@ -108,7 +105,7 @@ class CollectionsController extends BaseController
                 ->setStatusCode(409)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Коллекция уже существует'
+                    'message' => TranslationHelper::translate('Collection already exists')
                 ]);
         }
 
@@ -119,7 +116,7 @@ class CollectionsController extends BaseController
                 ->setStatusCode(500)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Error creating collection'
+                    'message' => TranslationHelper::translate('Error creating collection')
                 ]);
         }
 
@@ -133,7 +130,6 @@ class CollectionsController extends BaseController
 
     /**
      * PUT /api/collections/{id}
-     * Обновить коллекцию
      */
     public function updateAction(string $id)
     {
@@ -155,8 +151,8 @@ class CollectionsController extends BaseController
                 'error'   => TranslationHelper::translate('Authentication required')
             ], 401);
         }
-        $data = $this->request->getJsonRawBody(true);
 
+        $data       = $this->request->getJsonRawBody(true);
         $collection = $this->collectionService->update($id, $data, $user);
 
         if (!$collection) {
@@ -164,7 +160,7 @@ class CollectionsController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Collection not found or access denied'
+                    'message' => TranslationHelper::translate('Collection not found or access denied')
                 ]);
         }
 
@@ -176,7 +172,6 @@ class CollectionsController extends BaseController
 
     /**
      * DELETE /api/collections/{id}
-     * Удалить коллекцию
      */
     public function deleteAction(string $id)
     {
@@ -187,6 +182,7 @@ class CollectionsController extends BaseController
                 'error'   => TranslationHelper::translate('Authentication required')
             ], 401);
         }
+
         $result = $this->collectionService->delete($id, $user);
 
         if (!$result) {
@@ -194,19 +190,18 @@ class CollectionsController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Collection not found or access denied'
+                    'message' => TranslationHelper::translate('Collection not found or access denied')
                 ]);
         }
 
         return $this->response->setJsonContent([
             'success' => true,
-            'message' => 'Collection deleted successfully'
+            'message' => TranslationHelper::translate('Collection deleted successfully')
         ]);
     }
 
     /**
      * POST /api/collections/{id}/cards
-     * Добавить карточку в коллекцию
      */
     public function addCardAction(string $id): \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
     {
@@ -218,10 +213,8 @@ class CollectionsController extends BaseController
                 'error'   => TranslationHelper::translate('Authentication required')
             ], 401);
         }
-        $data = $this->request->getJsonRawBody(true);
 
-        $result = $this->collectionService->addCard($id, $req->get('card_id'), $user);
-
+        $result     = $this->collectionService->addCard($id, $req->get('card_id'), $user);
         $statusCode = $result['success'] ? 201 : 400;
 
         return $this->response
@@ -231,7 +224,6 @@ class CollectionsController extends BaseController
 
     /**
      * DELETE /api/collections/{id}/cards/{cardId}
-     * Удалить карточку из коллекции
      */
     public function removeCardAction(string $id, string $cardId)
     {
@@ -243,19 +235,18 @@ class CollectionsController extends BaseController
                 ->setStatusCode(404)
                 ->setJsonContent([
                     'success' => false,
-                    'message' => 'Card not found in collection or access denied'
+                    'message' => TranslationHelper::translate('Card not found in collection or access denied')
                 ]);
         }
 
         return $this->response->setJsonContent([
             'success' => true,
-            'message' => 'Card removed from collection'
+            'message' => TranslationHelper::translate('Card removed from collection')
         ]);
     }
 
     /**
      * POST /api/collections/{id}/share
-     * Поделиться коллекцией
      */
     public function shareAction(string $id)
     {
@@ -263,82 +254,12 @@ class CollectionsController extends BaseController
         $user    = $this->getAuthenticatedUser();
         $data    = $this->request->getJsonRawBody(true);
 
-        $result = $this->collectionService->share(
+        $result     = $this->collectionService->share(
             $id,
             $request->get('user_id'),
             $user,
             $request->get('permission', 'read'),
         );
-
-        $statusCode = $result['success'] ? 200 : 400;
-
-        return $this->response
-            ->setStatusCode($statusCode)
-            ->setJsonContent($result);
-    }
-
-    /**
-     * DELETE /api/collections/{id}/share/{userId}
-     * Отозвать доступ к коллекции
-     */
-    public function unshareAction(int $id, int $userId)
-    {
-        $user   = $this->getAuthenticatedUser();
-        $result = $this->collectionService->unshare($id, $userId, $user->id);
-
-        if (!$result) {
-            return $this->response
-                ->setStatusCode(404)
-                ->setJsonContent([
-                    'success' => false,
-                    'message' => 'Shared access not found or access denied'
-                ]);
-        }
-
-        return $this->response->setJsonContent([
-            'success' => true,
-            'message' => 'Access revoked successfully'
-        ]);
-    }
-
-    /**
-     * GET /api/collections/{id}/shared-users
-     * Получить список пользователей с доступом
-     */
-    public function sharedUsersAction(int $id)
-    {
-        $user  = $this->getAuthenticatedUser();
-        $users = $this->collectionService->getSharedUsers($id, $user->id);
-
-        if ($users === false) {
-            return $this->response->setStatusCode(403)
-                ->setJsonContent([
-                    'success' => false,
-                    'message' => 'Access denied'
-                ]);
-        }
-
-        return $this->response->setJsonContent([
-            'success' => true,
-            'data'    => $users
-        ]);
-    }
-
-    public function moveCardAction(string $id): \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
-    {
-        $user = $this->getAuthenticatedUser();
-
-        if (!$user) {
-            return $this->jsonResponse([
-                'success' => false,
-                'error'   => TranslationHelper::translate('Authentication required')
-            ], 401);
-        }
-
-        $req           = new MoveCardRequest();
-        $collectionIds = $req->getCollectionIds();
-
-        $result     = $this->collectionService->moveCard($id, $collectionIds, $user);
         $statusCode = $result['success'] ? 200 : 400;
 
         return $this->response
