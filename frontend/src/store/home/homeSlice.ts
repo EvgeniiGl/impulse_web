@@ -124,15 +124,15 @@ const homeSlice = createSlice({
                 state.isLoading = false;
                 const newCards = action.payload.data.cards;
 
+                state.pagination.total = action.payload.data.total;
+                state.pagination.page = action.payload.data.page;
+                state.pagination.hasMore = newCards.length === state.pagination.perPage;
+
                 if (state.pagination.page === 1) {
                     state.cards = newCards;
                 } else {
                     state.cards = [...state.cards, ...newCards];
                 }
-
-                state.pagination.total = action.payload.data.total;
-                state.pagination.page = action.payload.data.page;
-                state.pagination.hasMore = newCards.length === state.pagination.perPage;
             })
             .addCase(searchPublicCards.rejected, (state: HomeState, action) => {
                 state.isLoading = false;

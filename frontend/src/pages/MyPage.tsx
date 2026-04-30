@@ -81,6 +81,11 @@ export default function MyPage() {
 
         if (selectedCollectionId === COMMON) {
             dispatch(fetchMyCards({page: nextPage, perPage: 12}));
+        } else if (selectedCollectionId === LIKED) {
+            dispatch(fetchLikedCards({
+                page: nextPage,
+                perPage: 12
+            }));
         } else {
             dispatch(fetchCardsByCollection({
                 collectionId: selectedCollectionId,
