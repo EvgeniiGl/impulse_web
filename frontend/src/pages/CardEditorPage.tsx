@@ -34,7 +34,7 @@ export default function CardEditorPage() {
     }>({
         title: '',
         description: '',
-        access_type: 'private',
+        access_type: 'public',
         is_active: false,
         file: null,
         collection_ids: [],
@@ -634,11 +634,11 @@ export default function CardEditorPage() {
                                     onChange={handleAccessTypeChange}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                                 >
-                                    <option value="private">
-                                        {t('cards.private')} - {t('cards.privateDesc')}
-                                    </option>
                                     <option value="public">
                                         {t('cards.public')} - {t('cards.publicDesc')}
+                                    </option>
+                                    <option value="private">
+                                        {t('cards.private')} - {t('cards.privateDesc')}
                                     </option>
                                 </select>
                                 <p className="mt-1 text-xs text-gray-500">

@@ -47,9 +47,7 @@ const CollectionSelect: React.FC<CollectionSelectProps> = ({
         value: collection.id,
         label: `${collection.name}${collection.access_type === 'public' ? ' 🌎' : ''}`
     }));
-    console.log("log--",
-        "\ndata--", selectedOptions,
-    );
+
     const handleChange = (
         newValue: MultiValue<SelectOption>,
         _actionMeta: ActionMeta<SelectOption>

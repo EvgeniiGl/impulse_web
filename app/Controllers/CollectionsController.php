@@ -254,12 +254,35 @@ class CollectionsController extends BaseController
         $user    = $this->getAuthenticatedUser();
         $data    = $this->request->getJsonRawBody(true);
 
-        $result     = $this->collectionService->share(
+        $result = $this->collectionService->share(
             $id,
             $request->get('user_id'),
             $user,
             $request->get('permission', 'read'),
         );
+
+        $statusCode = $result['success'] ? 200 : 400;
+
+        return $this->response
+            ->setStatusCode($statusCode)
+            ->setJsonContent($result);
+    }
+
+    public function moveCardAction(string $id): \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
+    {
+        $user = $this->getAuthenticatedUser();
+
+        if (!$user) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => TranslationHelper::translate('Authentication required')
+            ], 401);
+        }
+
+        $req           = new MoveCardRequest();
+        $collectionIds = $req->getCollectionIds();
+
+        $result     = $this->collectionService->moveCard($id, $collectionIds, $user);
         $statusCode = $result['success'] ? 200 : 400;
 
         return $this->response

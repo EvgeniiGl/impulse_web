@@ -20,11 +20,19 @@ export default function CollectionTabs({
                                            onCardDrop,
                                        }: CollectionTabsProps) {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    // Refs to the <button> elements keyed by collection id
     const tabRefsRef = useRef<Record<string, HTMLButtonElement | null>>({});
 
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
+
+    // ── Drag-to-scroll state ───────────────────────────────────────────────────
+    const isDraggingRef = useRef(false);
+    const dragStartXRef = useRef(0);
+    const dragScrollLeftRef = useRef(0);
+    // Threshold in px — below this the mouseup is treated as a click, not a drag
+    const DRAG_THRESHOLD = 5;
+    const dragMovedRef = useRef(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     const checkScroll = useCallback(() => {
         const el = scrollContainerRef.current;
@@ -44,18 +52,98 @@ export default function CollectionTabs({
         };
     }, [collections, checkScroll]);
 
-    // ── Center active tab in the scroll container ──────────────────────────────
-    // We manually compute scrollLeft instead of using scrollIntoView because
-    // scrollIntoView can scroll the entire page, not just the container.
-    // We walk up the offsetParent chain from the button to the scroll container
-    // to get the true accumulated offsetLeft regardless of intermediate wrappers
-    // (CollectionDropZone, flex children, etc.).
+    // ── Mouse wheel horizontal scroll ─────────────────────────────────────────
+    // We attach via useEffect with { passive: false } so we can call
+    // preventDefault() and prevent the page from scrolling vertically.
+    useEffect(() => {
+        const el = scrollContainerRef.current;
+        if (!el) return;
+
+        const onWheel = (e: WheelEvent) => {
+            // Only intercept when the cursor is actually over the scroll container
+            if (!el.contains(e.target as Node)) return;
+            // If the container has no overflow to scroll, let the event propagate
+            if (el.scrollWidth <= el.clientWidth) return;
+
+            e.preventDefault();
+            // deltaY for vertical wheel, deltaX for horizontal trackpad swipe
+            const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+            el.scrollBy({left: delta * 1.5, behavior: 'auto'});
+            checkScroll();
+        };
+
+        el.addEventListener('wheel', onWheel, {passive: false});
+        return () => el.removeEventListener('wheel', onWheel);
+    }, [checkScroll]);
+
+    // ── Drag-to-scroll ─────────────────────────────────────────────────────────
+    const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        // Only left button
+        if (e.button !== 0) return;
+        const el = scrollContainerRef.current;
+        if (!el) return;
+
+        isDraggingRef.current = true;
+        dragMovedRef.current = false;
+        dragStartXRef.current = e.clientX;
+        dragScrollLeftRef.current = el.scrollLeft;
+        setIsDragging(true);
+
+        // Prevent text selection while dragging
+        e.preventDefault();
+    }, []);
+
+    useEffect(() => {
+        const onMouseMove = (e: MouseEvent) => {
+            if (!isDraggingRef.current) return;
+            const el = scrollContainerRef.current;
+            if (!el) return;
+
+            const dx = e.clientX - dragStartXRef.current;
+            if (Math.abs(dx) > DRAG_THRESHOLD) {
+                dragMovedRef.current = true;
+            }
+            el.scrollLeft = dragScrollLeftRef.current - dx;
+            checkScroll();
+        };
+
+        const onMouseUp = () => {
+            if (!isDraggingRef.current) return;
+            isDraggingRef.current = false;
+            setIsDragging(false);
+            // Сбрасываем флаг перемещения после того, как успеет сработать onClick
+            setTimeout(() => {
+                dragMovedRef.current = false;
+            }, 0);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        };
+    }, [checkScroll]);
+
+    // Suppress click on a tab if the user actually dragged
+    const handleTabClick = useCallback(
+        (id: string, e: React.MouseEvent) => {
+            if (dragMovedRef.current) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            onSelect(id);
+        },
+        [onSelect],
+    );
+
+    // ── Center active tab ──────────────────────────────────────────────────────
     const centerActiveTab = useCallback((animated: boolean) => {
         const container = scrollContainerRef.current;
         const btn = tabRefsRef.current[selectedId];
         if (!container || !btn) return;
 
-        // Walk offsetParent chain to accumulate true offset relative to container
         let left = 0;
         let el: HTMLElement | null = btn;
         while (el && el !== container) {
@@ -66,7 +154,7 @@ export default function CollectionTabs({
         const target = left + btn.offsetWidth / 2 - container.clientWidth / 2;
         let clamped = Math.max(0, Math.min(target, container.scrollWidth - container.clientWidth));
         if (target - clamped < 200) {
-            clamped -= 300
+            clamped -= 300;
         }
 
         container.scrollTo({
@@ -75,7 +163,6 @@ export default function CollectionTabs({
         });
     }, [selectedId]);
 
-    // Center with animation whenever the active tab changes
     useEffect(() => {
         const raf1 = requestAnimationFrame(() => {
             const raf2 = requestAnimationFrame(() => {
@@ -87,7 +174,6 @@ export default function CollectionTabs({
         return () => cancelAnimationFrame(raf1);
     }, [selectedId, centerActiveTab, checkScroll]);
 
-    // Center without animation on initial collections load (once per collections change)
     const initializedForRef = useRef<Collection[] | null>(null);
     useEffect(() => {
         if (collections.length === 0) return;
@@ -123,7 +209,6 @@ export default function CollectionTabs({
 
     return (
         <div className={css.wrapper}>
-            {/* Scroll-left button */}
             {canScrollLeft && (
                 <button
                     className={css.scrollBtn}
@@ -136,11 +221,11 @@ export default function CollectionTabs({
                 </button>
             )}
 
-            {/* Scrollable tab strip */}
             <div
                 ref={scrollContainerRef}
                 onScroll={checkScroll}
-                className={css.scrollContainer}
+                onMouseDown={handleMouseDown}
+                className={`${css.scrollContainer} ${isDragging ? css.scrollContainerDragging : ''}`}
             >
                 {collections.map((collection) => {
                     const isActive = selectedId === collection.id;
@@ -157,10 +242,12 @@ export default function CollectionTabs({
                                 ref={(el) => {
                                     tabRefsRef.current[collection.id] = el;
                                 }}
-                                onClick={() => onSelect(collection.id)}
+                                onClick={(e) => handleTabClick(collection.id, e)}
                                 className={`${css.tabBase} ${
                                     isActive ? css.tabBtnActive : css.tabBtn
                                 }`}
+                                // Prevent drag from accidentally triggering native drag
+                                draggable={false}
                             >
                                 {collection.name}
                                 <span className={css.count}>({collection.card_count})</span>
@@ -170,7 +257,6 @@ export default function CollectionTabs({
                 })}
             </div>
 
-            {/* Scroll-right button */}
             {canScrollRight && (
                 <button
                     className={css.scrollBtn}
