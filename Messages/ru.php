@@ -80,6 +80,9 @@ return [
     'Collection already shared with this user'                                                  => 'Коллекция уже открыта для этого пользователя',
     'Permission must be one of: read, write, admin. Allowed values: read, write, admin'         => 'Разрешение должно быть одним из: read, write, admin',
     'Error updating card collections'                                                           => 'Ошибка при обновлении коллекций карточки',
+    'Collection cards fetched successfully'                                                     => 'Карточки коллекции успешно получены',
+    'Invalid page number'                                                                       => 'Неверный номер страницы',
+    'Invalid per_page value'                                                                    => 'Неверное значение per_page',
 
     // -------------------------------------------------------------------------
     // Likes

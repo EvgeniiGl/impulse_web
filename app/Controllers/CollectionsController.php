@@ -43,6 +43,10 @@ class CollectionsController extends BaseController
 
     /**
      * GET /api/collections/{id}
+     *
+     * Query params:
+     *   page     (int, default 1)   – page number
+     *   per_page (int, default 12)  – items per page (max 100)
      */
     public function showAction(string $id): \Phalcon\Http\ResponseInterface
     {
@@ -54,7 +58,21 @@ class CollectionsController extends BaseController
             ], 401);
         }
 
-        $collection = (new Collection())->getWithCards($id, $user);
+        $page    = (int)$this->request->getQuery('page', 'int', 1);
+        $perPage = (int)$this->request->getQuery('per_page', 'int', 12);
+
+        // Clamp to safe bounds (mirrors getLikedCardsAction pattern)
+        $page    = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+
+        try {
+            $collection = (new \App\Models\Collection())->getWithCards($id, $user, $page, $perPage);
+        } catch (\Throwable $e) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error'   => TranslationHelper::translate('Internal server error')
+            ], 500);
+        }
 
         if (!$collection) {
             return $this->response
@@ -65,9 +83,25 @@ class CollectionsController extends BaseController
                 ]);
         }
 
+        // Pull pagination metadata out of the data array so the response
+        // envelope matches the shape used by getLikedCardsAction / getLikedCollectionsAction.
+        $cards   = $collection['cards'] ?? [];
+        $total   = $collection['total'] ?? 0;
+        $retPage = $collection['page'] ?? $page;
+        $perP    = $collection['per_page'] ?? $perPage;
+
+        // Remove inline pagination keys – they live in the envelope now.
+        unset($collection['total'], $collection['page'], $collection['per_page']);
+
         return $this->response->setJsonContent([
             'success' => true,
-            'data'    => $collection
+            'data'    => [
+                'collection' => $collection,
+                'cards'      => $cards,
+                'total'      => (int)$total,
+                'page'       => (int)$retPage,
+                'per_page'   => (int)$perP,
+            ]
         ]);
     }
 

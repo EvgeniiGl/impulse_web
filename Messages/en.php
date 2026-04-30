@@ -80,6 +80,9 @@ return [
     'Collection already shared with this user'                                                  => 'Collection already shared with this user',
     'Permission must be one of: read, write, admin. Allowed values: read, write, admin'         => 'Permission must be one of: read, write, admin',
     'Error updating card collections'                                                           => 'Error updating card collections',
+    'Collection cards fetched successfully'                                                     => 'Collection cards fetched successfully',
+    'Invalid page number'                                                                       => 'Invalid page number',
+    'Invalid per_page value'                                                                    => 'Invalid per_page value',
 
     // -------------------------------------------------------------------------
     // Likes

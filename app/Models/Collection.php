@@ -263,7 +263,7 @@ class Collection extends Model
             AND hc.card_id is null 
             AND cr.card_id is null 
         ";
-        
+
         $query  = $this->getModelsManager()->createQuery($phql);
         $result = $query->execute([$userId]);
 
@@ -271,31 +271,64 @@ class Collection extends Model
     }
 
     /**
-     * Получить коллекцию с карточками
+     * Получить коллекцию с карточками (с пагинацией)
+     *
+     * @param string $collectionId
+     * @param User $user
+     * @param int $page
+     * @param int $perPage
+     * @return array|null  Returns null if not found/no access,
+     *                     or array with keys: collection fields + cards, total, page, per_page
      */
-    public function getWithCards(string $collectionId, User $user): ?array
+    public function getWithCards(string $collectionId, User $user, int $page = 1, int $perPage = 12): ?array
     {
         $collection = self::findFirst([
             'conditions' => 'id = :id:',
-            'bind'       => [
-                'id' => $collectionId,
-            ]
+            'bind'       => ['id' => $collectionId],
         ]);
 
         if (!$collection || !$collection->hasAccess($user->id)) {
             return null;
         }
 
-        $data                 = $collection->toArray();
-        $data['creator_name'] = $collection->creator->username;
-        $data['cards']        = [];
+        // Validate pagination params
+        $page    = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $offset  = ($page - 1) * $perPage;
 
-        foreach ($collection->cards as $card) {
+        // Count total cards in collection
+        $total = CollectionCard::count([
+            'conditions' => 'collection_id = :collection_id:',
+            'bind'       => ['collection_id' => $collectionId],
+        ]);
+
+        // Fetch paginated card IDs ordered by link creation date
+        $collectionCards = CollectionCard::find([
+            'conditions' => 'collection_id = :collection_id:',
+            'bind'       => ['collection_id' => $collectionId],
+            'order'      => 'created_at DESC',
+            'limit'      => $perPage,
+            'offset'     => $offset,
+        ]);
+
+        $data                 = $collection->toArray();
+        $data['creator_name'] = $collection->creator->name ?? $collection->creator->username ?? null;
+        $data['cards']        = [];
+        $data['total']        = (int)$total;
+        $data['page']         = $page;
+        $data['per_page']     = $perPage;
+
+        foreach ($collectionCards as $collectionCard) {
+            $card = $collectionCard->getCard();
+            if (!$card) {
+                continue;
+            }
+
             $cardData = $card->toArray();
 
-            // Добавляем только ID коллекций для каждой карточки
+            // Collect all collection IDs this card belongs to
             $cardData['collectionIds'] = [];
-            foreach ($card->collections as $relatedCollection) {
+            foreach ($card->getCollections() as $relatedCollection) {
                 $cardData['collectionIds'][] = $relatedCollection->id;
             }
 

@@ -330,10 +330,15 @@ const myCardSlice = createSlice({
             })
             .addCase(fetchCardsByCollection.fulfilled, (state: MyCardState, action: PayloadAction<GetCardsResponse>) => {
                 state.isLoading = false;
-                state.myCards = action.payload.data.cards;
+                const newCards = action.payload.data.cards;
                 state.pagination.total = action.payload.data.total;
                 state.pagination.page = action.payload.data.page;
-                state.pagination.hasMore = action.payload.data.cards.length === state.pagination.perPage;
+                state.pagination.hasMore = newCards.length === state.pagination.perPage;
+                if (state.pagination.page === 1) {
+                    state.myCards = newCards;
+                } else {
+                    state.myCards = [...state.myCards, ...newCards];
+                }
             })
             .addCase(fetchCardsByCollection.rejected, (state: MyCardState, action) => {
                 state.isLoading = false;
