@@ -320,9 +320,10 @@ class LikesController extends BaseController
         return $this->response->setJsonContent([
             'success' => true,
             'data'    => [
-                'cards' => $cards,
-                'total' => $total,
-                'page'  => $page
+                'cards'    => $cards,
+                'total'    => $total,
+                'page'     => $page,
+                'per_page' => $perPage,
             ]
         ]);
     }
@@ -380,7 +381,8 @@ class LikesController extends BaseController
             'data'    => [
                 'collections' => $collections,
                 'total'       => $total,
-                'page'        => $page
+                'page'        => $page,
+                'per_page'    => $perPage,
             ]
         ]);
     }
